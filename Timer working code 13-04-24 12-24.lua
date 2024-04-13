@@ -6,10 +6,6 @@ local resetButton = nil -- Variable to hold the reset button's reference
 local isTimerActive = false
 local realmBestLabel = nil -- Variable to hold the realm best time label reference
 local bestClearLabel = nil -- Variable to hold the best clear time label reference
-local lastTenSecondsTimer = nil
-local C_Timer = C_Timer or nil
-local soundPlayed = {}
-
 
 -- Function to create the addon frame
 local function CreateAddonFrame()
@@ -34,7 +30,7 @@ local function CreateAddonFrame()
     millisecondsLabel:SetFont("Fonts\\FRIZQT__.TTF", 18)
 
     -- Position the font strings within the label frame
-    minutesLabel:SetPoint("LEFT", 10, -50)
+    minutesLabel:SetPoint("LEFT", 10, 0)
     secondsLabel:SetPoint("LEFT", minutesLabel, "RIGHT", 0, 0)
     millisecondsLabel:SetPoint("LEFT", secondsLabel, "RIGHT", 0, -1) -- Adjusted the Y offset here
 
@@ -49,7 +45,7 @@ local function CreateAddonFrame()
     realmBestLabel:SetText("Realm Best Time: " .. realmBestTime)
 
     -- Position the realm best time label
-    realmBestLabel:SetPoint("LEFT", labelFrame, "LEFT", 10, 0) -- Adjust the offset as needed
+    realmBestLabel:SetPoint("LEFT", minutesLabel, "TOP", -20, 15) -- Adjust the offset as needed
 
     -- Create a new font string for the best clear time label
     bestClearLabel = labelFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
@@ -65,7 +61,7 @@ local function CreateAddonFrame()
     end)
 
     -- Position the best clear time label below the realm best time label
-    bestClearLabel:SetPoint("LEFT", labelFrame, "LEFT", 10, -20) -- Adjust the offset as needed
+    bestClearLabel:SetPoint("LEFT", minutesLabel, "BOTTOM", -20, -15) -- Adjust the offset as needed
 
     -- Enable dragging functionality
     labelFrame:SetMovable(true)
@@ -159,64 +155,25 @@ function StringToTime(timeString)
     end
 end
 
--- Function to reset the soundPlayed table
-local function ResetSoundPlayed()
-    for i = 1, 10 do
-        soundPlayed[i] = false
-    end
-end
-
--- Call ResetSoundPlayed at the beginning of the script
-ResetSoundPlayed()
-
 function SubtractTimer(labelToUse)
     if not startTime then return end -- Check if the timer has started
-    
-    local currentTime = GetTime() 
+    local currentTime = GetTime()
     local elapsedTime = currentTime - startTime
 
     local realmBestTime = StringToTime(GetChallengeModeRealmBestTime())
     local timeSpent = elapsedTime
     local remainingTime = realmBestTime - timeSpent
 
-    if remainingTime > 0 and elapsedTime>=0 then
-        local minutesLeft = math.floor(remainingTime / 60)
-        local secondsLeft = math.floor(remainingTime % 60)
-        local millisecondsLeft = math.floor((remainingTime * 1000) % 1000)
+    local minutesLeft = math.floor(remainingTime / 60)
+    local secondsLeft = math.floor(remainingTime % 60)
+    local millisecondsLeft = math.floor((remainingTime * 1000) % 1000)
 
-        local minutesTogo = string.format("|cFFFFD700%02d|r:", minutesLeft)
-        local secondToGo = string.format("|cFFFFD700%02d|r", secondsLeft)
-        local millisecondToGo = string.format("|cFFFFD700%02d|r", millisecondsLeft)
-        
-        -- Update the text for minutes, seconds, and milliseconds
-        labelToUse:SetText("Best clear: " .. minutesTogo .. secondToGo)
-		
-		-- Inside the condition for the last 10 seconds, check if the sound has already been played
-		if secondsLeft <= 10 and secondsLeft > 0 and minutesLeft == 0 then
-			if not soundPlayed[secondsLeft] then
-				PlaySoundFile("Interface\\AddOns\\Challenge-Mode_Helper\\Sounds\\" .. secondsLeft .. ".ogg")
-				soundPlayed[secondsLeft] = true
-			end
-		end
-	
-	end
-	--print("secondToGo: ".. secondToGo)
-	--print("secondsLeft: ".. secondsLeft)
-	--
-	-- if secondToGo == 10 then
-	--	PlaySoundFile ( "Interface\\AddOns\\\Challenge-Mode_Helper\\Sounds\\10.ogg")
-	--	print("10")
-	-- end
-	-- 
-	--if secondToGo == 9 then
-	--	PlaySoundFile ( "Interface\\AddOns\\\Challenge-Mode_Helper\\Sounds\\9.ogg")
-	--			print("9")
-	-- end
-	-- 
-	-- if secondToGo == 8 then
-	--	PlaySoundFile ( "Interface\\AddOns\\\Challenge-Mode_Helper\\Sounds\\8.ogg")
-	--			print("8")
-	-- end
+    local minutesTogo = string.format("|cFFFFD700%02d|r:", minutesLeft)
+    local secondToGo = string.format("|cFFFFD700%02d|r", secondsLeft)
+    local millisecondToGo = string.format("|cFFFFD700%02d|r", millisecondsLeft)
+    
+    -- Update the text for minutes, seconds, and milliseconds
+    labelToUse:SetText("Best clear: " .. minutesTogo .. secondToGo)
 end
 
 -- Function to update the timer
@@ -230,16 +187,14 @@ function UpdateTimer(minutesLabel, secondsLabel, millisecondsLabel)
     local seconds = math.floor(elapsedTime % 60)
     local milliseconds = math.floor((elapsedTime * 1000) % 1000)
 
-	 if(elapsedTime>=0)then
-        -- Update the text and font size for minutes
-        minutesLabel:SetText(string.format("|cFFFFD700%02d|r:", minutes))
+    -- Update the text and font size for minutes
+    minutesLabel:SetText(string.format("|cFFFFD700%02d|r:", minutes))
 
-        -- Update the text and font size for seconds
-        secondsLabel:SetText(string.format("|cFFFFD700%02d|r:", seconds))
+    -- Update the text and font size for seconds
+    secondsLabel:SetText(string.format("|cFFFFD700%02d|r:", seconds))
 
-        -- Update the text and font size for milliseconds
-        millisecondsLabel:SetText(string.format("|cFFFFFFFF%03d|r", milliseconds))
-    end
+    -- Update the text and font size for milliseconds
+    millisecondsLabel:SetText(string.format("|cFFFFFFFF%03d|r", milliseconds))
 end
 
 function GetChallengeRealmBestTime()
@@ -264,7 +219,7 @@ end
 function formatSecondsToMinutes(timeToFormat)
     local formattedTime = "00:00" -- Default formatted time if realm best is not available
 
-    if timeToFormat and timeToFormat ~= 0 then
+    if timeToFormat ~= 0 then
         timeToFormat = timeToFormat / 1000
 
         -- Calculate hours, minutes, and seconds
@@ -306,38 +261,22 @@ function GetElapsedTime()
     return elapsedTime
 end
 
----- Event handler for WORLD_STATE_TIMER_START
---function OnWorldStateTimerStart(self, event, ...)
---    local playerName = UnitName("player") -- Get the name of the local player
---
---    -- Check if the event is relevant to your character
---    if playerName == "Clopie" then
---        startTime = GetTime() -- Record the start time
---        isTimerActive = true
---        if resetButton then
---            resetButton.disabled = 1 -- Disable the reset button
---        end
---    end
---end
-
--- Event handler for TIMER_START
-function OnStartTimer(self, event, ...)
-    startTime = GetTime() + 5 -- Record the start time
+-- Event handler for WORLD_STATE_TIMER_START
+function OnWorldStateTimerStart()
+    startTime = GetTime() -- Record the start time
     isTimerActive = true
     if resetButton then
         resetButton.disabled = 1 -- Disable the reset button
     end
-    ResetSoundPlayed()  -- Reset the soundPlayed table when the timer starts
 end
 
 -- Event handler for WORLD_STATE_TIMER_STOP
 function OnWorldStateTimerStop()
-	
-	startTime = nil -- Reset the start time
-	isTimerActive = false
-	if resetButton then
-		resetButton.disabled = nil -- Enable the reset button
-	end
+    startTime = nil -- Reset the start time
+    isTimerActive = false
+    if resetButton then
+        resetButton.disabled = nil -- Enable the reset button
+    end
 end
 
 -- Event handler for CHALLENGE_MODE_COMPLETED
@@ -374,7 +313,7 @@ end
 
 -- Event handler for PLAYER_LOGIN
 local function OnPlayerLogin()
-	if CmHelperDB and CmHelperDB.framePosition then
+    if CmHelperDB and CmHelperDB.framePosition then
         if not labelFrame then
             labelFrame, minutesLabel, secondsLabel, millisecondsLabel = CreateAddonFrame()
         end
@@ -382,9 +321,6 @@ local function OnPlayerLogin()
     else
         labelFrame, minutesLabel, secondsLabel, millisecondsLabel = CreateAddonFrame()
     end
-
-    -- Update the best clear time label
-    bestClearLabel:SetText("Best clear: " .. GetRemainingTimeToBeatRealmBest())
 end
 
 -- Register events
@@ -394,11 +330,10 @@ frame:RegisterEvent("WORLD_STATE_TIMER_STOP")
 frame:RegisterEvent("CHALLENGE_MODE_COMPLETED")
 frame:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 frame:RegisterEvent("PLAYER_LOGIN")
-frame:RegisterEvent("START_TIMER")
 
 frame:SetScript("OnEvent", function(self, event, ...)
     if event == "WORLD_STATE_TIMER_START" then
-   --     OnWorldStateTimerStart()
+        OnWorldStateTimerStart()
     elseif event == "WORLD_STATE_TIMER_STOP" then
         OnWorldStateTimerStop()
     elseif event == "CHALLENGE_MODE_COMPLETED" then
@@ -407,7 +342,5 @@ frame:SetScript("OnEvent", function(self, event, ...)
         OnZoneChangedNewArea()
     elseif event == "PLAYER_LOGIN" then
         OnPlayerLogin()
-	elseif event == "START_TIMER" then
-        OnStartTimer()
     end
 end)

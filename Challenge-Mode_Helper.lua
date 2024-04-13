@@ -10,7 +10,6 @@ local defaults = {
 
 function f:OnEvent(event, addOnName)
     if event == "ADDON_LOADED" then
-        print("Addon loaded:", addOnName)
         if addOnName == "Challenge-Mode_Helper" then
             CmHelperDB = CmHelperDB or CopyTable(defaults)
             self.db = CmHelperDB
