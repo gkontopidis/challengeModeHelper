@@ -162,12 +162,11 @@ function SubtractTimer(labelToUse)
     
     local currentTime = GetTime()
     local elapsedTime = currentTime - startTime
-
     local realmBestTime = StringToTime(GetChallengeModeRealmBestTime())
     local timeSpent = elapsedTime
     local remainingTime = realmBestTime - timeSpent
 
-    if remainingTime > 0 then
+    if remainingTime > 0 and elapsedTime>=0 then
         local minutesLeft = math.floor(remainingTime / 60)
         local secondsLeft = math.floor(remainingTime % 60)
         local millisecondsLeft = math.floor((remainingTime * 1000) % 1000)
@@ -191,15 +190,16 @@ function UpdateTimer(minutesLabel, secondsLabel, millisecondsLabel)
     local minutes = math.floor(elapsedTime / 60)
     local seconds = math.floor(elapsedTime % 60)
     local milliseconds = math.floor((elapsedTime * 1000) % 1000)
+    if(elapsedTime>=0)then
+        -- Update the text and font size for minutes
+        minutesLabel:SetText(string.format("|cFFFFD700%02d|r:", minutes))
 
-    -- Update the text and font size for minutes
-    minutesLabel:SetText(string.format("|cFFFFD700%02d|r:", minutes))
+        -- Update the text and font size for seconds
+        secondsLabel:SetText(string.format("|cFFFFD700%02d|r:", seconds))
 
-    -- Update the text and font size for seconds
-    secondsLabel:SetText(string.format("|cFFFFD700%02d|r:", seconds))
-
-    -- Update the text and font size for milliseconds
-    millisecondsLabel:SetText(string.format("|cFFFFFFFF%03d|r", milliseconds))
+        -- Update the text and font size for milliseconds
+        millisecondsLabel:SetText(string.format("|cFFFFFFFF%03d|r", milliseconds))
+    end
 end
 
 function GetChallengeRealmBestTime()
