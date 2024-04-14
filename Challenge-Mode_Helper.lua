@@ -66,6 +66,24 @@ function f:InitializeOptions()
     InterfaceOptions_AddCategory(self.panel)
 end
 
+-- Function to set default frame position
+local function SetDefaultFramePosition()
+    if not CmHelperDB then
+        CmHelperDB = {}
+    end
+    if not CmHelperDB.framePosition then
+        CmHelperDB.framePosition = {
+            yOfs = -100,  -- Adjust these values to set the default position
+            xOfs = 100,
+            point = "CENTER",
+            relativePoint = "CENTER",
+        }
+    end
+end
+
+-- Call the function to set default frame position
+SetDefaultFramePosition()
+
 f:RegisterEvent("ADDON_LOADED")
 f:RegisterEvent("WORLD_STATE_TIMER_STOP")
 f:SetScript("OnEvent", f.OnEvent)
