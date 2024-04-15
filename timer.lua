@@ -14,7 +14,7 @@ local yOfs = -21.22220802307129
 local xOfs = 7.110173225402832
 local point = "TOP"
 local relativePoint = "TOP"
-
+timeElapsed=0
 
 	-- Function to create the addon frame
 	local function CreateAddonFrame()
@@ -73,8 +73,10 @@ local relativePoint = "TOP"
 		local function UpdateButtonState()
 			if IsInGroup() and UnitIsGroupLeader("player") then
 				button:Show() -- Show the button if the player is the group leader
+			elseif not IsInGroup() then
+				button:Show() -- Show the button if the player is alone
 			else
-				button:Hide() -- Hide the button if the player is not the group leader or not in a group
+				button:Hide() -- Hide the button if the player is in a group but not the leader
 			end
 		end
 
@@ -277,7 +279,7 @@ local relativePoint = "TOP"
 
 		local currentTime = GetTime()
 		local elapsedTime = currentTime - startTime
-
+		timeElapsed = elapsedTime
 		local minutes = math.floor(elapsedTime / 60)
 		local seconds = math.floor(elapsedTime % 60)
 		local milliseconds = math.floor((elapsedTime * 1000) % 1000)
@@ -355,6 +357,8 @@ local relativePoint = "TOP"
 		if not startTime then return 0 end -- Return 0 if the timer has not started
 		local currentTime = GetTime()
 		local elapsedTime = currentTime - startTime
+		timeElapsed = elapsedTime
+		print("tret",elapsedTime)
 		return elapsedTime
 	end
 
@@ -395,7 +399,6 @@ local relativePoint = "TOP"
 				labelFrame, minutesLabel, secondsLabel, millisecondsLabel, bestClearLabel = CreateAddonFrame()
 			end
 			labelFrame:Show()
-			
 			-- Reset the timer labels to "00:00:000"
 			minutesLabel:SetText("00:")
 			secondsLabel:SetText("00:")

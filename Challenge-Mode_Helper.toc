@@ -7,4 +7,6 @@
 
 Challenge-Mode_Helper.lua
 Timer.lua
+Objectives.lua
+
 
