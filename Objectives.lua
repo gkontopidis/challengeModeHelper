@@ -3,47 +3,25 @@ if not CmHelperDB then
     CmHelperDB = {}
 end
 
--- Define a mock version of C_Scenario.GetCriteriaInfo(i) for testing
-local function Mock_GetCriteriaInfo(i)
-    -- Simulate completed objectives
-    if i == 1 then
-        --criteriaString, criteriaType, completed, quantity, totalQuantity
-        return "Saboteur Kip'tilak", "", true, 1, 1
-    elseif i == 2 then
-        return "Striker Ga'dok", "", false, 0, 1
-    elseif i == 3 then
-        return "Commander Ri'mok", "", false, 0, 1
-    elseif i == 4 then
-        return "Raigonn", "", false, 0, 1
-    elseif i == 5 then
-        return "Enemies", "", true, 25, 25
-    end
-end
-
-local function Mock_GetCriteriaInfo2(i)
-    -- Simulate completed objectives
-    if i == 1 then
-        return "Saboteur Kip'tilak", "", true, 1, 1
-    elseif i == 2 then
-        return "Striker Ga'dok", "", true, 1, 1
-    elseif i == 3 then
-        return "Commander Ri'mok", "", false, 0, 1
-    elseif i == 4 then
-        return "Raigonn", "", false, 0, 1
-    elseif i == 5 then
-        return "Enemies", "", true, 25, 25
-    end
-end
-
 -- Define a table to store completion times for objectives
 local completionTimes = {}
 
 local Objectives_frame
 local Objectives_label
+local TotalEnemies = "" -- Initialize TotalEnemies variable
 
--- Function to update the objectives label
-function UpdateObjectivesLabel()
+-- Variable to store the selected color option
+local colorPicked = 0
 
+-- Function to update the size of the frame based on the text size
+local function UpdateFrameSize()
+    local textWidth = Objectives_label:GetStringWidth() + 20 -- Add some padding
+    local textHeight = Objectives_label:GetStringHeight() + 20 -- Add some padding
+    Objectives_frame:SetSize(textWidth, textHeight)
+end
+
+-- Function to update the objectives label text
+local function UpdateObjectivesLabel()
     local text = ""
     local objectives = GetScenarioObjectives()
 
@@ -56,47 +34,28 @@ function UpdateObjectivesLabel()
     end
 
     for i, objective in ipairs(objectives) do
-        local TotalEnemies = TotalDungeonEnemies(i)        
+        TotalDungeonEnemies(i)
         if i < #objectives then
-            local bestCompletionTime = GetBestCompletionTime(objective.name)
-            text = text ..
-                       ("%s %s %s %d %s %s %s\n"):format(objective.name, objective.progress, "/", TotalEnemies,
-                    objective.status, objective.timePassed, bestCompletionTime)
+            text = text .. ("%s %s %s %d %s %s\n"):format(objective.name, objective.progress,"/", TotalEnemies, objective.status, objective.timePassed)
         else
-            text = text ..
-                       ("%s : %d/%d%s\n"):format(objective.name, objective.progress, TotalEnemies, objective.timePassed)
+            text = text .. ("%s : %d/%d%s\n"):format(objective.name, objective.progress, TotalEnemies, objective.timePassed)
         end
     end
-    -- print(secondsToString(timeElapsed))
+    
     Objectives_label:SetText(text)
-end
-
-function GetBestCompletionTime(objectiveName)
-    local completionTime = Challenge_Mode_HelperDB.scenarios[objectiveName]
-    completionTime = secondsToString(completionTime)
-    return completionTime
+    -- After updating the text, call the function to update the frame size
+    UpdateFrameSize()
 end
 
 function secondsToString(secondsToChange)
-
     local minutes = math.floor((secondsToChange % 3600) / 60)
     local seconds = secondsToChange % 60
-
     secondsToChange = string.format("%02d:%02d", minutes, seconds)
     return secondsToChange
 end
 
 -- Function to get scenario objectives
 function GetScenarioObjectives()
-    -- TESTING ---
-    if timeElapsed > 3 and timeElapsed < 10 then
-        -- Replace the original C_Scenario.GetCriteriaInfo() function with the mock version
-        C_Scenario.GetCriteriaInfo = Mock_GetCriteriaInfo
-    elseif timeElapsed > 10 then
-        C_Scenario.GetCriteriaInfo = Mock_GetCriteriaInfo2
-    end
-    -- /END TESTING ---
-
     local dungeon, _, steps = C_Scenario.GetStepInfo()
     local objectives = {}
 
@@ -110,19 +69,14 @@ function GetScenarioObjectives()
             -- Record the completion time for this objective
             timePassed = secondsToString(timeElapsed)
             completionTimes[i] = timePassed
-
+            
             print(objectiveName .. timePassed) -- Print to chat
         elseif completionTimes[i] then
             -- If completion time has already been recorded, use it
-            timePassed = completionTimes[i]
+            timePassed = secondsToString(completionTimes[i])
         end
 
-        table.insert(objectives, {
-            name = objectiveName,
-            status = status,
-            progress = progress,
-            timePassed = timePassed
-        })
+        table.insert(objectives, {name = objectiveName, status = status, progress = progress, timePassed = timePassed})
     end
 
     return objectives
@@ -136,13 +90,28 @@ end
 
 function TotalDungeonEnemies(indexNumber)
     local _, _, _, _, totalQuantity = C_Scenario.GetCriteriaInfo(indexNumber)
-    return totalQuantity
+    TotalEnemies = totalQuantity
+    return TotalEnemies
 end
 
 -- Create a frame for the label
 Objectives_frame = CreateFrame("Frame", "MyAddonObjectivesFrame", UIParent)
-Objectives_frame:SetSize(300, 100) -- Set the size of the label frame
 Objectives_frame:SetPoint("CENTER", UIParent, "CENTER")
+
+-- Set up backdrop for the frame
+Objectives_frame:SetBackdrop({
+    bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+    edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+    tile = true,
+    tileSize = 16,
+    edgeSize = 16,
+    insets = {
+        left = 4,
+        right = 4,
+        top = 4,
+        bottom = 4,
+    },
+})
 
 -- Create a font string to display the objectives inside the objectives frame
 Objectives_label = Objectives_frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
@@ -171,31 +140,106 @@ end)
 -- Set the frame to be locked by default
 Objectives_frame.isLocked = true
 
--- Create a dropdown menu
-local dropdownMenu = CreateFrame("Frame", "MyAddonDropdownMenu", UIParent, "UIDropDownMenuTemplate")
-dropdownMenu.displayMode = "MENU"
-dropdownMenu.initialize = function(self, level)
-    local info = UIDropDownMenu_CreateInfo()
-    if Objectives_frame.isLocked then
-        info.text = "Unlock"
-        info.func = function()
-            Objectives_frame.isLocked = false
-            UIDropDownMenu_Refresh(self)
-        end
-    else
-        info.text = "Lock"
-        info.func = function()
-            Objectives_frame.isLocked = true
-            Objectives_frame:StopMovingOrSizing()
-            UIDropDownMenu_Refresh(self)
+-- Function to create the dropdown menu
+local function CreateDropdownMenu()
+    local dropdownMenu = CreateFrame("Frame", "MyAddonDropdownMenu", UIParent, "UIDropDownMenuTemplate")
+    dropdownMenu.displayMode = "MENU"
+    dropdownMenu.initialize = function(self, level)
+        if level == 1 then
+            local info = UIDropDownMenu_CreateInfo()
+            if Objectives_frame.isLocked then
+                info.text = "Unlock"
+                info.func = function()
+                    Objectives_frame.isLocked = false
+                    UIDropDownMenu_Refresh(self)
+                    UpdateObjectivesLabel() -- Update label after changing lock state
+                end
+            else
+                info.text = "Lock"
+                info.func = function()
+                    Objectives_frame.isLocked = true
+                    Objectives_frame:StopMovingOrSizing()
+                    UIDropDownMenu_Refresh(self)
+                    UpdateObjectivesLabel() -- Update label after changing lock state
+                end
+            end
+            UIDropDownMenu_AddButton(info, level)
+
+            info = UIDropDownMenu_CreateInfo()
+            info.text = "Background"
+            info.hasArrow = true
+            info.value = "background"
+            UIDropDownMenu_AddButton(info, level)
+        elseif level == 2 then
+            if UIDROPDOWNMENU_MENU_VALUE == "background" then
+                local info = UIDropDownMenu_CreateInfo()
+                info.text = "0%"
+                info.func = function()
+                    Objectives_frame:SetBackdropColor(0, 0, 0, 0)
+                    UIDropDownMenu_SetSelectedValue(dropdownMenu, 0)
+                    colorPicked = 0 -- Update colorPicked variable
+                    UpdateObjectivesLabel() -- Update label after changing background
+                end
+                info.checked = colorPicked == 0 and 1 or nil
+                UIDropDownMenu_AddButton(info, level)
+
+                info = UIDropDownMenu_CreateInfo()
+                info.text = "25%"
+                info.func = function()
+                    Objectives_frame:SetBackdropColor(0, 0, 0, 0.25)
+                    UIDropDownMenu_SetSelectedValue(dropdownMenu, 0.25)
+                    colorPicked = 0.25 -- Update colorPicked variable
+                    UpdateObjectivesLabel() -- Update label after changing background
+                end
+                info.checked = colorPicked == 0.25 and 1 or nil
+                UIDropDownMenu_AddButton(info, level)
+
+                info = UIDropDownMenu_CreateInfo()
+                info.text = "50%"
+                info.func = function()
+                    Objectives_frame:SetBackdropColor(0, 0, 0, 0.50)
+                    UIDropDownMenu_SetSelectedValue(dropdownMenu, 0.50)
+                    colorPicked = 0.50 -- Update colorPicked variable
+                    UpdateObjectivesLabel() -- Update label after changing background
+                end
+                info.checked = colorPicked == 0.50 and 1 or nil
+                UIDropDownMenu_AddButton(info, level)
+
+                info = UIDropDownMenu_CreateInfo()
+                info.text = "75%"
+                info.func = function()
+                    Objectives_frame:SetBackdropColor(0, 0, 0, 0.75)
+                    UIDropDownMenu_SetSelectedValue(dropdownMenu, 0.75)
+                    colorPicked = 0.75 -- Update colorPicked variable
+                    UpdateObjectivesLabel() -- Update label after changing background
+                end
+                info.checked = colorPicked == 0.75 and 1 or nil
+                UIDropDownMenu_AddButton(info, level)
+
+                info = UIDropDownMenu_CreateInfo()
+                info.text = "100%"
+                info.func = function()
+                    Objectives_frame:SetBackdropColor(0, 0, 0, 1)
+                    UIDropDownMenu_SetSelectedValue(dropdownMenu, 1)
+                    colorPicked = 1 -- Update colorPicked variable
+                    UpdateObjectivesLabel() -- Update label after changing background
+                end
+                info.checked = colorPicked == 1 and 1 or nil
+                UIDropDownMenu_AddButton(info, level)
+            end
         end
     end
-    UIDropDownMenu_AddButton(info, level)
+    return dropdownMenu
 end
+
+-- Create a dropdown menu and store it in a variable
+local dropdownMenu = CreateDropdownMenu()
 
 -- Show the dropdown menu on right-click
 Objectives_frame:SetScript("OnMouseDown", function(self, button)
     if button == "RightButton" then
+        -- Set the colorPicked variable before showing the dropdown menu
+        UIDropDownMenu_SetSelectedValue(dropdownMenu, colorPicked)
         ToggleDropDownMenu(1, nil, dropdownMenu, self:GetName(), 0, 0)
     end
 end)
@@ -203,11 +247,14 @@ end)
 -- Function to save frame position
 function Objectives_frame:SavePosition()
     local point, _, relativePoint, xOfs, yOfs = self:GetPoint()
+    local r, g, b, a = self:GetBackdropColor()
     CmHelperDB.Objectives_frame = {
         point = point,
         relativePoint = relativePoint,
         xOfs = xOfs,
-        yOfs = yOfs
+        yOfs = yOfs,
+        alpha = a, -- Save the alpha value of the backdrop color
+        colorPicked = colorPicked, -- Save the selected color option
     }
 end
 
@@ -217,63 +264,14 @@ local function OnStartTimer()
     Objectives_frame:Show()
     -- Start updating the label continuously
     Objectives_frame:SetScript("OnUpdate", UpdateLabelOnTimer)
-    -- local dungeonName, _, _ = C_Scenario.GetStepInfo()
-
 end
 
 -- Function to handle timer stop event
 local function OnStopTimer()
     -- Refresh the objectives label one more time
-    -- UpdateObjectivesLabel()
+    UpdateObjectivesLabel()
     -- Stop updating the label continuously
     Objectives_frame:SetScript("OnUpdate", nil)
-end
-
--- Function to handle instance reset event
-local function OnInstanceReset()
-    local _, _, _, difficultyName = GetInstanceInfo()
-    if difficultyName == "Challenge Mode" then
-        -- Show the objectives frame if the player is in a challenge mode instance
-        Objectives_frame:Show()
-        -- TotalDungeonEnemies()
-    end
-end
-
--- Function to handle PLAYER_LOGIN
-local function OnPlayerLogin()
-    local _, _, _, difficultyName = GetInstanceInfo()
-    if difficultyName == "Challenge Mode" then
-        -- Always update the objectives label
-        UpdateObjectivesLabel()
-        -- TotalDungeonEnemies()
-        -- Show the objectives frame if the player is in a challenge mode
-        Objectives_frame:Show()
-    else
-        -- Check if the player is in a scenario
-        if C_Scenario.IsInScenario() then
-            UpdateObjectivesLabel()
-            Objectives_frame:Show()
-            -- TotalDungeonEnemies()
-        else
-            Objectives_frame:Hide()
-        end
-    end
-
-    -- Load saved position if available
-    if CmHelperDB and CmHelperDB.Objectives_frame then
-        local position = CmHelperDB.Objectives_frame
-        Objectives_frame:SetPoint(position.point, UIParent, position.relativePoint, position.xOfs, position.yOfs)
-    end
-end
-
--- Function to handle encounter start event
-local function OnEncounterStart()
-    print("START")
-end
-
--- Function to handle encounter end event
-local function OnEncounterEnd()
-    print("FINISH")
 end
 
 -- Register events
@@ -295,14 +293,27 @@ Objectives_frame:SetScript("OnEvent", function(self, event, ...)
     elseif event == "CHALLENGE_MODE_COMPLETED" then
         -- OnChallengeModeCompleted()
     elseif event == "ZONE_CHANGED_NEW_AREA" then
-        OnPlayerLogin() -- Call OnPlayerLogin whenever the player changes zone
+        -- Call UpdateObjectivesLabel whenever the player changes zone
+        UpdateObjectivesLabel()
     elseif event == "PLAYER_LOGIN" then
-        OnPlayerLogin() -- Call OnPlayerLogin when the player logs in
+        -- Call UpdateObjectivesLabel when the player logs in
+        UpdateObjectivesLabel()
+        
+        -- Load saved position, transparency, and colorPicked
+        local savedPosition = CmHelperDB.Objectives_frame
+        if savedPosition then
+            Objectives_frame:SetPoint(savedPosition.point, UIParent, savedPosition.relativePoint, savedPosition.xOfs, savedPosition.yOfs)
+            Objectives_frame:SetBackdropColor(0, 0, 0, savedPosition.alpha)
+            colorPicked = savedPosition.colorPicked or 0
+        end
     elseif event == "INSTANCE_RESET" then
-        OnInstanceReset()
+        -- Call UpdateObjectivesLabel when instance resets
+        UpdateObjectivesLabel()
     elseif event == "ENCOUNTER_START" then
-        OnEncounterStart()
+        -- Call UpdateObjectivesLabel when encounter starts
+        UpdateObjectivesLabel()
     elseif event == "ENCOUNTER_END" then
-        OnEncounterEnd()
+        -- Call UpdateObjectivesLabel when encounter ends
+        UpdateObjectivesLabel()
     end
 end)

@@ -6,7 +6,6 @@
 ## SavedVariables: CmHelperDB
 
 Challenge-Mode_Helper.lua
-Challenge-Mode_HelperDB.lua
 Timer.lua
 Objectives.lua
 
