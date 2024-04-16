@@ -3,16 +3,47 @@ if not CmHelperDB then
     CmHelperDB = {}
 end
 
+-- Define a mock version of C_Scenario.GetCriteriaInfo(i) for testing
+local function Mock_GetCriteriaInfo(i)
+    -- Simulate completed objectives
+    if i == 1 then
+        --criteriaString, criteriaType, completed, quantity, totalQuantity
+        return "Saboteur Kip'tilak", "", true, 1, 1
+    elseif i == 2 then
+        return "Striker Ga'dok", "", false, 0, 1
+    elseif i == 3 then
+        return "Commander Ri'mok", "", false, 0, 1
+    elseif i == 4 then
+        return "Raigonn", "", false, 0, 1
+    elseif i == 5 then
+        return "Enemies", "", true, 25, 25
+    end
+end
+
+local function Mock_GetCriteriaInfo2(i)
+    -- Simulate completed objectives
+    if i == 1 then
+        return "Saboteur Kip'tilak", "", true, 1, 1
+    elseif i == 2 then
+        return "Striker Ga'dok", "", true, 1, 1
+    elseif i == 3 then
+        return "Commander Ri'mok", "", false, 0, 1
+    elseif i == 4 then
+        return "Raigonn", "", false, 0, 1
+    elseif i == 5 then
+        return "Enemies", "", true, 25, 25
+    end
+end
+
 -- Define a table to store completion times for objectives
 local completionTimes = {}
 
 local Objectives_frame
 local Objectives_label
-local TotalEnemies = "" -- Initialize TotalEnemies variable
 
 -- Function to update the objectives label
 function UpdateObjectivesLabel()
-	
+
     local text = ""
     local objectives = GetScenarioObjectives()
 
@@ -25,29 +56,47 @@ function UpdateObjectivesLabel()
     end
 
     for i, objective in ipairs(objectives) do
-		TotalDungeonEnemies(i)
+        local TotalEnemies = TotalDungeonEnemies(i)        
         if i < #objectives then
-            text = text .. ("%s %s %s %d %s %s\n"):format(objective.name, objective.progress,"/", TotalEnemies, objective.status, objective.timePassed)
+            local bestCompletionTime = GetBestCompletionTime(objective.name)
+            text = text ..
+                       ("%s %s %s %d %s %s %s\n"):format(objective.name, objective.progress, "/", TotalEnemies,
+                    objective.status, objective.timePassed, bestCompletionTime)
         else
-            text = text .. ("%s : %d/%d%s\n"):format(objective.name, objective.progress, TotalEnemies, objective.timePassed)
+            text = text ..
+                       ("%s : %d/%d%s\n"):format(objective.name, objective.progress, TotalEnemies, objective.timePassed)
         end
     end
-	--print(secondsToString(timeElapsed))
+    -- print(secondsToString(timeElapsed))
     Objectives_label:SetText(text)
 end
 
-function secondsToString (secondsToChange)
-	
-	local minutes = math.floor((secondsToChange % 3600) / 60)
-			local seconds = secondsToChange % 60
-	
-	secondsToChange = string.format("%02d:%02d", minutes, seconds)
-	return secondsToChange
+function GetBestCompletionTime(objectiveName)
+    local completionTime = Challenge_Mode_HelperDB.scenarios[objectiveName]
+    completionTime = secondsToString(completionTime)
+    return completionTime
 end
 
+function secondsToString(secondsToChange)
+
+    local minutes = math.floor((secondsToChange % 3600) / 60)
+    local seconds = secondsToChange % 60
+
+    secondsToChange = string.format("%02d:%02d", minutes, seconds)
+    return secondsToChange
+end
 
 -- Function to get scenario objectives
 function GetScenarioObjectives()
+    -- TESTING ---
+    if timeElapsed > 3 and timeElapsed < 10 then
+        -- Replace the original C_Scenario.GetCriteriaInfo() function with the mock version
+        C_Scenario.GetCriteriaInfo = Mock_GetCriteriaInfo
+    elseif timeElapsed > 10 then
+        C_Scenario.GetCriteriaInfo = Mock_GetCriteriaInfo2
+    end
+    -- /END TESTING ---
+
     local dungeon, _, steps = C_Scenario.GetStepInfo()
     local objectives = {}
 
@@ -60,38 +109,34 @@ function GetScenarioObjectives()
         if completed and not completionTimes[i] then
             -- Record the completion time for this objective
             timePassed = secondsToString(timeElapsed)
-			completionTimes[i] = timePassed
-            
+            completionTimes[i] = timePassed
+
             print(objectiveName .. timePassed) -- Print to chat
         elseif completionTimes[i] then
             -- If completion time has already been recorded, use it
-            timePassed = secondsToString(completionTimes[i])
+            timePassed = completionTimes[i]
         end
 
-        table.insert(objectives, {name = objectiveName, status = status, progress = progress, timePassed = timePassed})
+        table.insert(objectives, {
+            name = objectiveName,
+            status = status,
+            progress = progress,
+            timePassed = timePassed
+        })
     end
 
     return objectives
 end
 
 function printTable(tbl)
-		for key, value in pairs(tbl) do
+    for key, value in pairs(tbl) do
         print(key, value)
     end
 end
 
 function TotalDungeonEnemies(indexNumber)
-	--local dungeonName, _, _ = C_Scenario.GetStepInfo()
-	--print("Dungeon Name:", dungeonName)
-	
-	
-	
-	local _, _, _, _, totalQuantity = C_Scenario.GetCriteriaInfo(indexNumber)
-	--if dungeonName == "Gate of the Setting Sun" then
-	--	TotalEnemies = "25" -- Assign the value to TotalEnemies directly
-	--end 
-	TotalEnemies = totalQuantity
-	return TotalEnemies
+    local _, _, _, _, totalQuantity = C_Scenario.GetCriteriaInfo(indexNumber)
+    return totalQuantity
 end
 
 -- Create a frame for the label
@@ -162,7 +207,7 @@ function Objectives_frame:SavePosition()
         point = point,
         relativePoint = relativePoint,
         xOfs = xOfs,
-        yOfs = yOfs,
+        yOfs = yOfs
     }
 end
 
@@ -172,14 +217,14 @@ local function OnStartTimer()
     Objectives_frame:Show()
     -- Start updating the label continuously
     Objectives_frame:SetScript("OnUpdate", UpdateLabelOnTimer)
-    --local dungeonName, _, _ = C_Scenario.GetStepInfo()
-    
+    -- local dungeonName, _, _ = C_Scenario.GetStepInfo()
+
 end
 
 -- Function to handle timer stop event
 local function OnStopTimer()
     -- Refresh the objectives label one more time
-    --UpdateObjectivesLabel()
+    -- UpdateObjectivesLabel()
     -- Stop updating the label continuously
     Objectives_frame:SetScript("OnUpdate", nil)
 end
@@ -190,7 +235,7 @@ local function OnInstanceReset()
     if difficultyName == "Challenge Mode" then
         -- Show the objectives frame if the player is in a challenge mode instance
         Objectives_frame:Show()
-		--TotalDungeonEnemies()
+        -- TotalDungeonEnemies()
     end
 end
 
@@ -200,7 +245,7 @@ local function OnPlayerLogin()
     if difficultyName == "Challenge Mode" then
         -- Always update the objectives label
         UpdateObjectivesLabel()
-        --TotalDungeonEnemies()
+        -- TotalDungeonEnemies()
         -- Show the objectives frame if the player is in a challenge mode
         Objectives_frame:Show()
     else
@@ -208,12 +253,12 @@ local function OnPlayerLogin()
         if C_Scenario.IsInScenario() then
             UpdateObjectivesLabel()
             Objectives_frame:Show()
-			--TotalDungeonEnemies()
+            -- TotalDungeonEnemies()
         else
             Objectives_frame:Hide()
         end
     end
-    
+
     -- Load saved position if available
     if CmHelperDB and CmHelperDB.Objectives_frame then
         local position = CmHelperDB.Objectives_frame
@@ -223,12 +268,12 @@ end
 
 -- Function to handle encounter start event
 local function OnEncounterStart()
-   print("START")
+    print("START")
 end
 
 -- Function to handle encounter end event
 local function OnEncounterEnd()
-   print("FINISH")
+    print("FINISH")
 end
 
 -- Register events
@@ -250,9 +295,9 @@ Objectives_frame:SetScript("OnEvent", function(self, event, ...)
     elseif event == "CHALLENGE_MODE_COMPLETED" then
         -- OnChallengeModeCompleted()
     elseif event == "ZONE_CHANGED_NEW_AREA" then
-        OnPlayerLogin()  -- Call OnPlayerLogin whenever the player changes zone
+        OnPlayerLogin() -- Call OnPlayerLogin whenever the player changes zone
     elseif event == "PLAYER_LOGIN" then
-        OnPlayerLogin()  -- Call OnPlayerLogin when the player logs in
+        OnPlayerLogin() -- Call OnPlayerLogin when the player logs in
     elseif event == "INSTANCE_RESET" then
         OnInstanceReset()
     elseif event == "ENCOUNTER_START" then
