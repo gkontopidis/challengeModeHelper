@@ -14,19 +14,35 @@ local yOfs = -21.22220802307129
 local xOfs = 7.110173225402832
 local point = "TOP"
 local relativePoint = "TOP"
+local colorPicked2 = "0" -- Variable to store the selected color option
 timeElapsed=0
 
 	-- Function to create the addon frame
 	local function CreateAddonFrame()
 		-- Create a frame for the label
 		labelFrame = CreateFrame("Frame", "MyAddonLabelFrame", UIParent)
-		labelFrame:SetSize(200, 100) -- Set the size of the label frame
+		labelFrame:SetSize(280, 90) -- Set the size of the label frame
 		
+		-- Set up backdrop for the frame
+		labelFrame:SetBackdrop({
+			bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+			edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+			tile = true,
+			tileSize = 16,
+			edgeSize = 16,
+			insets = {
+				left = 4,
+				right = 4,
+				top = 4,
+				bottom = 4,
+			},
+		})
+				
 		-- Create a button
 		local button = CreateFrame("Button", nil, labelFrame, "UIPanelButtonTemplate")
 		button:SetText("RESET")
 		button:SetSize(60, 60)
-		button:SetPoint("LEFT", -70, -20) -- Adjust the position as needed
+		button:SetPoint("LEFT", 10, 0) -- Adjust the position as needed
 
 		-- Set the button's icon texture
 		button:SetNormalTexture("Interface\\Icons\\SPELL_HOLY_BORROWEDTIME")
@@ -104,7 +120,7 @@ timeElapsed=0
 		millisecondsLabel:SetFont("Fonts\\FRIZQT__.TTF", 18)
 
 		-- Position the font strings within the label frame
-		minutesLabel:SetPoint("LEFT", 10, -50)
+		minutesLabel:SetPoint("LEFT", 80, -20)
 		secondsLabel:SetPoint("LEFT", minutesLabel, "RIGHT", 0, 0)
 		millisecondsLabel:SetPoint("LEFT", secondsLabel, "RIGHT", 0, -1) -- Adjusted the Y offset here
 
@@ -119,7 +135,7 @@ timeElapsed=0
 		realmBestLabel:SetText("Realm Best Time: " .. realmBestTime)
 
 		-- Position the realm best time label
-		realmBestLabel:SetPoint("LEFT", labelFrame, "LEFT", 10, 0) -- Adjust the offset as needed
+		realmBestLabel:SetPoint("LEFT", labelFrame, "LEFT", 80, 20) -- Adjust the offset as needed
 
 		-- Create a new font string for the best clear time label
 		bestClearLabel = labelFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
@@ -135,7 +151,7 @@ timeElapsed=0
 		end)
 
 		-- Position the best clear time label below the realm best time label
-		bestClearLabel:SetPoint("LEFT", labelFrame, "LEFT", 10, -20) -- Adjust the offset as needed
+		bestClearLabel:SetPoint("LEFT", labelFrame, "LEFT", 80, 0) -- Adjust the offset as needed
 
 		-- Enable dragging functionality
 		labelFrame:SetMovable(true)
@@ -158,42 +174,121 @@ timeElapsed=0
 		local dropdownMenu = CreateFrame("Frame", "MyAddonDropdownMenu", UIParent, "UIDropDownMenuTemplate")
 		dropdownMenu.displayMode = "MENU"
 		dropdownMenu.initialize = function(self, level)
+		
+		if level == 1 then
 			local info = UIDropDownMenu_CreateInfo()
+			-- Add the Lock/Unlock option based on labelFrame.isLocked state
 			if labelFrame.isLocked then
 				info.text = "Unlock"
+				info.notCheckable = true
 				info.func = function()
 					labelFrame.isLocked = false
 					UIDropDownMenu_Refresh(self)
-				end
+					end
 			else
 				info.text = "Lock"
+				info.notCheckable = true
 				info.func = function()
 					labelFrame.isLocked = true
 					labelFrame:StopMovingOrSizing()
 					UIDropDownMenu_Refresh(self)
 				end
 			end
+			
 			UIDropDownMenu_AddButton(info, level)
-
-			-- Define resetInfo outside the condition
+						
 			local resetInfo = UIDropDownMenu_CreateInfo()
 			resetInfo.text = "Reset Timer"
+			resetInfo.notCheckable = true -- Sub-options won't have checkboxes
 			resetInfo.func = function()
+				-- Reset timer labels
 				minutesLabel:SetText("|cFFFFD70000|r:")
 				secondsLabel:SetText("|cFFFFD70000|r:")
 				millisecondsLabel:SetText("|cFFFFFFFF000|r")
 			end
 
-			-- Add the reset button conditionally
+			-- Add the Reset Timer option if the timer is not active
 			if not isTimerActive then
 				UIDropDownMenu_AddButton(resetInfo, level)
-				resetButton = resetInfo -- Store the reference to the reset button
+				resetButton = resetInfo
 			end
-		end
+			
+			info.text = "Background"
+            info.hasArrow = true
+            info.value = "background"
+			UIDropDownMenu_AddButton(info, level)
+        elseif level == 2 then
+            if UIDROPDOWNMENU_MENU_VALUE == "background" then
+                local info = UIDropDownMenu_CreateInfo()
+                info.text = "0%"
+                info.func = function()
+                    labelFrame:SetBackdropColor(0, 0, 0, 0)
+                    UIDropDownMenu_SetSelectedValue(dropdownMenu, 0)
+                    colorPicked2 = 0 -- Update colorPicked2 variable
+                    --UpdateObjectivesLabel() -- Update label after changing background
+					labelFrame:SavePosition()
+                end
+                info.checked = colorPicked2 == 0 and 1 or nil
+                UIDropDownMenu_AddButton(info, level)
+
+                info = UIDropDownMenu_CreateInfo()
+                info.text = "25%"
+                info.func = function()
+                    labelFrame:SetBackdropColor(0, 0, 0, 0.25)
+                    UIDropDownMenu_SetSelectedValue(dropdownMenu, 0.25)
+                    colorPicked2 = 0.25 -- Update colorPicked2 variable
+                    --UpdateObjectivesLabel() -- Update label after changing background
+					labelFrame:SavePosition()
+                end
+                info.checked = colorPicked2 == 0.25 and 1 or nil
+                UIDropDownMenu_AddButton(info, level)
+
+                info = UIDropDownMenu_CreateInfo()
+                info.text = "50%"
+                info.func = function()
+                    labelFrame:SetBackdropColor(0, 0, 0, 0.50)
+                    UIDropDownMenu_SetSelectedValue(dropdownMenu, 0.50)
+                    colorPicked2 = 0.50 -- Update colorPicked2 variable
+                    --UpdateObjectivesLabel() -- Update label after changing background
+					labelFrame:SavePosition()
+                end
+                info.checked = colorPicked2 == 0.50 and 1 or nil
+                UIDropDownMenu_AddButton(info, level)
+
+                info = UIDropDownMenu_CreateInfo()
+                info.text = "75%"
+                info.func = function()
+                    labelFrame:SetBackdropColor(0, 0, 0, 0.75)
+                    UIDropDownMenu_SetSelectedValue(dropdownMenu, 0.75)
+                    colorPicked2 = 0.75 -- Update colorPicked2 variable
+                    --UpdateObjectivesLabel() -- Update label after changing background
+					labelFrame:SavePosition()
+                end
+                info.checked = colorPicked2 == 0.75 and 1 or nil
+                UIDropDownMenu_AddButton(info, level)
+
+                info = UIDropDownMenu_CreateInfo()
+                info.text = "100%"
+                info.func = function()
+                    labelFrame:SetBackdropColor(0, 0, 0, 1)
+                    UIDropDownMenu_SetSelectedValue(dropdownMenu, 1)
+                    colorPicked2 = 1 -- Update colorPicked2 variable
+                    --UpdateObjectivesLabel() -- Update label after changing background
+					labelFrame:SavePosition()
+                end
+                info.checked = colorPicked2 == 1 and 1 or nil
+                UIDropDownMenu_AddButton(info, level)
+            end
+        end
+    		
+	end
+
+		--local dropdownMenu = CreateDropdownMenu()
 
 		-- Show the dropdown menu on right-click
 		labelFrame:SetScript("OnMouseDown", function(self, button)
 			if button == "RightButton" then
+				UIDropDownMenu_SetSelectedValue(dropdownMenu, colorPicked2)
 				ToggleDropDownMenu(1, nil, dropdownMenu, self:GetName(), 0, 0)
 			end
 		end)
@@ -201,11 +296,14 @@ timeElapsed=0
 		-- Function to save frame position
 		function labelFrame:SavePosition()
 			local point, _, relativePoint, xOfs, yOfs = self:GetPoint()
+			local r, g, b, a = self:GetBackdropColor()
 			CmHelperDB.framePosition = {
 				point = point,
 				relativePoint = relativePoint,
 				xOfs = xOfs,
 				yOfs = yOfs,
+				colorPicked2 = colorPicked2, -- Save the selected color option
+				alpha = a,
 			}
 		end
 
@@ -430,6 +528,9 @@ timeElapsed=0
 			end
 			-- Set the frame position based on the values stored in CmHelperDB
 			labelFrame:SetPoint(CmHelperDB.framePosition.point, UIParent, CmHelperDB.framePosition.relativePoint, CmHelperDB.framePosition.xOfs, CmHelperDB.framePosition.yOfs)
+			
+			-- Set the transparency of the label frame based on the stored value
+			labelFrame:SetBackdropColor(0, 0, 0, CmHelperDB.framePosition.colorPicked2)
 		else
 			-- Initialize CmHelperDB with the default frame position values
 			CmHelperDB = {
@@ -438,10 +539,15 @@ timeElapsed=0
 					xOfs = 7.110173225402832,
 					point = "TOP",
 					relativePoint = "TOP",
+					colorPicked2 = colorPicked2, -- Set default transparency value
+					alpha = a
 				}
 			}
 			-- Create the addon frame
 			labelFrame, minutesLabel, secondsLabel, millisecondsLabel = CreateAddonFrame()
+			
+			-- Set the default transparency of the label frame
+			labelFrame:SetBackdropColor(0, 0, 0, CmHelperDB.framePosition.colorPicked2)
 		end
 
 		-- Update the best clear time label

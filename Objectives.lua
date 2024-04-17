@@ -232,6 +232,7 @@ local function CreateDropdownMenu()
             local info = UIDropDownMenu_CreateInfo()
             if Objectives_frame.isLocked then
                 info.text = "Unlock"
+				info.notCheckable = true
                 info.func = function()
                     Objectives_frame.isLocked = false
                     UIDropDownMenu_Refresh(self)
@@ -239,6 +240,7 @@ local function CreateDropdownMenu()
                 end
             else
                 info.text = "Lock"
+				info.notCheckable = true
                 info.func = function()
                     Objectives_frame.isLocked = true
                     Objectives_frame:StopMovingOrSizing()
@@ -251,6 +253,7 @@ local function CreateDropdownMenu()
             info = UIDropDownMenu_CreateInfo()
             info.text = "Background"
             info.hasArrow = true
+			info.notCheckable = true
             info.value = "background"
             UIDropDownMenu_AddButton(info, level)
         elseif level == 2 then
@@ -262,6 +265,7 @@ local function CreateDropdownMenu()
                     UIDropDownMenu_SetSelectedValue(dropdownMenu, 0)
                     colorPicked = 0 -- Update colorPicked variable
                     UpdateObjectivesLabel() -- Update label after changing background
+					Objectives_frame:SavePosition()
                 end
                 info.checked = colorPicked == 0 and 1 or nil
                 UIDropDownMenu_AddButton(info, level)
@@ -273,6 +277,7 @@ local function CreateDropdownMenu()
                     UIDropDownMenu_SetSelectedValue(dropdownMenu, 0.25)
                     colorPicked = 0.25 -- Update colorPicked variable
                     UpdateObjectivesLabel() -- Update label after changing background
+					Objectives_frame:SavePosition()
                 end
                 info.checked = colorPicked == 0.25 and 1 or nil
                 UIDropDownMenu_AddButton(info, level)
@@ -284,6 +289,7 @@ local function CreateDropdownMenu()
                     UIDropDownMenu_SetSelectedValue(dropdownMenu, 0.50)
                     colorPicked = 0.50 -- Update colorPicked variable
                     UpdateObjectivesLabel() -- Update label after changing background
+					Objectives_frame:SavePosition()
                 end
                 info.checked = colorPicked == 0.50 and 1 or nil
                 UIDropDownMenu_AddButton(info, level)
@@ -295,6 +301,7 @@ local function CreateDropdownMenu()
                     UIDropDownMenu_SetSelectedValue(dropdownMenu, 0.75)
                     colorPicked = 0.75 -- Update colorPicked variable
                     UpdateObjectivesLabel() -- Update label after changing background
+					Objectives_frame:SavePosition()
                 end
                 info.checked = colorPicked == 0.75 and 1 or nil
                 UIDropDownMenu_AddButton(info, level)
@@ -306,6 +313,7 @@ local function CreateDropdownMenu()
                     UIDropDownMenu_SetSelectedValue(dropdownMenu, 1)
                     colorPicked = 1 -- Update colorPicked variable
                     UpdateObjectivesLabel() -- Update label after changing background
+					Objectives_frame:SavePosition()
                 end
                 info.checked = colorPicked == 1 and 1 or nil
                 UIDropDownMenu_AddButton(info, level)
@@ -370,7 +378,7 @@ end
 local function OnLogOut()
     print("Logging out. Copying data from localDB.objectives to CmHelperDB.objectives...")
 
-    -- Ensure CmHelperDB is initialized
+	-- Ensure CmHelperDB is initialized
     if not CmHelperDB then
         print("CmHelperDB is not initialized. Initializing...")
         CmHelperDB = {}
