@@ -1,90 +1,40 @@
-if not CmHelperDB then
-    CmHelperDB = {
-        BestBossKillTime = {}
-    }
-end
-
--- Ensure scenarios table exists
-if not CmHelperDB.BestBossKillTime then
-    CmHelperDB.BestBossKillTime = {}
-end
-
--- Copy values from CmHelperDB.BestBossKillTime to localDB.BestBossKillTime
 local localDB = {
     BestBossKillTime = {}
 }
-if CmHelperDB then
-	for key, value in pairs(CmHelperDB.BestBossKillTime) do
-		localDB.BestBossKillTime[key] = value
-	end
-end
+-- -- Define a mock version of C_Scenario.GetCriteriaInfo(i) for testing
+-- local function Mock_GetCriteriaInfo(i)
+--     -- Simulate completed objectives
+--     if i == 1 then
+--         -- criteriaString, criteriaType, completed, quantity, totalQuantity
+--         return "Saboteur Kip'tilak", "", true, 1, 1
+--     elseif i == 2 then
+--         return "Striker Ga'dok", "", false, 0, 1
+--     elseif i == 3 then
+--         return "Commander Ri'mok", "", false, 0, 1
+--     elseif i == 4 then
+--         return "Raigonn", "", false, 0, 1
+--     elseif i == 5 then
+--         return "Enemies", "", true, 25, 25
+--     end
+-- end
 
-local localDB = {
-    BestBossKillTime = {}
-}
-localDB.BestBossKillTime["Wise Mari"] = ""
-localDB.BestBossKillTime["Lorewalker Stonestep"] = ""
-localDB.BestBossKillTime["Liu Flameheart"] = ""
-localDB.BestBossKillTime["Sha of Doubt"] = ""
-localDB.BestBossKillTime["Ook-Ook"] = ""
-localDB.BestBossKillTime["Hoptallus"] = ""
-localDB.BestBossKillTime["Yan-Zhu the Uncasked"] = ""
-localDB.BestBossKillTime["Saboteur Kip'tilak"] = "05:50"
-localDB.BestBossKillTime["Striker Ga'dok"] = "10:15"
-localDB.BestBossKillTime["Commander Ri'mok"] = ""
-localDB.BestBossKillTime["Raigonn"] = ""
-localDB.BestBossKillTime["Gu Cloudstrike"] = ""
-localDB.BestBossKillTime["Master Snowdrift"] = ""
-localDB.BestBossKillTime["Sha of Violence"] = ""
-localDB.BestBossKillTime["Taran Zhu"] = ""
-localDB.BestBossKillTime["Trial of the King"] = ""
-localDB.BestBossKillTime["Gekkan"] = ""
-localDB.BestBossKillTime["Xin the Weaponmaster"] = ""
-
-for key, value in pairs(CmHelperDB.BestBossKillTime) do
-    localDB.BestBossKillTime[key] = value
-end
-
--- Define a mock version of C_Scenario.GetCriteriaInfo(i) for testing
-local function Mock_GetCriteriaInfo(i)
-    -- Simulate completed objectives
-    if i == 1 then
-        -- criteriaString, criteriaType, completed, quantity, totalQuantity
-        return "Saboteur Kip'tilak", "", true, 1, 1
-    elseif i == 2 then
-        return "Striker Ga'dok", "", false, 0, 1
-    elseif i == 3 then
-        return "Commander Ri'mok", "", false, 0, 1
-    elseif i == 4 then
-        return "Raigonn", "", false, 0, 1
-    elseif i == 5 then
-        return "Enemies", "", true, 25, 25
-    end
-end
-
-local function Mock_GetCriteriaInfo2(i)
-    -- Simulate completed objectives
-    if i == 1 then
-        return "Saboteur Kip'tilak", "", true, 1, 1
-    elseif i == 2 then
-        return "Striker Ga'dok", "", true, 1, 1
-    elseif i == 3 then
-        return "Commander Ri'mok", "", false, 0, 1
-    elseif i == 4 then
-        return "Raigonn", "", false, 0, 1
-    elseif i == 5 then
-        return "Enemies", "", true, 25, 25
-    end
-end
-
--- Initialize saved variables
-if not CmHelperDB then
-    CmHelperDB = {}
-end
+-- local function Mock_GetCriteriaInfo2(i)
+--     -- Simulate completed objectives
+--     if i == 1 then
+--         return "Saboteur Kip'tilak", "", true, 1, 1
+--     elseif i == 2 then
+--         return "Striker Ga'dok", "", true, 1, 1
+--     elseif i == 3 then
+--         return "Commander Ri'mok", "", false, 0, 1
+--     elseif i == 4 then
+--         return "Raigonn", "", false, 0, 1
+--     elseif i == 5 then
+--         return "Enemies", "", true, 25, 25
+--     end
+-- end
 
 -- Define a table to store completion times for objectives
 local completionTimes = {}
-
 local Objectives_frame
 local Objectives_label
 local TotalEnemies = "" -- Initialize TotalEnemies variable
@@ -101,7 +51,7 @@ end
 
 -- Function to update the objectives label text
 local function UpdateObjectivesLabel()
-
+    -- printTable(localDB.BestBossKillTime)
     local text = ""
     local objectives = GetScenarioObjectives()
 
@@ -113,15 +63,8 @@ local function UpdateObjectivesLabel()
         Objectives_frame:Show()
     end
 
-
-
     for i, objective in ipairs(objectives) do
-	if localDB.BestBossKillTime[objective.name]== nil then
-		localDB.BestBossKillTime[objective.name]="N/A"
-	end
-		if objective.bossTimeToKill== nil then
-		objective.bossTimeToKill="N/A"
-	end
+
         TotalDungeonEnemies(i)
         if i < #objectives then
             text = text .. ("%s %s %s\n"):format(objective.name, objective.bossTimeToKill, objective.timePassed)
@@ -129,7 +72,7 @@ local function UpdateObjectivesLabel()
             text = text .. ("%s : %d/%d\n"):format(objective.name, objective.progress, TotalEnemies)
         end
     end
-    
+
     Objectives_label:SetText(text)
     -- After updating the text, call the function to update the frame size
     UpdateFrameSize()
@@ -142,55 +85,68 @@ function secondsToString(secondsToChange)
     return secondsToChange
 end
 
--- Function to get scenario objectives
+--- Function to get scenario objectives
 function GetScenarioObjectives()
+    -- -- TESTING ---
 
--- TESTING ---
-
-    if timeElapsed > 7 and timeElapsed < 9 then
-        -- Replace the original C_Scenario.GetCriteriaInfo() function with the mock version
-        C_Scenario.GetCriteriaInfo = Mock_GetCriteriaInfo
-    elseif timeElapsed > 9 then
-        C_Scenario.GetCriteriaInfo = Mock_GetCriteriaInfo2
-    end
-    -- /END TESTING ---
+    -- if timeElapsed > 7 and timeElapsed < 9 then
+    --     -- Replace the original C_Scenario.GetCriteriaInfo() function with the mock version
+    --     C_Scenario.GetCriteriaInfo = Mock_GetCriteriaInfo
+    -- elseif timeElapsed > 9 then
+    --     C_Scenario.GetCriteriaInfo = Mock_GetCriteriaInfo2
+    -- end
+    -- -- /END TESTING ---
 
     local dungeon, _, steps = C_Scenario.GetStepInfo()
     local objectives = {}
-	local bossTimeToKill
-	
+    local bossTimeToKill
+
     for i = 1, steps do
         local objectiveName, _, completed, progress = C_Scenario.GetCriteriaInfo(i)
-		local formattedObjectiveName = objectiveName
-        --local status = completed and "|cFF00FF00Completed|r" or "|cFFFF0000Incomplete|r"
-		if completed then
-			formattedObjectiveName = "|cFF00FF00" .. objectiveName .. "|r"
-		end
         local timePassed = ""
-		bossTimeToKill = localDB.BestBossKillTime[objectiveName]
+        local formattedObjectiveName = objectiveName
+        bossTimeToKill = localDB.BestBossKillTime[objectiveName]
+
+        if bossTimeToKill == nil or bossTimeToKill == "" then
+            localDB.BestBossKillTime[objectiveName] = "N/A"
+            bossTimeToKill = "N/A"
+        end
 
         -- Check if objective is completed and the completion time has not been recorded yet
         if completed and not completionTimes[i] then
             -- Record the completion time for this objective
-			
+
             timePassed = secondsToString(timeElapsed)
             completionTimes[i] = timePassed
-            
-            print(objectiveName .. timePassed) -- Print to chat
+
+            -- print(objectiveName .. timePassed) -- Print to chat
         elseif completionTimes[i] then
             -- If completion time has already been recorded, use it
 
-		if localDB.BestBossKillTime == objectiveName then
-			bossTimeToKill= localDB.BestBossKillTime[objectiveName]
-		end
+            if localDB.BestBossKillTime[objectiveName] then
+                bossTimeToKill = localDB.BestBossKillTime[objectiveName]
+            end
 
-            timePassed = completionTimes[i] --secondsToString(completionTimes[i])
-			-- if localDB.BestBossKillTime[objectiveName] == "" or timeStringToSeconds(localDB.BestBossKillTime[objectiveName]) > timeStringToSeconds(completionTimes[i]) then
-           --    localDB.BestBossKillTime[objectiveName] = completionTimes[i]
-           --end
+            timePassed = completionTimes[i] -- secondsToString(completionTimes[i])
+
+            if localDB.BestBossKillTime[objectiveName] == "N/A" or localDB.BestBossKillTime[objectiveName] == "" or
+                timeStringToSeconds(localDB.BestBossKillTime[objectiveName]) > timeStringToSeconds(completionTimes[i]) then
+                localDB.BestBossKillTime[objectiveName] = completionTimes[i]
+                bossTimeToKill = completionTimes[i]
+            end
         end
 
-        table.insert(objectives, {name = formattedObjectiveName, progress = progress, timePassed = timePassed, bossTimeToKill=bossTimeToKill})
+        -- Check if objective is completed and format the name with color for display
+        if completed then
+            formattedObjectiveName = "|cFF00FF00" .. formattedObjectiveName .. "|r" -- Green color for completion
+        end
+
+        table.insert(objectives, {
+            name = formattedObjectiveName, -- Store the formatted name with colors
+            progress = progress,
+            timePassed = timePassed,
+            bossTimeToKill = bossTimeToKill
+        })
     end
 
     return objectives
@@ -198,12 +154,12 @@ end
 
 function timeStringToSeconds(timeString)
     if not timeString then
-        return 0  -- Return 0 or any default value if timeString is nil
+        return 0 -- Return 0 or any default value if timeString is nil
     end
 
     local minutes, seconds = timeString:match("(%d+):(%d+)")
     if not minutes or not seconds then
-        return 0  -- Return 0 or any default value if timeString is in an invalid format
+        return 0 -- Return 0 or any default value if timeString is in an invalid format
     end
 
     return tonumber(minutes) * 60 + tonumber(seconds)
@@ -236,8 +192,8 @@ Objectives_frame:SetBackdrop({
         left = 4,
         right = 4,
         top = 4,
-        bottom = 4,
-    },
+        bottom = 4
+    }
 })
 
 -- Create a font string to display the objectives inside the objectives frame
@@ -381,7 +337,7 @@ function Objectives_frame:SavePosition()
         xOfs = xOfs,
         yOfs = yOfs,
         alpha = a, -- Save the alpha value of the backdrop color
-        colorPicked = colorPicked, -- Save the selected color option
+        colorPicked = colorPicked -- Save the selected color option
     }
 end
 
@@ -401,6 +357,64 @@ local function OnStopTimer()
     Objectives_frame:SetScript("OnUpdate", nil)
 end
 
+local function OnPlayerEntringWorld()
+    -- Check if the player is in a challenge mode instance
+    local _, _, _, difficultyName = GetInstanceInfo()
+    if difficultyName == "Challenge Mode" then
+        -- If in a challenge mode instance, hide the WatchFrame UI
+        WatchFrame:SetScript("OnEvent", nil)
+        WatchFrame:Hide()
+    end
+end
+
+local function OnLogOut()
+    print("Logging out. Copying data from localDB.objectives to CmHelperDB.objectives...")
+
+    -- Ensure CmHelperDB is initialized
+    if not CmHelperDB then
+        print("CmHelperDB is not initialized. Initializing...")
+        CmHelperDB = {}
+    end
+
+    -- Ensure CmHelperDB.objectives is initialized
+    if not CmHelperDB.BestBossKillTime then
+        print("CmHelperDB.objectives is not initialized. Initializing...")
+        CmHelperDB.BestBossKillTime = {}
+    end
+
+    -- Copy values from localDB.objectives to CmHelperDB.objectives
+    for key, value in pairs(localDB.BestBossKillTime) do
+        CmHelperDB.BestBossKillTime[key] = value
+    end
+
+    print("Data copied successfully.")
+end
+
+local function OnAddonLoaded()
+    if not CmHelperDB then
+        CmHelperDB = {
+            BestBossKillTime = {}
+        }
+    end
+
+    -- Ensure scenarios table exists
+    if not CmHelperDB.BestBossKillTime then
+        CmHelperDB.BestBossKillTime = {}
+    end
+
+    -- Copy values from CmHelperDB.BestBossKillTime to localDB.BestBossKillTime
+
+    if CmHelperDB then
+        if CmHelperDB.BestBossKillTime then
+            if next(CmHelperDB.BestBossKillTime) ~= nil then
+                for bossName, bestTime in pairs(CmHelperDB.BestBossKillTime) do
+                    localDB.BestBossKillTime[bossName] = bestTime
+                end
+            end
+        end
+    end
+end
+
 -- Register events
 Objectives_frame:RegisterEvent("START_TIMER")
 Objectives_frame:RegisterEvent("WORLD_STATE_TIMER_STOP")
@@ -411,15 +425,16 @@ Objectives_frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 Objectives_frame:RegisterEvent("INSTANCE_RESET")
 Objectives_frame:RegisterEvent("ENCOUNTER_START")
 Objectives_frame:RegisterEvent("ENCOUNTER_END")
+Objectives_frame:RegisterEvent("PLAYER_LOGOUT")
+Objectives_frame:RegisterEvent("ADDON_LOADED")
 
 Objectives_frame:SetScript("OnEvent", function(self, event, ...)
     if event == "START_TIMER" then
         OnStartTimer()
     elseif event == "WORLD_STATE_TIMER_STOP" then
         OnStopTimer()
-	elseif event == "PLAYER_ENTERING_WORLD" then
-WatchFrame:SetScript("OnEvent", nil)
-        WatchFrame:Hide()
+    elseif event == "PLAYER_ENTERING_WORLD" then
+        OnPlayerEntringWorld()
     elseif event == "CHALLENGE_MODE_COMPLETED" then
         -- OnChallengeModeCompleted()
     elseif event == "ZONE_CHANGED_NEW_AREA" then
@@ -428,11 +443,12 @@ WatchFrame:SetScript("OnEvent", nil)
     elseif event == "PLAYER_LOGIN" then
         -- Call UpdateObjectivesLabel when the player logs in
         UpdateObjectivesLabel()
-        
+
         -- Load saved position, transparency, and colorPicked
         local savedPosition = CmHelperDB.Objectives_frame
         if savedPosition then
-            Objectives_frame:SetPoint(savedPosition.point, UIParent, savedPosition.relativePoint, savedPosition.xOfs, savedPosition.yOfs)
+            Objectives_frame:SetPoint(savedPosition.point, UIParent, savedPosition.relativePoint, savedPosition.xOfs,
+                savedPosition.yOfs)
             Objectives_frame:SetBackdropColor(0, 0, 0, savedPosition.alpha)
             colorPicked = savedPosition.colorPicked or 0
         end
@@ -445,5 +461,9 @@ WatchFrame:SetScript("OnEvent", nil)
     elseif event == "ENCOUNTER_END" then
         -- Call UpdateObjectivesLabel when encounter ends
         UpdateObjectivesLabel()
+    elseif event == "ADDON_LOADED" then
+        OnAddonLoaded()
+    elseif event == "PLAYER_LOGOUT" then
+        OnLogOut()
     end
 end)
