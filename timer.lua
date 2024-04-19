@@ -224,6 +224,7 @@ timeElapsed=0
 			
 			local backgroundFrame = UIDropDownMenu_CreateInfo()
 			backgroundFrame.text = "Background"
+			backgroundFrame.notCheckable = true
             backgroundFrame.hasArrow = true
             backgroundFrame.value = "background"
 			UIDropDownMenu_AddButton(backgroundFrame, level)
@@ -546,10 +547,8 @@ timeElapsed=0
 
 	-- Event handler for ZONE_CHANGED_NEW_AREA
 	local function OnZoneChangedNewArea()
-		local timeRemaining = GetChallengeModeRealmOrGuildBestTime()
 		local _, _, _, difficultyName = GetInstanceInfo()
 		if difficultyName == "Challenge Mode" then
-			
 			-- Reset the timer labels to "00:00:000"
 			minutesLabel:SetText("00:")
 			secondsLabel:SetText("00:")
@@ -558,7 +557,12 @@ timeElapsed=0
 				labelFrame, minutesLabel, secondsLabel, millisecondsLabel, bestClearLabel = CreateAddonFrame()
 			end
 			labelFrame:Show()
-			bestClearLabel:SetText("Time remaining:", timeRemaining)
+			local timeRemaining = GetChallengeModeRealmOrGuildBestTime()
+			if timeRemaining then
+				bestClearLabel:SetText("Time remaining: " .. timeRemaining)
+			else
+				bestClearLabel:SetText("Time remaining: N/A")
+			end
 		else
 			if inChallengeMode then
 				OnWorldStateTimerStop() -- Reset the timer if leaving challenge mode
@@ -566,6 +570,7 @@ timeElapsed=0
 			labelFrame:Hide()
 		end
 	end
+	
 
 	-- Event handler for PLAYER_LOGIN
 	local function OnPlayerLogin()
