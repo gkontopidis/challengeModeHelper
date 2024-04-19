@@ -123,7 +123,7 @@ function GetScenarioObjectives()
         elseif completionTimes[i] then
             -- If completion time has already been recorded, use it
 
-            if localDB.BestBossKillTime[objectiveName] then
+            if localDB.BestBossKillTime[objectiveName] and objectiveName ~= "Enemies" then
                 bossTimeToKill = localDB.BestBossKillTime[objectiveName]
             end
 
@@ -444,7 +444,18 @@ Objectives_frame:SetScript("OnEvent", function(self, event, ...)
     elseif event == "PLAYER_ENTERING_WORLD" then
         OnPlayerEntringWorld()
     elseif event == "CHALLENGE_MODE_COMPLETED" then
-        -- OnChallengeModeCompleted()
+        -- Record the completion time for the last boss if it hasn't been recorded already
+        local objectives = GetScenarioObjectives()
+        local lastObjective = objectives[#objectives-1] -- Get the last objective
+        if lastObjective and lastObjective.progress == lastObjective.totalQuantity and not completionTimes[#objectives-1] then
+            -- Record completion time for the last boss
+            completionTimes[#objectives-1] = secondsToString(timeElapsed)
+            -- Save the completion time to the database
+            localDB.BestBossKillTime[lastObjective.name] = completionTimes[#objectives-1]
+        end
+        -- Update the objectives label
+        UpdateObjectivesLabel()
+    
     elseif event == "ZONE_CHANGED_NEW_AREA" then
         -- Call UpdateObjectivesLabel whenever the player changes zone
         UpdateObjectivesLabel()

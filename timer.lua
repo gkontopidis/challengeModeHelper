@@ -15,6 +15,7 @@ local xOfs = 7.110173225402832
 local point = "TOP"
 local relativePoint = "TOP"
 local colorPicked2 = "0" -- Variable to store the selected color option
+local selectedCountDown="guildBest"
 timeElapsed=0
 
 	-- Function to create the addon frame
@@ -129,18 +130,26 @@ timeElapsed=0
 		secondsLabel:SetTextColor(1, 0.84, 0) -- Gold color
 		millisecondsLabel:SetTextColor(1, 1, 1) -- White color
 
+
 		-- Create a new font string for the realm best time label
 		realmBestLabel = labelFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-		local realmBestTime = GetChallengeModeRealmBestTime()
-		realmBestLabel:SetText("Realm Best Time: " .. realmBestTime)
+		local realmBestTime = GetChallengeModeRealmOrGuildBestTime()
+		local textToDisplay=""
+		if (selectedCountDown == "realmBest")then
+			textToDisplay = "Realm Best:"
+		elseif (selectedCountDown == "guildBest")then
+			textToDisplay = "Guild Best:"
+		end
+		
+		realmBestLabel:SetText(textToDisplay .. realmBestTime)
 
 		-- Position the realm best time label
 		realmBestLabel:SetPoint("LEFT", labelFrame, "LEFT", 80, 20) -- Adjust the offset as needed
 
 		-- Create a new font string for the best clear time label
 		bestClearLabel = labelFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-		local remainingTime = GetRemainingTimeToBeatRealmBest()
-
+		local remainingTime = GetRemainingTimeToBeatCounter()
+		bestClearLabel:SetText("Time remaining: " .. remainingTime)
 		-- Set up a timer to call UpdateTime every second
 		labelFrame:SetScript("OnUpdate", function(self, elapsed)
 			self.elapsed = (self.elapsed or 0) + elapsed
@@ -213,10 +222,19 @@ timeElapsed=0
 				resetButton = resetInfo
 			end
 			
-			info.text = "Background"
-            info.hasArrow = true
-            info.value = "background"
+			local backgroundFrame = UIDropDownMenu_CreateInfo()
+			backgroundFrame.text = "Background"
+            backgroundFrame.hasArrow = true
+            backgroundFrame.value = "background"
+			UIDropDownMenu_AddButton(backgroundFrame, level)
+
+			local timeToBeatMenu = UIDropDownMenu_CreateInfo()			
+			timeToBeatMenu.text = "Time to beat"
+			timeToBeatMenu.notCheckable = true -- Sub-options won't have checkboxes
+            timeToBeatMenu.hasArrow = true
+            timeToBeatMenu.value = "timeToBeat"
 			UIDropDownMenu_AddButton(info, level)
+
         elseif level == 2 then
             if UIDROPDOWNMENU_MENU_VALUE == "background" then
                 local info = UIDropDownMenu_CreateInfo()
@@ -278,11 +296,44 @@ timeElapsed=0
                 end
                 info.checked = colorPicked2 == 1 and 1 or nil
                 UIDropDownMenu_AddButton(info, level)
+
+            elseif UIDROPDOWNMENU_MENU_VALUE == "timeToBeat" then
+                local timeToBeatFrame = UIDropDownMenu_CreateInfo()
+                timeToBeatFrame.text = "Realm best"
+                timeToBeatFrame.func = function()
+                    UIDropDownMenu_SetSelectedValue(dropdownMenu, "realmBest")
+                    selectedCountDown = "realmBest" 	
+					updateFrame()		
+                end
+                timeToBeatFrame.checked = selectedCountDown == "realmBest" and 1 or nil
+                UIDropDownMenu_AddButton(timeToBeatFrame, level)
+
+                timeToBeatFrame = UIDropDownMenu_CreateInfo()
+                timeToBeatFrame.text = "Guild best"
+                timeToBeatFrame.func = function()
+                    UIDropDownMenu_SetSelectedValue(dropdownMenu, "guildBest")
+                    selectedCountDown = "guildBest"
+					updateFrame()
+                end
+                timeToBeatFrame.checked = selectedCountDown == "guildBest" and 1 or nil
+                UIDropDownMenu_AddButton(timeToBeatFrame, level)
             end
         end
-    		
+		
 	end
 
+	function updateFrame()
+		local realmBestTime = GetChallengeModeRealmOrGuildBestTime()
+		local textToDisplay = ""
+		if selectedCountDown == "realmBest" then
+			textToDisplay = "Realm Best: "
+		elseif selectedCountDown == "guildBest" then
+			textToDisplay = "Guild Best: "
+		end
+		realmBestLabel:SetText(textToDisplay .. realmBestTime)
+		bestClearLabel:SetText("Time remaining: " .. realmBestTime)
+	end
+	
 		--local dropdownMenu = CreateDropdownMenu()
 
 		-- Show the dropdown menu on right-click
@@ -310,7 +361,7 @@ timeElapsed=0
 		-- Function to update the timer periodically
 		labelFrame:SetScript("OnUpdate", function()
 			UpdateTimer(minutesLabel, secondsLabel, millisecondsLabel)
-			 SubtractTimer(bestClearLabel)
+			SubtractTimer(bestClearLabel)
 		end)
 
 		return labelFrame, minutesLabel, secondsLabel, millisecondsLabel, bestClearLabel
@@ -343,7 +394,7 @@ timeElapsed=0
 		local currentTime = GetTime() 
 		local elapsedTime = currentTime - startTime
 
-		local realmBestTime = StringToTime(GetChallengeModeRealmBestTime())
+		local realmBestTime = StringToTime(GetChallengeModeRealmOrGuildBestTime())
 		local timeSpent = elapsedTime
 		local remainingTime = realmBestTime - timeSpent
 
@@ -357,12 +408,12 @@ timeElapsed=0
 			local millisecondToGo = string.format("|cFFFFD700%02d|r", millisecondsLeft)
 			
 			-- Update the text for minutes, seconds, and milliseconds
-			labelToUse:SetText("Best clear: " .. minutesTogo .. secondToGo)
+			labelToUse:SetText("Time remaining: " .. minutesTogo .. secondToGo)
 			
 			-- Inside the condition for the last 10 seconds, check if the sound has already been played
 			if secondsLeft <= 10 and secondsLeft > 0 and minutesLeft == 0 then
 				if not soundPlayed[secondsLeft] then
-					PlaySoundFile("Interface\\AddOns\\\Challenge-Mode_Helper\\Sounds\\" .. secondsLeft .. ".ogg")
+					PlaySoundFile("Interface\\AddOns\\Challenge-Mode_Helper\\Sounds\\" .. secondsLeft .. ".ogg")
 					soundPlayed[secondsLeft] = true
 				end
 			end
@@ -394,8 +445,9 @@ timeElapsed=0
 		end
 	end
 
-	function GetChallengeRealmBestTime()
+	function GetChallengeRealmOrGuildBestTime()
 		local realmBest = 0
+		local guildBest = 0
 		local maps = {}
 		GetChallengeModeMapTable(maps)
 		local numMaps = #maps
@@ -405,12 +457,16 @@ timeElapsed=0
 			local _, _, _, _, _, _, _, currentMapID = GetInstanceInfo()
 
 			if currentMapID == mapID then
-				realmBest = GetChallengeBestTime(mapID)
+				guildBest, realmBest = GetChallengeBestTime(mapID)
 				break
 			end
 		end
 
-		return realmBest
+		if (selectedCountDown == "realmBest") then
+			return realmBest
+		elseif (selectedCountDown == "guildBest")  then
+			return guildBest
+		end		
 	end
 
 	function formatSecondsToMinutes(timeToFormat)
@@ -430,23 +486,23 @@ timeElapsed=0
 		return formattedTime
 	end
 
-	function GetChallengeModeRealmBestTime()
-		local realmBest = GetChallengeRealmBestTime()
-		local realmBestFormattedTime = formatSecondsToMinutes(realmBest)
+	function GetChallengeModeRealmOrGuildBestTime()
+		local timeToBeat = GetChallengeRealmOrGuildBestTime()
+		local realmBestFormattedTime = formatSecondsToMinutes(timeToBeat)
 		return realmBestFormattedTime
 	end
 
-	function GetRemainingTimeToBeatRealmBest()
-		local realmBest = GetChallengeRealmBestTime()
+	function GetRemainingTimeToBeatCounter()
+		local timeToBeat = GetChallengeRealmOrGuildBestTime()
 		local currentTime = GetElapsedTime()
 
 		-- Check if any required value is nil
-		if not realmBest or not currentTime then
+		if not timeToBeat or not currentTime then
 			return "N/A" -- Return a default value or handle the nil case appropriately
 		end
 
 		-- Calculate remaining time only if both values are available
-		local remainingTimeToBeatRealmBest = realmBest - currentTime
+		local remainingTimeToBeatRealmBest = timeToBeat - currentTime
 		local formattedRemainingTime = formatSecondsToMinutes(remainingTimeToBeatRealmBest)
 		return formattedRemainingTime
 	end
@@ -456,7 +512,6 @@ timeElapsed=0
 		local currentTime = GetTime()
 		local elapsedTime = currentTime - startTime
 		timeElapsed = elapsedTime
-		print("tret",elapsedTime)
 		return elapsedTime
 	end
 
@@ -491,30 +546,25 @@ timeElapsed=0
 
 	-- Event handler for ZONE_CHANGED_NEW_AREA
 	local function OnZoneChangedNewArea()
+		local timeRemaining = GetChallengeModeRealmOrGuildBestTime()
 		local _, _, _, difficultyName = GetInstanceInfo()
 		if difficultyName == "Challenge Mode" then
-			if not labelFrame then
-				labelFrame, minutesLabel, secondsLabel, millisecondsLabel, bestClearLabel = CreateAddonFrame()
-			end
-			labelFrame:Show()
+			
 			-- Reset the timer labels to "00:00:000"
 			minutesLabel:SetText("00:")
 			secondsLabel:SetText("00:")
 			millisecondsLabel:SetText("000")
-			bestClearLabel:SetText("Best clear: 00:00")
+			if not labelFrame then
+				labelFrame, minutesLabel, secondsLabel, millisecondsLabel, bestClearLabel = CreateAddonFrame()
+			end
+			labelFrame:Show()
+			bestClearLabel:SetText("Time remaining:", timeRemaining)
 		else
 			if inChallengeMode then
 				OnWorldStateTimerStop() -- Reset the timer if leaving challenge mode
 			end
 			labelFrame:Hide()
 		end
-
-		-- Update the realm best time when the zone changes
-		local realmBestTime = GetChallengeModeRealmBestTime()
-		realmBestLabel:SetText("Realm Best Time: " .. realmBestTime)
-
-		-- Update the best clear time when the zone changes
-		bestClearLabel:SetText("Best clear: " .. GetRemainingTimeToBeatRealmBest())
 	end
 
 	-- Event handler for PLAYER_LOGIN
@@ -551,7 +601,7 @@ timeElapsed=0
 		end
 
 		-- Update the best clear time label
-		bestClearLabel:SetText("Best clear: " .. GetRemainingTimeToBeatRealmBest())
+		--bestClearLabel:SetText("Best clear: " .. GetRemainingTimeToBeatCounter())
 	end
 
 
@@ -564,6 +614,7 @@ timeElapsed=0
 				labelFrame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
 			end
 		end
+		OnZoneChangedNewArea()
 	end
 
 	-- Register events
