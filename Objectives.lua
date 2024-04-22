@@ -360,7 +360,7 @@ end
 -- Function to handle timer stop event
 local function OnStopTimer()
     -- Refresh the objectives label one more time
-    UpdateObjectivesLabel()
+    -- UpdateObjectivesLabel()
     -- Stop updating the label continuously
     Objectives_frame:SetScript("OnUpdate", nil)
 end
@@ -465,7 +465,7 @@ Objectives_frame:SetScript("OnEvent", function(self, event, ...)
         --     localDB.BestBossKillTime[lastObjective.name] = completionTimes[#objectives-1]
         -- end
         -- -- Update the objectives label
-        UpdateObjectivesLabel()
+        -- UpdateObjectivesLabel()
     elseif event == "CRITERIA_COMPLETE" then
         -- Record the completion time for the last boss if it hasn't been recorded already
         local objectives = GetScenarioObjectives()
