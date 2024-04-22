@@ -503,7 +503,7 @@ Objectives_frame:SetScript("OnEvent", function(self, event, ...)
         UpdateObjectivesLabel()
     elseif event == "ENCOUNTER_END" then
         -- Call UpdateObjectivesLabel when encounter ends
-        UpdateObjectivesLabel()
+        -- UpdateObjectivesLabel()
     elseif event == "ADDON_LOADED" then
         OnAddonLoaded()
     elseif event == "PLAYER_LOGOUT" then
