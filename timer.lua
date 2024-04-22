@@ -552,16 +552,7 @@ timeElapsed=0
 				labelFrame, minutesLabel, secondsLabel, millisecondsLabel, bestClearLabel = CreateAddonFrame()
 			end
 			local timeRemaining = GetChallengeModeRealmOrGuildBestTime()
-			if timeRemaining then
-				bestClearLabel:SetText("Time remaining: " .. timeRemaining)
-				if (selectedCountDown == "realmBest") then
-					realmBestLabel:SetText("Realm Best: " .. timeRemaining)
-				elseif(selectedCountDown == "guildBest") then
-					realmBestLabel:SetText("Guild Best: " .. timeRemaining)
-				end
-			else
-				bestClearLabel:SetText("Time remaining: N/A")
-			end
+			updateFrame()
 			labelFrame:Show()
 		else
 			if inChallengeMode then
@@ -631,6 +622,7 @@ timeElapsed=0
 	frame:RegisterEvent("PLAYER_LOGIN")
 	frame:RegisterEvent("START_TIMER")
 	frame:RegisterEvent("PLAYER_ENTERING_WORLD")
+	frame:RegisterEvent("WORLD_MAP_UPDATE")
 
 	frame:SetScript("OnEvent", function(self, event, ...)
 		if event == "PLAYER_ENTERING_WORLD" then
@@ -647,5 +639,7 @@ timeElapsed=0
 			OnPlayerLogin()
 		elseif event == "START_TIMER" then
 			OnStartTimer()
-		end
+		elseif event == "WORLD_MAP_UPDATE" then
+			updateFrame()
+		end		
 	end)
