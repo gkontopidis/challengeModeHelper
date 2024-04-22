@@ -551,13 +551,18 @@ timeElapsed=0
 			if not labelFrame then
 				labelFrame, minutesLabel, secondsLabel, millisecondsLabel, bestClearLabel = CreateAddonFrame()
 			end
-			labelFrame:Show()
 			local timeRemaining = GetChallengeModeRealmOrGuildBestTime()
 			if timeRemaining then
 				bestClearLabel:SetText("Time remaining: " .. timeRemaining)
+				if (selectedCountDown == "realmBest") then
+					realmBestLabel:SetText("Realm Best: " .. timeRemaining)
+				elseif(selectedCountDown == "guildBest") then
+					realmBestLabel:SetText("Guild Best: " .. timeRemaining)
+				end
 			else
 				bestClearLabel:SetText("Time remaining: N/A")
 			end
+			labelFrame:Show()
 		else
 			if inChallengeMode then
 				OnWorldStateTimerStop() -- Reset the timer if leaving challenge mode
