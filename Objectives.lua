@@ -477,7 +477,7 @@ Objectives_frame:SetScript("OnEvent", function(self, event, ...)
             localDB.BestBossKillTime[lastObjective.name] = completionTimes[#objectives-1]
         end
         -- Update the objectives label
-        UpdateObjectivesLabel()
+        -- UpdateObjectivesLabel()
     
     elseif event == "ZONE_CHANGED_NEW_AREA" then
         -- Call UpdateObjectivesLabel whenever the player changes zone
