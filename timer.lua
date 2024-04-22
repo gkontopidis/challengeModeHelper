@@ -449,24 +449,14 @@ timeElapsed=0
 	function GetChallengeRealmOrGuildBestTime()
 		local realmBest = 0
 		local guildBest = 0
-		local maps = {}
 		local _, _, _, difficultyName = GetInstanceInfo()
+		
     	if difficultyName == "Challenge Mode" then
-			--GetChallengeModeMapTable(maps)
+		
+			local _, _, _, _, _, _, _, currentMapID = GetInstanceInfo()
 
-			-- for i = 1, #maps do
-			-- 	local _, mapID = GetChallengeModeMapInfo(maps[i])
-			 	local _, _, _, _, _, _, _, currentMapID = GetInstanceInfo()
-
-			-- 	print("mapID, currentMapID: ", mapID, currentMapID)
-			-- 	if currentMapID == mapID then
-			 		guildBest, realmBest = GetChallengeBestTime(currentMapID)
-			 		print("retunring realmbest: ",realmBest)					
-					print("retunring guildbest: ", guildBest)
-			-- 		break
-			-- 	end
-			-- end
-
+			guildBest, realmBest = GetChallengeBestTime(currentMapID)
+						 		
 			if (selectedCountDown == "realmBest") then				
 				return realmBest
 			elseif (selectedCountDown == "guildBest")  then
