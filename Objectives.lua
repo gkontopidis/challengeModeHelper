@@ -56,12 +56,12 @@ local function UpdateObjectivesLabel()
     local objectives = GetScenarioObjectives()
 
     -- Check if objectives table is empty or not properly populated
-    if #objectives == 0 then
-        Objectives_frame:Hide()
-        return
-    else
-        Objectives_frame:Show()
-    end
+    -- if #objectives == 0 then
+    --     Objectives_frame:Hide()
+    --     return
+    -- else
+    Objectives_frame:Show()
+    -- end
 
     for i, objective in ipairs(objectives) do
 
@@ -423,6 +423,15 @@ local function OnAddonLoaded()
     end
 end
 
+local function showObjectivesFrame()
+    local _, _, _, difficultyName = GetInstanceInfo()
+		if difficultyName == "Challenge Mode" then
+            Objectives_frame:Show()
+        else
+            Objectives_frame:Hide()
+         end
+    end
+
 -- Register events
 Objectives_frame:RegisterEvent("START_TIMER")
 Objectives_frame:RegisterEvent("WORLD_STATE_TIMER_STOP")
@@ -435,6 +444,7 @@ Objectives_frame:RegisterEvent("ENCOUNTER_START")
 Objectives_frame:RegisterEvent("ENCOUNTER_END")
 Objectives_frame:RegisterEvent("PLAYER_LOGOUT")
 Objectives_frame:RegisterEvent("ADDON_LOADED")
+Objectives_frame:RegisterEvent("CRITERIA_COMPLETE")
 
 Objectives_frame:SetScript("OnEvent", function(self, event, ...)
     if event == "START_TIMER" then
@@ -443,7 +453,20 @@ Objectives_frame:SetScript("OnEvent", function(self, event, ...)
         OnStopTimer()
     elseif event == "PLAYER_ENTERING_WORLD" then
         OnPlayerEntringWorld()
+        showObjectivesFrame()
     elseif event == "CHALLENGE_MODE_COMPLETED" then
+        -- -- Record the completion time for the last boss if it hasn't been recorded already
+        -- local objectives = GetScenarioObjectives()
+        -- local lastObjective = objectives[#objectives-1] -- Get the last objective
+        -- if lastObjective and lastObjective.progress == lastObjective.totalQuantity and not completionTimes[#objectives-1] then
+        --     -- Record completion time for the last boss
+        --     completionTimes[#objectives-1] = secondsToString(timeElapsed)
+        --     -- Save the completion time to the database
+        --     localDB.BestBossKillTime[lastObjective.name] = completionTimes[#objectives-1]
+        -- end
+        -- -- Update the objectives label
+        UpdateObjectivesLabel()
+    elseif event == "CRITERIA_COMPLETE" then
         -- Record the completion time for the last boss if it hasn't been recorded already
         local objectives = GetScenarioObjectives()
         local lastObjective = objectives[#objectives-1] -- Get the last objective
@@ -459,10 +482,11 @@ Objectives_frame:SetScript("OnEvent", function(self, event, ...)
     elseif event == "ZONE_CHANGED_NEW_AREA" then
         -- Call UpdateObjectivesLabel whenever the player changes zone
         UpdateObjectivesLabel()
+        showObjectivesFrame()
     elseif event == "PLAYER_LOGIN" then
         -- Call UpdateObjectivesLabel when the player logs in
         UpdateObjectivesLabel()
-
+        showObjectivesFrame()
         -- Load saved position, transparency, and colorPicked
         local savedPosition = CmHelperDB.Objectives_frame
         if savedPosition then
