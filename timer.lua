@@ -450,26 +450,29 @@ timeElapsed=0
 		local realmBest = 0
 		local guildBest = 0
 		local maps = {}
-		GetChallengeModeMapTable(maps)
-		local numMaps = #maps
+		local _, _, _, difficultyName = GetInstanceInfo()
+    	if difficultyName == "Challenge Mode" then
+			GetChallengeModeMapTable(maps)
+			local numMaps = #maps
 
-		for i = 1, numMaps do
-			local _, mapID = GetChallengeModeMapInfo(maps[i])
-			local _, _, _, _, _, _, _, currentMapID = GetInstanceInfo()
+			for i = 1, numMaps do
+				local _, mapID = GetChallengeModeMapInfo(maps[i])
+				local _, _, _, _, _, _, _, currentMapID = GetInstanceInfo()
 
-			if currentMapID == mapID then
-				guildBest, realmBest = GetChallengeBestTime(mapID)
-				break
+				if currentMapID == mapID then
+					guildBest, realmBest = GetChallengeBestTime(mapID)
+					break
+				end
 			end
-		end
 
-		if (selectedCountDown == "realmBest") then
-			print("retunring realmbest: ",realmBest)
-			return realmBest
-		elseif (selectedCountDown == "guildBest")  then
-			print("retunring guildbest: ", guildBest)
-			return guildBest
-		end		
+			if (selectedCountDown == "realmBest") then
+				print("retunring realmbest: ",realmBest)
+				return realmBest
+			elseif (selectedCountDown == "guildBest")  then
+				print("retunring guildbest: ", guildBest)
+				return guildBest
+			end	
+		end	
 	end
 
 	function formatSecondsToMinutes(timeToFormat)
