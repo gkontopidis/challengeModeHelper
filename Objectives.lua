@@ -362,7 +362,7 @@ local function OnStopTimer()
     -- Refresh the objectives label one more time
     -- UpdateObjectivesLabel()
     -- Stop updating the label continuously
-    Objectives_frame:SetScript("OnUpdate", nil)
+    -- Objectives_frame:SetScript("OnUpdate", nil)
 end
 
 local function OnPlayerEntringWorld()
