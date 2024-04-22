@@ -1,6 +1,8 @@
 local localDB = {
     BestBossKillTime = {}
 }
+
+local updateFrame = true
 -- -- Define a mock version of C_Scenario.GetCriteriaInfo(i) for testing
 -- local function Mock_GetCriteriaInfo(i)
 --     -- Simulate completed objectives
@@ -51,6 +53,7 @@ end
 
 -- Function to update the objectives label text
 local function UpdateObjectivesLabel()
+    while updateFrame do
     -- printTable(localDB.BestBossKillTime)
     local text = ""
     local objectives = GetScenarioObjectives()
@@ -76,6 +79,7 @@ local function UpdateObjectivesLabel()
     Objectives_label:SetText(text)
     -- After updating the text, call the function to update the frame size
     UpdateFrameSize()
+    end
 end
 
 function secondsToString(secondsToChange)
@@ -478,12 +482,15 @@ Objectives_frame:SetScript("OnEvent", function(self, event, ...)
         end
         -- Update the objectives label
         UpdateObjectivesLabel()
+        updateFrame = false
     
     elseif event == "ZONE_CHANGED_NEW_AREA" then
         -- Call UpdateObjectivesLabel whenever the player changes zone
+        updateFrame = true
         UpdateObjectivesLabel()
         showObjectivesFrame()
     elseif event == "PLAYER_LOGIN" then
+        updateFrame = true
         -- Call UpdateObjectivesLabel when the player logs in
         UpdateObjectivesLabel()
         showObjectivesFrame()
@@ -496,9 +503,11 @@ Objectives_frame:SetScript("OnEvent", function(self, event, ...)
             colorPicked = savedPosition.colorPicked or 0
         end
     elseif event == "INSTANCE_RESET" then
+        updateFrame = true
         -- Call UpdateObjectivesLabel when instance resets
         UpdateObjectivesLabel()
     elseif event == "ENCOUNTER_START" then
+        updateFrame = true
         -- Call UpdateObjectivesLabel when encounter starts
         UpdateObjectivesLabel()
     elseif event == "ENCOUNTER_END" then
