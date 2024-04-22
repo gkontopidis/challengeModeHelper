@@ -109,7 +109,7 @@ function GetScenarioObjectives()
         local objectiveName, _, completed, progress = C_Scenario.GetCriteriaInfo(i)
         local timePassed = ""
         local formattedObjectiveName = objectiveName
-        bossTimeToKill = localDB.BestBossKillTime[objectiveName]
+        -- bossTimeToKill = localDB.BestBossKillTime[objectiveName]
 
         if bossTimeToKill == nil or bossTimeToKill == "" then
             localDB.BestBossKillTime[objectiveName] = "N/A"
@@ -133,8 +133,8 @@ function GetScenarioObjectives()
 
             timePassed = completionTimes[i] -- secondsToString(completionTimes[i])
 
-            if localDB.BestBossKillTime[objectiveName] == "N/A" or localDB.BestBossKillTime[objectiveName] == "" or
-                timeStringToSeconds(localDB.BestBossKillTime[objectiveName]) > timeStringToSeconds(completionTimes[i]) then
+            if (localDB.BestBossKillTime[objectiveName] == "N/A" or localDB.BestBossKillTime[objectiveName] == "" or
+                timeStringToSeconds(localDB.BestBossKillTime[objectiveName]) > timeStringToSeconds(completionTimes[i])) and objectiveName ~= "Enemies" then
                 localDB.BestBossKillTime[objectiveName] = completionTimes[i]
                 bossTimeToKill = completionTimes[i]
             end
@@ -453,12 +453,14 @@ Objectives_frame:RegisterEvent("CRITERIA_COMPLETE")
 Objectives_frame:SetScript("OnEvent", function(self, event, ...)
     if event == "START_TIMER" then
         OnStartTimer()
+        updateFrame = true
     elseif event == "WORLD_STATE_TIMER_STOP" then
         OnStopTimer()
     elseif event == "PLAYER_ENTERING_WORLD" then
         OnPlayerEntringWorld()
         showObjectivesFrame()
     elseif event == "CHALLENGE_MODE_COMPLETED" then
+        updateFrame = false
         -- -- Record the completion time for the last boss if it hasn't been recorded already
         -- local objectives = GetScenarioObjectives()
         -- local lastObjective = objectives[#objectives-1] -- Get the last objective
@@ -482,8 +484,7 @@ Objectives_frame:SetScript("OnEvent", function(self, event, ...)
         end
         -- Update the objectives label
         UpdateObjectivesLabel()
-        updateFrame = false
-    
+        
     elseif event == "ZONE_CHANGED_NEW_AREA" then
         -- Call UpdateObjectivesLabel whenever the player changes zone
         updateFrame = true
