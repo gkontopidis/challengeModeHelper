@@ -464,8 +464,10 @@ timeElapsed=0
 		end
 
 		if (selectedCountDown == "realmBest") then
+			print("retunring realmbest: ",realmBest)
 			return realmBest
 		elseif (selectedCountDown == "guildBest")  then
+			print("retunring guildbest: ", guildBest)
 			return guildBest
 		end		
 	end
