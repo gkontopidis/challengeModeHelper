@@ -53,7 +53,7 @@ end
 
 -- Function to update the objectives label text
 local function UpdateObjectivesLabel()
-    while updateFrame do
+    if updateFrame then
     -- printTable(localDB.BestBossKillTime)
     local text = ""
     local objectives = GetScenarioObjectives()
