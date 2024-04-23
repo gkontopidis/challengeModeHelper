@@ -453,6 +453,7 @@ Objectives_frame:RegisterEvent("CRITERIA_COMPLETE")
 Objectives_frame:SetScript("OnEvent", function(self, event, ...)
     if event == "START_TIMER" then
         OnStartTimer()
+        completionTimes = {}
         updateFrame = true
     elseif event == "WORLD_STATE_TIMER_STOP" then
         OnStopTimer()
@@ -461,18 +462,6 @@ Objectives_frame:SetScript("OnEvent", function(self, event, ...)
         showObjectivesFrame()
     elseif event == "CHALLENGE_MODE_COMPLETED" then
         updateFrame = false
-        -- -- Record the completion time for the last boss if it hasn't been recorded already
-        -- local objectives = GetScenarioObjectives()
-        -- local lastObjective = objectives[#objectives-1] -- Get the last objective
-        -- if lastObjective and lastObjective.progress == lastObjective.totalQuantity and not completionTimes[#objectives-1] then
-        --     -- Record completion time for the last boss
-        --     completionTimes[#objectives-1] = secondsToString(timeElapsed)
-        --     -- Save the completion time to the database
-        --     localDB.BestBossKillTime[lastObjective.name] = completionTimes[#objectives-1]
-        -- end
-        -- -- Update the objectives label
-        -- UpdateObjectivesLabel()
-    elseif event == "CRITERIA_COMPLETE" then
         -- Record the completion time for the last boss if it hasn't been recorded already
         local objectives = GetScenarioObjectives()
         local lastObjective = objectives[#objectives-1] -- Get the last objective
@@ -484,6 +473,7 @@ Objectives_frame:SetScript("OnEvent", function(self, event, ...)
         end
         -- Update the objectives label
         UpdateObjectivesLabel()
+    elseif event == "CRITERIA_COMPLETE" then
         
     elseif event == "ZONE_CHANGED_NEW_AREA" then
         -- Call UpdateObjectivesLabel whenever the player changes zone
