@@ -1,6 +1,11 @@
 local Objectives_frame
 local Objectives_label
+local completionTimes = {} -- Define a table to store completion times for objectives
 local colorPicked = 0 -- Variable to store the selected color option
+local TotalEnemies = "" -- Initialize TotalEnemies variable
+local localDB = {
+    BestBossKillTime = {}
+}
 
 -- Function to update the size of the frame based on the text size
 local function UpdateFrameSize()
@@ -9,8 +14,15 @@ local function UpdateFrameSize()
     Objectives_frame:SetSize(textWidth, textHeight)
 end
 
+function TotalDungeonEnemies(indexNumber)
+    local _, _, _, _, totalQuantity = C_Scenario.GetCriteriaInfo(indexNumber)
+    TotalEnemies = totalQuantity
+    return TotalEnemies
+end
+
 -- Function to update the objectives label text
 local function UpdateObjectivesLabel()
+
     local objectives = GetScenarioObjectives()
 
     -- Check if there are any objectives available
@@ -19,19 +31,22 @@ local function UpdateObjectivesLabel()
         for i, objective in ipairs(objectives) do
             TotalDungeonEnemies(i)
             if i < #objectives then
-                text = text .. ("%s\n"):format(objective.name)
+                text = text .. ("%s %s %s\n"):format(objective.name, objective.bossTimeToKill, objective.timePassed)
+
             else
                 text = text .. ("%s : %d/%d\n"):format(objective.name, objective.progress, TotalEnemies)
+
             end
         end
         Objectives_label:SetText(text)
     else
         -- If there are no objectives available, display a message
-        --Objectives_label:SetText("No objectives available")
+        -- Objectives_label:SetText("No objectives available")
     end
 
     -- After updating the text, call the function to update the frame size
     UpdateFrameSize()
+
 end
 
 -- Create a frame for the label
@@ -200,46 +215,104 @@ function Objectives_frame:SavePosition()
     }
 end
 
+function secondsToString(secondsToChange)
+    local minutes = math.floor((secondsToChange % 3600) / 60)
+    local seconds = secondsToChange % 60
+    secondsToChange = string.format("%02d:%02d", minutes, seconds)
+    return secondsToChange
+end
+
+function timeStringToSeconds(timeString)
+    if not timeString then
+        return 0 -- Return 0 or any default value if timeString is nil
+    end
+
+    local minutes, seconds = timeString:match("(%d+):(%d+)")
+    if not minutes or not seconds then
+        return 0 -- Return 0 or any default value if timeString is in an invalid format
+    end
+
+    return tonumber(minutes) * 60 + tonumber(seconds)
+end
+
 -- Function to get scenario objectives
 function GetScenarioObjectives()
+    -- -- TESTING ---
+
+    -- if timeElapsed > 7 and timeElapsed < 9 then
+    --     -- Replace the original C_Scenario.GetCriteriaInfo() function with the mock version
+    --     C_Scenario.GetCriteriaInfo = Mock_GetCriteriaInfo
+    -- elseif timeElapsed > 9 then
+    --     C_Scenario.GetCriteriaInfo = Mock_GetCriteriaInfo2
+    -- end
+    -- -- /END TESTING ---
+
     local dungeon, _, steps = C_Scenario.GetStepInfo()
     local objectives = {}
+    local bossTimeToKill
 
-    for i = 1, steps do
-        local objectiveName, _, completed, progress = C_Scenario.GetCriteriaInfo(i)
-        local formattedObjectiveName = objectiveName
+    -- Check if there are any objectives available
+        for i = 1, steps do
+            local objectiveName, _, completed, progress = C_Scenario.GetCriteriaInfo(i)
+            local timePassed = ""
+            local formattedObjectiveName = objectiveName
+            bossTimeToKill = localDB.BestBossKillTime[objectiveName] -- Set bossTimeToKill from db
 
-        -- Check if objective is completed and format the name with color for display
-        if completed then
-            formattedObjectiveName = "|cFF00FF00" .. formattedObjectiveName .. "|r" -- Green color for completion
+            if bossTimeToKill == nil or bossTimeToKill == "" or bossTimeToKill == "00:00" then -- if there is no time stored in db 
+                localDB.BestBossKillTime[objectiveName] = "N/A"
+                bossTimeToKill = "N/A"
+            end
+
+            -- Check if objective is completed and the completion time has not been recorded yet
+            if completed and not completionTimes[i] then
+                -- Record the completion time for this objective
+
+                timePassed = secondsToString(timeElapsed)
+                completionTimes[i] = timePassed
+
+                -- print(objectiveName .. timePassed) -- Print to chat
+            elseif completionTimes[i] then
+                -- If completion time has already been recorded, use it
+
+                if localDB.BestBossKillTime[objectiveName] then
+                    bossTimeToKill = localDB.BestBossKillTime[objectiveName]
+                end
+
+                timePassed = completionTimes[i] -- secondsToString(completionTimes[i])
+
+                if localDB.BestBossKillTime[objectiveName] == "N/A" or localDB.BestBossKillTime[objectiveName] == "" or
+                    timeStringToSeconds(localDB.BestBossKillTime[objectiveName]) >
+                    timeStringToSeconds(completionTimes[i]) then
+                    localDB.BestBossKillTime[objectiveName] = completionTimes[i]
+                    bossTimeToKill = completionTimes[i]
+                end
+            end
+
+            -- Check if objective is completed and format the name with color for display
+            if completed then
+                formattedObjectiveName = "|cFF00FF00" .. formattedObjectiveName .. "|r" -- Green color for completion
+            end
+
+            table.insert(objectives, {
+                name = formattedObjectiveName, -- Store the formatted name with colors
+                progress = progress,
+                timePassed = timePassed,
+                bossTimeToKill = bossTimeToKill
+            })
         end
-		
-        table.insert(objectives, {
-            name = formattedObjectiveName,
-            status = status,
-            progress = progress
-        })
-    end
 
     return objectives
 end
 
-function TotalDungeonEnemies(indexNumber)
-    local _, _, _, _, totalQuantity = C_Scenario.GetCriteriaInfo(indexNumber)
-    TotalEnemies = totalQuantity
-    return TotalEnemies
-end
-
 -- Function to check if all objectives are complete
-local function AreObjectivesComplete()
-    local objectives = GetScenarioObjectives()
-    for _, objective in ipairs(objectives) do
-        if not objective.completed then
-            return false  -- Return false if any objective is incomplete
-        end
-    end
-    return true  -- Return true if all objectives are complete
-end
+-- function AreObjectivesComplete()
+--     local objectives = GetScenarioObjectives()
+--     if objectives then
+--         objectives_Completed = false 
+--     else
+--         objectives_Completed = true  -- Return true if all objectives are complete
+--     end
+-- end
 
 -- Register events
 Objectives_frame:RegisterEvent("START_TIMER")
@@ -259,11 +332,12 @@ Objectives_frame:RegisterEvent("CRITERIA_UPDATE")
 
 Objectives_frame:SetScript("OnEvent", function(self, event, ...)
     if event == "START_TIMER" then
-		
+        completionTimes = {}
+        UpdateObjectivesLabel()
     elseif event == "WORLD_STATE_TIMER_STOP" then
-		Objectives_frame:SetScript("OnUpdate", nil)
-	elseif event == "PLAYER_ENTERING_WORLD" then
-	-- Check if the player is in a challenge mode instance
+        Objectives_frame:SetScript("OnUpdate", nil)
+    elseif event == "PLAYER_ENTERING_WORLD" then
+        -- Check if the player is in a challenge mode instance
         local _, _, _, difficultyName = GetInstanceInfo()
         if difficultyName == "Challenge Mode" then
             -- If in a challenge mode instance, hide the WatchFrame UI
@@ -273,34 +347,75 @@ Objectives_frame:SetScript("OnEvent", function(self, event, ...)
         else
             Objectives_frame:Hide()
         end
-		UpdateObjectivesLabel()
+        UpdateObjectivesLabel()
     elseif event == "CHALLENGE_MODE_COMPLETED" then
-
+        UpdateObjectivesLabel()
     elseif event == "CRITERIA_COMPLETE" then
-
+        UpdateObjectivesLabel()
     elseif event == "ZONE_CHANGED_NEW_AREA" then
 
     elseif event == "PLAYER_LOGIN" then
-		-- Load saved position, transparency, and colorPicked
-		local savedPosition = CmHelperDB.Objectives_frame
+        -- Load saved position, transparency, and colorPicked
+        local savedPosition = CmHelperDB.Objectives_frame
         if savedPosition then
-            Objectives_frame:SetPoint(savedPosition.point, UIParent, savedPosition.relativePoint, savedPosition.xOfs, savedPosition.yOfs)
+            Objectives_frame:SetPoint(savedPosition.point, UIParent, savedPosition.relativePoint, savedPosition.xOfs,
+                savedPosition.yOfs)
             Objectives_frame:SetBackdropColor(0, 0, 0, savedPosition.alpha)
             colorPicked = savedPosition.colorPicked or 0
         end
     elseif event == "INSTANCE_RESET" then
 
     elseif event == "ENCOUNTER_START" then
-
+        
     elseif event == "ENCOUNTER_END" then
 
     elseif event == "ADDON_LOADED" then
+        if not CmHelperDB then
+            CmHelperDB = {
+                BestBossKillTime = {}
+            }
+        end
 
+        -- Ensure scenarios table exists
+        if not CmHelperDB.BestBossKillTime then
+            CmHelperDB.BestBossKillTime = {}
+        end
+
+        -- Copy values from CmHelperDB.BestBossKillTime to localDB.BestBossKillTime
+
+        if CmHelperDB then
+            if CmHelperDB.BestBossKillTime then
+                if next(CmHelperDB.BestBossKillTime) ~= nil then
+                    for bossName, bestTime in pairs(CmHelperDB.BestBossKillTime) do
+                        localDB.BestBossKillTime[bossName] = bestTime
+                    end
+                end
+            end
+        end
     elseif event == "PLAYER_LOGOUT" then
+        print("Logging out. Copying data from localDB.objectives to CmHelperDB.objectives...")
 
+        -- Ensure CmHelperDB is initialized
+        if not CmHelperDB then
+            print("CmHelperDB is not initialized. Initializing...")
+            CmHelperDB = {}
+        end
+
+        -- Ensure CmHelperDB.objectives is initialized
+        if not CmHelperDB.BestBossKillTime then
+            print("CmHelperDB.objectives is not initialized. Initializing...")
+            CmHelperDB.BestBossKillTime = {}
+        end
+
+        -- Copy values from localDB.objectives to CmHelperDB.objectives
+        for key, value in pairs(localDB.BestBossKillTime) do
+            CmHelperDB.BestBossKillTime[key] = value
+        end
+
+        print("Data copied successfully.")
     elseif event == "SCENARIO_UPDATE" then
-		UpdateObjectivesLabel()
-	elseif event == "CRITERIA_UPDATE" then
-		UpdateObjectivesLabel()
+        UpdateObjectivesLabel()
+    elseif event == "CRITERIA_UPDATE" then
+        UpdateObjectivesLabel()
     end
 end)
