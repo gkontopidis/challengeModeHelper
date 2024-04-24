@@ -24,18 +24,28 @@ end
 local function UpdateObjectivesLabel()
 
     local objectives = GetScenarioObjectives()
-
+    local dungeon = C_Scenario.GetStepInfo()
     -- Check if there are any objectives available
-    if #objectives > 0 then
+    if #objectives > 0 then        
         local text = ""
         for i, objective in ipairs(objectives) do
             TotalDungeonEnemies(i)
-            if i < #objectives then
-                text = text .. ("%s %s %s\n"):format(objective.name, objective.bossTimeToKill, objective.timePassed)
+            if(dungeon ~= "Shado-Pan Monastery") then
+                if i < #objectives then
+                    text = text .. ("%s %s %s\n"):format(objective.name, objective.bossTimeToKill, objective.timePassed)
 
+                else
+                    text = text .. ("%s : %d/%d\n"):format(objective.name, objective.progress, TotalEnemies)
+
+                end
             else
-                text = text .. ("%s : %d/%d\n"):format(objective.name, objective.progress, TotalEnemies)
+                if i < #objectives-1 then
+                    text = text .. ("%s %s %s\n"):format(objective.name, objective.bossTimeToKill, objective.timePassed)
 
+                else
+                    text = text .. ("%s : %d/%d\n"):format(objective.name, objective.progress, TotalEnemies)
+
+                end
             end
         end
         Objectives_label:SetText(text)
