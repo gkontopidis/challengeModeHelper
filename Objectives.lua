@@ -278,8 +278,9 @@ function GetScenarioObjectives()
                 -- Record the completion time for this objective
 
                 timePassed = secondsToString(timeElapsed)
-                completionTimes[i] = timePassed
-
+                if(timePassed~="00:00") then
+                    completionTimes[i] = timePassed
+                end
                 -- print(objectiveName .. timePassed) -- Print to chat
             elseif completionTimes[i] then
                 -- If completion time has already been recorded, use it
@@ -382,44 +383,48 @@ Objectives_frame:SetScript("OnEvent", function(self, event, ...)
     elseif event == "ADDON_LOADED" then
         if not CmHelperDB then
             CmHelperDB = {
+            }
+        end
+        if not timesDB then
+            timesDB = {
                 BestBossKillTime = {}
             }
         end
 
         -- Ensure scenarios table exists
-        if not CmHelperDB.BestBossKillTime then
-            CmHelperDB.BestBossKillTime = {}
+        if not timesDB.BestBossKillTime then
+            timesDB.BestBossKillTime = {}
         end
 
-        -- Copy values from CmHelperDB.BestBossKillTime to localDB.BestBossKillTime
+        -- Copy values from timesDB.BestBossKillTime to localDB.BestBossKillTime
 
-        if CmHelperDB then
-            if CmHelperDB.BestBossKillTime then
-                if next(CmHelperDB.BestBossKillTime) ~= nil then
-                    for bossName, bestTime in pairs(CmHelperDB.BestBossKillTime) do
+        if timesDB then
+            if timesDB.BestBossKillTime then
+                if next(timesDB.BestBossKillTime) ~= nil then
+                    for bossName, bestTime in pairs(timesDB.BestBossKillTime) do
                         localDB.BestBossKillTime[bossName] = bestTime
                     end
                 end
             end
         end
     elseif event == "PLAYER_LOGOUT" then
-        print("Logging out. Copying data from localDB.objectives to CmHelperDB.objectives...")
+        print("Logging out. Copying data from localDB.objectives to timesDB.objectives...")
 
         -- Ensure CmHelperDB is initialized
-        if not CmHelperDB then
+        if not timesDB then
             print("CmHelperDB is not initialized. Initializing...")
-            CmHelperDB = {}
+            timesDB = {}
         end
 
         -- Ensure CmHelperDB.objectives is initialized
-        if not CmHelperDB.BestBossKillTime then
-            print("CmHelperDB.objectives is not initialized. Initializing...")
-            CmHelperDB.BestBossKillTime = {}
+        if not timesDB.BestBossKillTime then
+            print("timesDB.objectives is not initialized. Initializing...")
+            timesDB.BestBossKillTime = {}
         end
 
         -- Copy values from localDB.objectives to CmHelperDB.objectives
         for key, value in pairs(localDB.BestBossKillTime) do
-            CmHelperDB.BestBossKillTime[key] = value
+            timesDB.BestBossKillTime[key] = value
         end
 
         print("Data copied successfully.")

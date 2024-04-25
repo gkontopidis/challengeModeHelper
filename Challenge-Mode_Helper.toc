@@ -3,6 +3,7 @@
 ## Title: Challenge Mode Helper
 ## Notes: Utilities for MoP Challenge modes
 ## Author: Clopyright
+## SavedVariablesPerCharacter: timesDB
 ## SavedVariables: CmHelperDB
 
 Challenge-Mode_Helper.lua
