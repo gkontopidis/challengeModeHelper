@@ -692,7 +692,6 @@ frame:SetScript("OnEvent", function(self, event, ...)
     elseif event == "CHALLENGE_MODE_COMPLETED" then
         OnChallengeModeCompleted()
     elseif event == "ZONE_CHANGED_NEW_AREA" then
-        OnZoneChangedNewArea()
     elseif event == "PLAYER_LOGIN" then
         OnPlayerLogin()
     elseif event == "START_TIMER" then
