@@ -18,6 +18,7 @@ local relativePoint = "TOP"
 local colorPicked2 = "0" -- Variable to store the selected color option
 local selectedCountDown = "guildBest"
 local challengeName
+
 timeElapsed = 0
 
 -- Function to create the addon frame
@@ -170,7 +171,6 @@ local function CreateAddonFrame()
     goldicon:SetPoint("LEFT", labelFrame, "BOTTOM", -135, -12)
 
     local goldText = labelFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-    goldText:SetText(getChallengeRequirementTime("Gold"))
     goldText:SetPoint("LEFT", goldicon, "RIGHT", 10, 0)
 
     local silverIcon = labelFrame:CreateTexture(nil, "OVERLAY")
@@ -179,7 +179,6 @@ local function CreateAddonFrame()
     silverIcon:SetPoint("LEFT", goldText, "RIGHT", 20, 0)
 
     local silverText = labelFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-    silverText:SetText(getChallengeRequirementTime("Silver"))
     silverText:SetPoint("LEFT", silverIcon, "RIGHT", 10, 0)
 
     local bronzeIcon = labelFrame:CreateTexture(nil, "OVERLAY")
@@ -188,7 +187,6 @@ local function CreateAddonFrame()
     bronzeIcon:SetPoint("LEFT", silverText, "RIGHT", 20, 0)
 
     local bronzeText = labelFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-    bronzeText:SetText(getChallengeRequirementTime("Bronze"))
     bronzeText:SetPoint("LEFT", bronzeIcon, "RIGHT", 10, 0)
 
     -- Enable dragging functionality
@@ -362,6 +360,14 @@ local function CreateAddonFrame()
         end
         realmBestLabel:SetText(textToDisplay .. realmBestTime)
         bestClearLabel:SetText("Time remaining: " .. realmBestTime)
+		
+		goldTime = getChallengeRequirementTime("Gold")
+		silverTime = getChallengeRequirementTime("Silver")
+		bronzeTime = getChallengeRequirementTime("Bronze")
+		
+		goldText:SetText(goldTime)		
+		silverText:SetText(silverTime)		
+		bronzeText:SetText(bronzeTime)
     end
 
     -- local dropdownMenu = CreateDropdownMenu()
@@ -399,7 +405,7 @@ local function CreateAddonFrame()
 end
 
 function getChallengeRequirementTime(medal)
-	local dungeon, _, _, difficultyName = GetInstanceInfo()    
+    local dungeon, _, _, difficultyName = GetInstanceInfo()
     challengeName = dungeon
     if (challengeName and difficultyName == "Challenge Mode") then
         if (medal == "Gold") then
@@ -497,9 +503,9 @@ function GetChallengeRealmOrGuildBestTime()
     local realmBest = 0
     local guildBest = 0
     local dungeon, _, _, difficultyName = GetInstanceInfo()
-    
+
     if difficultyName == "Challenge Mode" then
-		challengeName=dungeon
+        challengeName = dungeon
         local _, _, _, _, _, _, _, currentMapID = GetInstanceInfo()
 
         guildBest, realmBest = GetChallengeBestTime(currentMapID)
@@ -568,7 +574,6 @@ local function LoadCompletionTimes()
     print("Completion times database loaded.")
 end
 
-
 -- Event handler for TIMER_START
 function OnStartTimer(self, event, ...)
     startTime = GetTime() + 5 -- Record the start time
@@ -595,28 +600,6 @@ local function OnChallengeModeCompleted()
         inChallengeMode = false
         startTime = nil -- Reset the start time
         labelFrame:SetScript("OnUpdate", nil) -- Stop updating the timer
-    end
-end
-
--- Event handler for ZONE_CHANGED_NEW_AREA
-local function OnZoneChangedNewArea()
-    local _, _, _, difficultyName = GetInstanceInfo()
-    if difficultyName == "Challenge Mode" then
-        -- Reset the timer labels to "00:00:000"
-        minutesLabel:SetText("00:")
-        secondsLabel:SetText("00:")
-        millisecondsLabel:SetText("000")
-        if not labelFrame then
-            labelFrame, minutesLabel, secondsLabel, millisecondsLabel, bestClearLabel = CreateAddonFrame()
-        end
-        local timeRemaining = GetChallengeModeRealmOrGuildBestTime()
-        updateFrame()
-        labelFrame:Show()
-    else
-        if inChallengeMode then
-            OnWorldStateTimerStop() -- Reset the timer if leaving challenge mode
-        end
-        labelFrame:Hide()
     end
 end
 
@@ -667,7 +650,6 @@ local function OnPlayerEnteringWorld()
             labelFrame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
         end
     end
-    OnZoneChangedNewArea()
 end
 
 -- Register events
@@ -684,6 +666,25 @@ frame:RegisterEvent("WORLD_MAP_UPDATE")
 frame:SetScript("OnEvent", function(self, event, ...)
     if event == "PLAYER_ENTERING_WORLD" then
         OnPlayerEnteringWorld()
+        local _, _, _, difficultyName = GetInstanceInfo()
+        if difficultyName == "Challenge Mode" then
+            -- Reset the timer labels to "00:00:000"
+            minutesLabel:SetText("00:")
+            secondsLabel:SetText("00:")
+            millisecondsLabel:SetText("000")
+            if not labelFrame then
+                labelFrame, minutesLabel, secondsLabel, millisecondsLabel, bestClearLabel =
+                    CreateAddonFrame()
+            end
+            local timeRemaining = GetChallengeModeRealmOrGuildBestTime()
+            updateFrame()
+            labelFrame:Show()
+        else
+            if inChallengeMode then
+                OnWorldStateTimerStop() -- Reset the timer if leaving challenge mode
+            end
+            labelFrame:Hide()
+        end
     elseif event == "WORLD_STATE_TIMER_START" then
         -- OnWorldStateTimerStart()
     elseif event == "WORLD_STATE_TIMER_STOP" then
