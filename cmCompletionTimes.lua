@@ -21,7 +21,7 @@ cmCompletionTimes = {
         ["Bronze"] = "60:00"
     },
     ["Siege of Niuzao Temple"] = {
-        ["Gold"] = "19:00",
+        ["Gold"] = "17:30",
         ["Silver"] = "30:00",
         ["Bronze"] = "50:00"
     },

@@ -347,6 +347,7 @@ Objectives_frame:RegisterEvent("CRITERIA_UPDATE")
 
 Objectives_frame:SetScript("OnEvent", function(self, event, ...)
     if event == "START_TIMER" then
+        completionTimes = {}
         UpdateObjectivesLabel()
     elseif event == "WORLD_STATE_TIMER_STOP" then
         Objectives_frame:SetScript("OnUpdate", nil)
