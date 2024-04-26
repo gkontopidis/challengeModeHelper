@@ -31,7 +31,7 @@ cmCompletionTimes = {
         ["Bronze"] = "45:00"
     },
     ["Scholomance"] = {
-        ["Gold"] = "20:00",
+        ["Gold"] = "19:00",
         ["Silver"] = "33:00",
         ["Bronze"] = "55:00"
     },

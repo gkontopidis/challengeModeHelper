@@ -282,7 +282,7 @@ function GetScenarioObjectives()
                     completionTimes[i] = timePassed
                 end
                 -- print(objectiveName .. timePassed) -- Print to chat
-            elseif completionTimes[i] then
+            elseif completed and completionTimes[i] then
                 -- If completion time has already been recorded, use it
 
                 if localDB.BestBossKillTime[objectiveName] then
@@ -343,11 +343,11 @@ Objectives_frame:RegisterEvent("CRITERIA_UPDATE")
 
 Objectives_frame:SetScript("OnEvent", function(self, event, ...)
     if event == "START_TIMER" then
-        completionTimes = {}
         UpdateObjectivesLabel()
     elseif event == "WORLD_STATE_TIMER_STOP" then
         Objectives_frame:SetScript("OnUpdate", nil)
     elseif event == "PLAYER_ENTERING_WORLD" then
+        completionTimes = {}
         -- Check if the player is in a challenge mode instance
         local _, _, _, difficultyName = GetInstanceInfo()
         if difficultyName == "Challenge Mode" then
