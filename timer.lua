@@ -702,6 +702,7 @@ frame:SetScript("OnEvent", function(self, event, ...)
         --print("Portal for jade exists = ", checkPortalExistance(131204))
        -- print("Portal for Niuzao exists = ", checkPortalExistance(131228))
        print('niuzao portal:',GetSpellCount("Path of the Black Ox"))
+       print('scarlet portal:',GetSpellCount("Path of the Scarlet Blade"))
     elseif event == "START_TIMER" then
         OnStartTimer()
     elseif event == "WORLD_MAP_UPDATE" then
