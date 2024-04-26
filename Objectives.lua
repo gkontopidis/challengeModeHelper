@@ -301,8 +301,8 @@ function GetScenarioObjectives()
             if completed and localDB.BestBossKillTime[objectiveName] == "N/A" then
                 localDB.BestBossKillTime[objectiveName] = completionTimes[i]
             end
-            print("bossneme: ",objectiveName, "time:", localDB.BestBossKillTime[objectiveName])
-            print("completionTimes:",i,": ", completionTimes[i])
+            --print("bossneme: ",objectiveName, "time:", localDB.BestBossKillTime[objectiveName])
+            --print("completionTimes:",i,": ", completionTimes[i])
             -- Check if objective is completed and format the name with color for display
             if completed then
                 formattedObjectiveName = "|cFF00FF00" .. formattedObjectiveName .. "|r" -- Green color for completion
@@ -366,6 +366,16 @@ Objectives_frame:SetScript("OnEvent", function(self, event, ...)
     elseif event == "CHALLENGE_MODE_COMPLETED" then
         UpdateObjectivesLabel()
     elseif event == "CRITERIA_COMPLETE" then
+         -- Record the completion time for the last boss if it hasn't been recorded already
+         local objectives = GetScenarioObjectives()
+         local lastObjective = objectives[#objectives-1] -- Get the last objective
+         if lastObjective and lastObjective.progress == lastObjective.totalQuantity and not completionTimes[#objectives-1] then
+             -- Record completion time for the last boss
+             completionTimes[#objectives-1] = secondsToString(timeElapsed)
+             -- Save the completion time to the database
+             timesDB.BestBossKillTime[lastObjective.name] = completionTimes[#objectives-1]
+         end
+         -- Update the objectives label
         UpdateObjectivesLabel()
     elseif event == "ZONE_CHANGED_NEW_AREA" then
 
