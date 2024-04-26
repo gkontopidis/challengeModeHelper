@@ -360,14 +360,14 @@ local function CreateAddonFrame()
         end
         realmBestLabel:SetText(textToDisplay .. realmBestTime)
         bestClearLabel:SetText("Time remaining: " .. realmBestTime)
-		
-		goldTime = getChallengeRequirementTime("Gold")
-		silverTime = getChallengeRequirementTime("Silver")
-		bronzeTime = getChallengeRequirementTime("Bronze")
-		
-		goldText:SetText(goldTime)		
-		silverText:SetText(silverTime)		
-		bronzeText:SetText(bronzeTime)
+
+        goldTime = getChallengeRequirementTime("Gold")
+        silverTime = getChallengeRequirementTime("Silver")
+        bronzeTime = getChallengeRequirementTime("Bronze")
+
+        goldText:SetText(goldTime)
+        silverText:SetText(silverTime)
+        bronzeText:SetText(bronzeTime)
     end
 
     -- local dropdownMenu = CreateDropdownMenu()
@@ -641,10 +641,6 @@ local function OnPlayerLogin()
     -- bestClearLabel:SetText("Best clear: " .. GetRemainingTimeToBeatCounter())
 end
 
-print("Portal for scarlet exists = ", checkPortalExistance(131231))
-print("Portal for jade exists = ", checkPortalExistance(131204))
-print("Portal for Niuzao exists = ", checkPortalExistance(131228))
-
 local function checkPortalExistance(portalId)
     return C_Spell.DoesSpellExist(portalId)
 end
@@ -681,8 +677,7 @@ frame:SetScript("OnEvent", function(self, event, ...)
             secondsLabel:SetText("00:")
             millisecondsLabel:SetText("000")
             if not labelFrame then
-                labelFrame, minutesLabel, secondsLabel, millisecondsLabel, bestClearLabel =
-                    CreateAddonFrame()
+                labelFrame, minutesLabel, secondsLabel, millisecondsLabel, bestClearLabel = CreateAddonFrame()
             end
             local timeRemaining = GetChallengeModeRealmOrGuildBestTime()
             updateFrame()
@@ -700,8 +695,12 @@ frame:SetScript("OnEvent", function(self, event, ...)
     elseif event == "CHALLENGE_MODE_COMPLETED" then
         OnChallengeModeCompleted()
     elseif event == "ZONE_CHANGED_NEW_AREA" then
+
     elseif event == "PLAYER_LOGIN" then
         OnPlayerLogin()
+        print("Portal for scarlet exists = ", checkPortalExistance(131231))
+        print("Portal for jade exists = ", checkPortalExistance(131204))
+        print("Portal for Niuzao exists = ", checkPortalExistance(131228))
     elseif event == "START_TIMER" then
         OnStartTimer()
     elseif event == "WORLD_MAP_UPDATE" then
