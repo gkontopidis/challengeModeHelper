@@ -282,7 +282,7 @@ function GetScenarioObjectives()
                     completionTimes[i] = timePassed
                 end
                 -- print(objectiveName .. timePassed) -- Print to chat
-            elseif completed and completionTimes[i] then
+            elseif completionTimes[i] then
                 -- If completion time has already been recorded, use it
 
                 if localDB.BestBossKillTime[objectiveName] then
