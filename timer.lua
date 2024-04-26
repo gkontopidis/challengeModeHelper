@@ -641,6 +641,14 @@ local function OnPlayerLogin()
     -- bestClearLabel:SetText("Best clear: " .. GetRemainingTimeToBeatCounter())
 end
 
+print("Portal for scarlet exists = ", checkPortalExistance(131231))
+print("Portal for jade exists = ", checkPortalExistance(131204))
+print("Portal for Niuzao exists = ", checkPortalExistance(131228))
+
+local function checkPortalExistance(portalId)
+    return C_Spell.DoesSpellExist(portalId)
+end
+
 -- Event handler for PLAYER_ENTERING_WORLD
 local function OnPlayerEnteringWorld()
     -- If it's the first load, center the labelFrame on the screen
