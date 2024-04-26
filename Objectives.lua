@@ -298,7 +298,7 @@ function GetScenarioObjectives()
                     bossTimeToKill = completionTimes[i]
                 end
             end
-
+            print("bossneme: ",objectiveName, "time:", localDB.BestBossKillTime[objectiveName])
             -- Check if objective is completed and format the name with color for display
             if completed then
                 formattedObjectiveName = "|cFF00FF00" .. formattedObjectiveName .. "|r" -- Green color for completion
