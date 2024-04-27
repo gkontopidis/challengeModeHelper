@@ -30,17 +30,17 @@ local function UpdateObjectivesLabel()
         local text = ""
         for i, objective in ipairs(objectives) do
             TotalDungeonEnemies(i)
+
             if(dungeon ~= "Shado-Pan Monastery") then
                 if i < #objectives then
-                    text = text .. ("%s %s %s\n"):format(objective.name, objective.bossTimeToKill, objective.timePassed)
-
+                    text = text .. ("%s \nBest: %s - %s\n\n"):format(objective.name, objective.bossTimeToKill, objective.timePassed)
                 else
                     text = text .. ("%s : %d/%d\n"):format(objective.name, objective.progress, TotalEnemies)
 
                 end
             else
                 if i < #objectives-1 then
-                    text = text .. ("%s %s %s\n"):format(objective.name, objective.bossTimeToKill, objective.timePassed)
+                    text = text .. ("%s \nBest: %s - Current: %s\n\n"):format(objective.name, objective.bossTimeToKill, objective.timePassed)
 
                 else
                     text = text .. ("%s : %d/%d\n"):format(objective.name, objective.progress, TotalEnemies)
@@ -79,7 +79,7 @@ Objectives_frame:SetBackdrop({
 })
 
 -- Create a font string to display the objectives inside the objectives frame
-Objectives_label = Objectives_frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+Objectives_label = Objectives_frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 Objectives_label:SetPoint("TOPLEFT", Objectives_frame, "TOPLEFT", 10, -10) -- Adjust position for the label
 Objectives_label:SetJustifyH("LEFT") -- Align text to the left
 

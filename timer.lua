@@ -1,5 +1,6 @@
 -- Global variables to hold frame references and timer data
 local labelFrame = nil
+local hoverFrame = nil
 local startTime = nil
 local inChallengeMode = false
 local resetButton = nil -- Variable to hold the reset button's reference
@@ -18,6 +19,7 @@ local relativePoint = "TOP"
 local colorPicked2 = "0" -- Variable to store the selected color option
 local selectedCountDown = "realmBest"
 local challengeName
+local PortalButtonState = "NotPressed"
 
 timeElapsed = 0
 
@@ -25,7 +27,7 @@ timeElapsed = 0
 local function CreateAddonFrame()
     -- Create a frame for the label
     labelFrame = CreateFrame("Frame", "MyAddonLabelFrame", UIParent)
-    labelFrame:SetSize(280, 90) -- Set the size of the label frame
+    labelFrame:SetSize(270, 90) -- Set the size of the label frame
 
     -- Set up backdrop for the frame
     labelFrame:SetBackdrop({
@@ -43,13 +45,13 @@ local function CreateAddonFrame()
     })
 
     -- Create the hover frame
-    local hoverFrame = CreateFrame("Frame", "MyAddonHoverFrame", UIParent)
-    local frameHeight = getAvailableTeleportButtons()
+    hoverFrame = CreateFrame("Frame", "MyAddonHoverFrame", UIParent)
+    frameHeight = getAvailableTeleportButtons()
     hoverFrame:SetSize(55, #frameHeight * 44)
     hoverFrame:SetPoint("TOP", labelFrame, "RIGHT", 22, 44) -- Adjust position as needed
     hoverFrame:SetBackdrop({
-        bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+        -- bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+        -- edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
         tile = true,
         tileSize = 16,
         edgeSize = 16,
@@ -66,44 +68,60 @@ local function CreateAddonFrame()
         local button = CreateFrame("Button", "MyAddonHoverButton" .. index, parent, "SecureActionButtonTemplate")
         button:SetSize(40, 40) -- Set the size of each button
         button:SetPoint("TOP", parent, "TOP", 0, -((index - 1) * 40)) -- Position each button vertically
-
+    
         -- Set the button's attributes for spell casting
         button:SetAttribute("type", "spell")
         button:SetAttribute("spell", GetSpellInfo(spellID))
-
+    
         -- Set the button's icon
         local iconTexture = button:CreateTexture(nil, "ARTWORK")
         iconTexture:SetAllPoints()
         iconTexture:SetTexture(iconPath)
-
+    
         -- Add tooltip functionality
         button:SetScript("OnEnter", function(self)
             GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
             GameTooltip:SetText(portalName) -- Set tooltip text
             GameTooltip:Show()
         end)
-
+    
         button:SetScript("OnLeave", function(self)
             GameTooltip:Hide() -- Hide tooltip when mouse leaves the button
         end)
-
+    
+        -- Function to update cooldown text
+        local function UpdateCooldownText()
+            local start, duration, enable = GetSpellCooldown(portalName)
+            local remainingTime = start + duration - GetTime()
+    
+            if remainingTime > 0 then
+                -- If the remaining time is greater than 0, the spell is on cooldown
+                iconTexture:SetDesaturated(true)
+                button:Disable()
+            else
+                -- If the remaining time is 0 or less, the spell is off cooldown
+                iconTexture:SetDesaturated(false)-- Enable the button by restoring saturation
+                button:Enable()
+            end
+        end
+    
+        -- Register for events to update the cooldown text
+        button:RegisterEvent("SPELL_UPDATE_COOLDOWN")
+        button:SetScript("OnEvent", function(self, event, ...)
+            UpdateCooldownText()
+        end)
+    
+        -- Update cooldown text initially
+        UpdateCooldownText()
+    
         return button
     end
+    
 
     local availablePortals = getAvailableTeleportButtons()
     for index, portalInfo in ipairs(availablePortals) do
         CreateButton(hoverFrame, index, portalInfo.name, portalInfo.iconPath, portalInfo.id) -- Create and store each button
     end
-
-    labelFrame:SetScript("OnEnter", function(self)
-        if areAnyChallengePortalsKnown() then
-            hoverFrame:Show()
-        end
-    end)
-
-    hoverFrame:SetScript("OnLeave", function(self)
-        hoverFrame:Hide()
-    end)
 
     -- Create a button
     local button = CreateFrame("Button", nil, labelFrame, "UIPanelButtonTemplate")
@@ -223,6 +241,11 @@ local function CreateAddonFrame()
             self.elapsed = 0
         end
     end)
+
+    local PortalButton = CreateFrame("Button", nil, labelFrame, "UIPanelButtonTemplate")
+    PortalButton:SetSize(20, 20)
+    PortalButton:SetPoint("LEFT", minutesLabel, "RIGHT", 120, -1) -- Adjust the position as needed
+    PortalButton:SetNormalTexture("Interface\\Icons\\misc_arrowright")
 
     -- Position the best clear time label below the realm best time label
     bestClearLabel:SetPoint("LEFT", labelFrame, "LEFT", 80, 0) -- Adjust the offset as needed
@@ -456,6 +479,19 @@ local function CreateAddonFrame()
             alpha = a
         }
     end
+
+    -- Set up button click handler to show the panel
+    PortalButton:SetScript("OnClick", function()
+        if PortalButtonState == "NotPressed" then
+            PortalButtonState = "Pressed"
+            PortalButton:SetNormalTexture("Interface\\Icons\\misc_arrowleft")
+            hoverFrame:Show()
+        else
+            PortalButtonState = "NotPressed"
+            PortalButton:SetNormalTexture("Interface\\Icons\\misc_arrowright")
+            hoverFrame:Hide()
+        end
+    end)
 
     -- Function to update the timer periodically
     labelFrame:SetScript("OnUpdate", function()
@@ -746,6 +782,7 @@ local function OnPlayerEnteringWorld()
             labelFrame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
         end
     end
+
 end
 
 -- Register events
@@ -779,6 +816,12 @@ frame:SetScript("OnEvent", function(self, event, ...)
                 OnWorldStateTimerStop() -- Reset the timer if leaving challenge mode
             end
             labelFrame:Hide()
+            hoverFrame:Hide()
+            PortalButtonState = "NotPressed"
+            if PortalButton then
+                PortalButton:SetNormalTexture("Interface\\Icons\\misc_arrowright")
+            end
+            -- print(PortalButtonState)
         end
     elseif event == "WORLD_STATE_TIMER_START" then
         -- OnWorldStateTimerStart()
