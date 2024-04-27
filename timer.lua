@@ -16,7 +16,7 @@ local xOfs = 7.110173225402832
 local point = "TOP"
 local relativePoint = "TOP"
 local colorPicked2 = "0" -- Variable to store the selected color option
-local selectedCountDown = "guildBest"
+local selectedCountDown = "realmBest"
 local challengeName
 
 timeElapsed = 0
@@ -639,6 +639,9 @@ local function OnPlayerLogin()
 
     -- Update the best clear time label
     -- bestClearLabel:SetText("Best clear: " .. GetRemainingTimeToBeatCounter())
+
+    -- Update the frame to display the correct realm best time
+    updateFrame()
 end
 
 local function checkPortalExistance(portalId)
@@ -701,8 +704,8 @@ frame:SetScript("OnEvent", function(self, event, ...)
         --print("Portal for scarlet exists = ", checkPortalExistance(131231))
         --print("Portal for jade exists = ", checkPortalExistance(131204))
        -- print("Portal for Niuzao exists = ", checkPortalExistance(131228))
-       print('niuzao portal:',GetSpellCount("Path of the Black Ox"))
-       print('scarlet portal:',GetSpellCount("Path of the Scarlet Blade"))
+       --print('niuzao portal:',GetSpellCount("Path of the Black Ox"))
+       --print('scarlet portal:',GetSpellCount("Path of the Scarlet Blade"))
     elseif event == "START_TIMER" then
         OnStartTimer()
     elseif event == "WORLD_MAP_UPDATE" then
