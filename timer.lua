@@ -42,6 +42,69 @@ local function CreateAddonFrame()
         }
     })
 
+    -- Create the hover frame
+    local hoverFrame = CreateFrame("Frame", "MyAddonHoverFrame", UIParent)
+    local frameHeight = getAvailableTeleportButtons()
+    hoverFrame:SetSize(55, #frameHeight * 44)
+    hoverFrame:SetPoint("TOP", labelFrame, "RIGHT", 22, 44) -- Adjust position as needed
+    hoverFrame:SetBackdrop({
+        bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+        tile = true,
+        tileSize = 16,
+        edgeSize = 16,
+        insets = {
+            left = 4,
+            right = 4,
+            top = 4,
+            bottom = 4
+        }
+    })
+    hoverFrame:Hide() -- Hide the hover frame initially
+
+    local function CreateButton(parent, index, portalName, iconPath, spellID)
+        local button = CreateFrame("Button", "MyAddonHoverButton" .. index, parent, "SecureActionButtonTemplate")
+        button:SetSize(40, 40) -- Set the size of each button
+        button:SetPoint("TOP", parent, "TOP", 0, -((index - 1) * 40)) -- Position each button vertically
+
+        -- Set the button's attributes for spell casting
+        button:SetAttribute("type", "spell")
+        button:SetAttribute("spell", GetSpellInfo(spellID))
+
+        -- Set the button's icon
+        local iconTexture = button:CreateTexture(nil, "ARTWORK")
+        iconTexture:SetAllPoints()
+        iconTexture:SetTexture(iconPath)
+
+        -- Add tooltip functionality
+        button:SetScript("OnEnter", function(self)
+            GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+            GameTooltip:SetText(portalName) -- Set tooltip text
+            GameTooltip:Show()
+        end)
+
+        button:SetScript("OnLeave", function(self)
+            GameTooltip:Hide() -- Hide tooltip when mouse leaves the button
+        end)
+
+        return button
+    end
+
+    local availablePortals = getAvailableTeleportButtons()
+    for index, portalInfo in ipairs(availablePortals) do
+        CreateButton(hoverFrame, index, portalInfo.name, portalInfo.iconPath, portalInfo.id) -- Create and store each button
+    end
+
+    labelFrame:SetScript("OnEnter", function(self)
+        if areAnyChallengePortalsKnown() then
+            hoverFrame:Show()
+        end
+    end)
+
+    hoverFrame:SetScript("OnLeave", function(self)
+        hoverFrame:Hide()
+    end)
+
     -- Create a button
     local button = CreateFrame("Button", nil, labelFrame, "UIPanelButtonTemplate")
     button:SetText("RESET")
@@ -404,6 +467,32 @@ local function CreateAddonFrame()
 
 end
 
+function areAnyChallengePortalsKnown()
+    for _, portal in pairs(challengePortals) do
+        if IsSpellKnown(portal.id) then
+            return true -- Return true as soon as a known spell is found
+        end
+    end
+    return false -- Return false if none of the spells are known
+end
+
+function getAvailableTeleportButtons()
+    local availablePortals = {}
+    if areAnyChallengePortalsKnown() then
+        for portalName, portalInfo in pairs(challengePortals) do
+            if IsSpellKnown(portalInfo.id) then
+                local buttonInfo = {
+                    name = portalName,
+                    iconPath = portalInfo.iconPath,
+                    id = portalInfo.id
+                }
+                table.insert(availablePortals, buttonInfo)
+            end
+        end
+    end
+    return availablePortals
+end
+
 function getChallengeRequirementTime(medal)
     local dungeon, _, _, difficultyName = GetInstanceInfo()
     challengeName = dungeon
@@ -701,11 +790,6 @@ frame:SetScript("OnEvent", function(self, event, ...)
 
     elseif event == "PLAYER_LOGIN" then
         OnPlayerLogin()
-        --print("Portal for scarlet exists = ", checkPortalExistance(131231))
-        --print("Portal for jade exists = ", checkPortalExistance(131204))
-       -- print("Portal for Niuzao exists = ", checkPortalExistance(131228))
-       --print('niuzao portal:',GetSpellCount("Path of the Black Ox"))
-       --print('scarlet portal:',GetSpellCount("Path of the Scarlet Blade"))
     elseif event == "START_TIMER" then
         OnStartTimer()
     elseif event == "WORLD_MAP_UPDATE" then

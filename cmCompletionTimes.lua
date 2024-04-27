@@ -47,3 +47,42 @@ cmCompletionTimes = {
     }
 
 }
+
+challengePortals={
+    ["Path of the Jade serpent"]={
+        ["id"]=131204,
+        ["iconPath"]="Interface\\Icons\\Achievement_JadeSerpent"
+    },
+    ["Path of the Stout Brew"]={
+        ["id"]=131205,
+        ["iconPath"]="Interface\\Icons\\Achievement_brewery"
+    },
+    ["Path of the Shado-Pan"]={
+        ["id"]=131206,
+        ["iconPath"]="Interface\\Icons\\achievement_shadowpan_hideout"
+    },
+    ["Path of the Mogu King"]={
+        ["id"]=131222,
+        ["iconPath"]= "Interface\\Icons\\achievement_dungeon_mogupalace"
+    },
+    ["Path of the Setting Sun"]={
+        ["id"]=131225,
+        ["iconPath"]= "Interface\\Icons\\achievement_greatwall"
+    },
+    ["Path of the Scarlet Mitre"]={
+        ["id"]=131229,
+        ["iconPath"]= "Interface\\Icons\\spell_holy_resurrection"
+    },
+    ["Path of the Scarlet Blade"]={
+        ["id"]=131231,
+        ["iconPath"]= "Interface\\Icons\\inv_helmet_52"
+    },
+    ["Path of the Necromancer"]={
+        ["id"]=131232,
+        ["iconPath"]= "Interface\\Icons\\spell_holy_senseundead"
+    },
+    ["Path of the Black Ox"]={
+        ["id"]=131228,
+        ["iconPath"]= "Interface\\Icons\\achievement_dungeon_siegeofniuzaotemple"
+    },
+}
