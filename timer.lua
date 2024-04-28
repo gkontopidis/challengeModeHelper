@@ -68,55 +68,54 @@ local function CreateAddonFrame()
         local button = CreateFrame("Button", "MyAddonHoverButton" .. index, parent, "SecureActionButtonTemplate")
         button:SetSize(40, 40) -- Set the size of each button
         button:SetPoint("TOP", parent, "TOP", 0, -((index - 1) * 40)) -- Position each button vertically
-    
+
         -- Set the button's attributes for spell casting
         button:SetAttribute("type", "spell")
         button:SetAttribute("spell", GetSpellInfo(spellID))
-    
+
         -- Set the button's icon
         local iconTexture = button:CreateTexture(nil, "ARTWORK")
         iconTexture:SetAllPoints()
         iconTexture:SetTexture(iconPath)
-    
+
         -- Add tooltip functionality
         button:SetScript("OnEnter", function(self)
             GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
             GameTooltip:SetText(portalName) -- Set tooltip text
             GameTooltip:Show()
         end)
-    
+
         button:SetScript("OnLeave", function(self)
             GameTooltip:Hide() -- Hide tooltip when mouse leaves the button
         end)
-    
+
         -- Function to update cooldown text
         local function UpdateCooldownText()
             local start, duration, enable = GetSpellCooldown(portalName)
             local remainingTime = start + duration - GetTime()
-    
+
             if remainingTime > 0 then
                 -- If the remaining time is greater than 0, the spell is on cooldown
                 iconTexture:SetDesaturated(true)
                 button:Disable()
             else
                 -- If the remaining time is 0 or less, the spell is off cooldown
-                iconTexture:SetDesaturated(false)-- Enable the button by restoring saturation
+                iconTexture:SetDesaturated(false) -- Enable the button by restoring saturation
                 button:Enable()
             end
         end
-    
+
         -- Register for events to update the cooldown text
         button:RegisterEvent("SPELL_UPDATE_COOLDOWN")
         button:SetScript("OnEvent", function(self, event, ...)
             UpdateCooldownText()
         end)
-    
+
         -- Update cooldown text initially
         UpdateCooldownText()
-    
+
         return button
     end
-    
 
     local availablePortals = getAvailableTeleportButtons()
     for index, portalInfo in ipairs(availablePortals) do
@@ -242,7 +241,7 @@ local function CreateAddonFrame()
         end
     end)
 
-    local PortalButton = CreateFrame("Button", nil, labelFrame, "UIPanelButtonTemplate")
+    PortalButton = CreateFrame("Button", nil, labelFrame, "UIPanelButtonTemplate")
     PortalButton:SetSize(20, 20)
     PortalButton:SetPoint("LEFT", minutesLabel, "RIGHT", 120, -1) -- Adjust the position as needed
     PortalButton:SetNormalTexture("Interface\\Icons\\misc_arrowright")
@@ -433,7 +432,6 @@ local function CreateAddonFrame()
                 UIDropDownMenu_AddButton(timeToBeatFrame, level)
             end
         end
-
     end
 
     function updateFrame()
@@ -455,8 +453,6 @@ local function CreateAddonFrame()
         silverText:SetText(silverTime)
         bronzeText:SetText(bronzeTime)
     end
-
-    -- local dropdownMenu = CreateDropdownMenu()
 
     -- Show the dropdown menu on right-click
     labelFrame:SetScript("OnMouseDown", function(self, button)
@@ -594,9 +590,7 @@ function SubtractTimer(labelToUse)
                 soundPlayed[secondsLeft] = true
             end
         end
-
     end
-
 end
 
 -- Function to update the timer
@@ -699,90 +693,8 @@ local function LoadCompletionTimes()
     print("Completion times database loaded.")
 end
 
--- Event handler for TIMER_START
-function OnStartTimer(self, event, ...)
-    startTime = GetTime() + 5 -- Record the start time
-    isTimerActive = true
-    if resetButton then
-        resetButton.disabled = 1 -- Disable the reset button
-    end
-    ResetSoundPlayed() -- Reset the soundPlayed table when the timer starts
-end
-
--- Event handler for WORLD_STATE_TIMER_STOP
-function OnWorldStateTimerStop()
-
-    startTime = nil -- Reset the start time
-    isTimerActive = false
-    if resetButton then
-        resetButton.disabled = nil -- Enable the reset button
-    end
-end
-
--- Event handler for CHALLENGE_MODE_COMPLETED
-local function OnChallengeModeCompleted()
-    if inChallengeMode then
-        inChallengeMode = false
-        startTime = nil -- Reset the start time
-        labelFrame:SetScript("OnUpdate", nil) -- Stop updating the timer
-    end
-end
-
--- Event handler for PLAYER_LOGIN
-local function OnPlayerLogin()
-    -- Check if CmHelperDB exists and if it has the framePosition table
-    if CmHelperDB and CmHelperDB.framePosition then
-        -- Check if the labelFrame hasn't been created yet
-        if not labelFrame then
-            -- Create the addon frame
-            labelFrame, minutesLabel, secondsLabel, millisecondsLabel = CreateAddonFrame()
-        end
-        -- Set the frame position based on the values stored in CmHelperDB
-        labelFrame:SetPoint(CmHelperDB.framePosition.point, UIParent, CmHelperDB.framePosition.relativePoint,
-            CmHelperDB.framePosition.xOfs, CmHelperDB.framePosition.yOfs)
-
-        -- Set the transparency of the label frame based on the stored value
-        labelFrame:SetBackdropColor(0, 0, 0, CmHelperDB.framePosition.colorPicked2)
-    else
-        -- Initialize CmHelperDB with the default frame position values
-        CmHelperDB = {
-            framePosition = {
-                yOfs = -21.22220802307129,
-                xOfs = 7.110173225402832,
-                point = "TOP",
-                relativePoint = "TOP",
-                colorPicked2 = colorPicked2, -- Set default transparency value
-                alpha = a
-            }
-        }
-        -- Create the addon frame
-        labelFrame, minutesLabel, secondsLabel, millisecondsLabel = CreateAddonFrame()
-
-        -- Set the default transparency of the label frame
-        labelFrame:SetBackdropColor(0, 0, 0, CmHelperDB.framePosition.colorPicked2)
-    end
-
-    -- Update the best clear time label
-    -- bestClearLabel:SetText("Best clear: " .. GetRemainingTimeToBeatCounter())
-
-    -- Update the frame to display the correct realm best time
-    updateFrame()
-end
-
 local function checkPortalExistance(portalId)
     return C_Spell.DoesSpellExist(portalId)
-end
-
--- Event handler for PLAYER_ENTERING_WORLD
-local function OnPlayerEnteringWorld()
-    -- If it's the first load, center the labelFrame on the screen
-    if isFirstLoad and not CmHelperDB then
-        isFirstLoad = false
-        if labelFrame then
-            labelFrame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
-        end
-    end
-
 end
 
 -- Register events
@@ -798,7 +710,13 @@ frame:RegisterEvent("WORLD_MAP_UPDATE")
 
 frame:SetScript("OnEvent", function(self, event, ...)
     if event == "PLAYER_ENTERING_WORLD" then
-        OnPlayerEnteringWorld()
+        -- If it's the first load, center the labelFrame on the screen
+        if isFirstLoad and not CmHelperDB then
+            isFirstLoad = false
+            if labelFrame then
+                labelFrame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
+            end
+        end
         local _, _, _, difficultyName = GetInstanceInfo()
         if difficultyName == "Challenge Mode" then
             -- Reset the timer labels to "00:00:000"
@@ -818,23 +736,66 @@ frame:SetScript("OnEvent", function(self, event, ...)
             labelFrame:Hide()
             hoverFrame:Hide()
             PortalButtonState = "NotPressed"
-            if PortalButton then
-                PortalButton:SetNormalTexture("Interface\\Icons\\misc_arrowright")
-            end
-            -- print(PortalButtonState)
+            PortalButton:SetNormalTexture("Interface\\Icons\\misc_arrowright")
         end
     elseif event == "WORLD_STATE_TIMER_START" then
         -- OnWorldStateTimerStart()
     elseif event == "WORLD_STATE_TIMER_STOP" then
-        OnWorldStateTimerStop()
+        startTime = nil -- Reset the start time
+        isTimerActive = false
+        if resetButton then
+            resetButton.disabled = nil -- Enable the reset button
+        end
     elseif event == "CHALLENGE_MODE_COMPLETED" then
-        OnChallengeModeCompleted()
+        if inChallengeMode then
+            inChallengeMode = false
+            startTime = nil -- Reset the start time
+            labelFrame:SetScript("OnUpdate", nil) -- Stop updating the timer
+        end
     elseif event == "ZONE_CHANGED_NEW_AREA" then
 
     elseif event == "PLAYER_LOGIN" then
-        OnPlayerLogin()
+        -- Check if CmHelperDB exists and if it has the framePosition table
+        if CmHelperDB and CmHelperDB.framePosition then
+            -- Check if the labelFrame hasn't been created yet
+            if not labelFrame then
+                -- Create the addon frame
+                labelFrame, minutesLabel, secondsLabel, millisecondsLabel = CreateAddonFrame()
+            end
+            -- Set the frame position based on the values stored in CmHelperDB
+            labelFrame:SetPoint(CmHelperDB.framePosition.point, UIParent, CmHelperDB.framePosition.relativePoint,
+                CmHelperDB.framePosition.xOfs, CmHelperDB.framePosition.yOfs)
+
+            -- Set the transparency of the label frame based on the stored value
+            labelFrame:SetBackdropColor(0, 0, 0, CmHelperDB.framePosition.colorPicked2)
+        else
+            -- Initialize CmHelperDB with the default frame position values
+            CmHelperDB = {
+                framePosition = {
+                    yOfs = -21.22220802307129,
+                    xOfs = 7.110173225402832,
+                    point = "TOP",
+                    relativePoint = "TOP",
+                    colorPicked2 = colorPicked2, -- Set default transparency value
+                    alpha = a
+                }
+            }
+            -- Create the addon frame
+            labelFrame, minutesLabel, secondsLabel, millisecondsLabel = CreateAddonFrame()
+
+            -- Set the default transparency of the label frame
+            labelFrame:SetBackdropColor(0, 0, 0, CmHelperDB.framePosition.colorPicked2)
+        end
+
+        -- Update the frame to display the correct realm best time
+        updateFrame()
     elseif event == "START_TIMER" then
-        OnStartTimer()
+        startTime = GetTime() + 5 -- Record the start time
+        isTimerActive = true
+        if resetButton then
+            resetButton.disabled = 1 -- Disable the reset button
+        end
+        ResetSoundPlayed() -- Reset the soundPlayed table when the timer starts
     elseif event == "WORLD_MAP_UPDATE" then
         updateFrame()
     end

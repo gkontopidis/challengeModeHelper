@@ -26,21 +26,25 @@ local function UpdateObjectivesLabel()
     local objectives = GetScenarioObjectives()
     local dungeon = C_Scenario.GetStepInfo()
     -- Check if there are any objectives available
-    if #objectives > 0 then        
+    if #objectives > 0 then
         local text = ""
         for i, objective in ipairs(objectives) do
             TotalDungeonEnemies(i)
 
-            if(dungeon ~= "Shado-Pan Monastery") then
+            if (dungeon ~= "Shado-Pan Monastery") then
                 if i < #objectives then
-                    text = text .. ("%s \nBest: %s - %s\n\n"):format(objective.name, objective.bossTimeToKill, objective.timePassed)
+                    text = text ..
+                               ("%s \nBest: %s - %s\n\n"):format(objective.name, objective.bossTimeToKill,
+                            objective.timePassed)
                 else
                     text = text .. ("%s : %d/%d\n"):format(objective.name, objective.progress, TotalEnemies)
 
                 end
             else
-                if i < #objectives-1 then
-                    text = text .. ("%s \nBest: %s - Current: %s\n\n"):format(objective.name, objective.bossTimeToKill, objective.timePassed)
+                if i < #objectives - 1 then
+                    text = text ..
+                               ("%s \nBest: %s - Current: %s\n\n"):format(objective.name, objective.bossTimeToKill,
+                            objective.timePassed)
 
                 else
                     text = text .. ("%s : %d/%d\n"):format(objective.name, objective.progress, TotalEnemies)
@@ -133,6 +137,13 @@ local function CreateDropdownMenu()
             info.notCheckable = true
             info.value = "background"
             UIDropDownMenu_AddButton(info, level)
+
+            info = UIDropDownMenu_CreateInfo()
+            info.text = "Font Size"
+            info.hasArrow = true
+            info.notCheckable = true
+            info.value = "fontsize"
+            UIDropDownMenu_AddButton(info, level)
         elseif level == 2 then
             if UIDROPDOWNMENU_MENU_VALUE == "background" then
                 local info = UIDropDownMenu_CreateInfo()
@@ -194,6 +205,36 @@ local function CreateDropdownMenu()
                 end
                 info.checked = colorPicked == 1 and 1 or nil
                 UIDropDownMenu_AddButton(info, level)
+            elseif UIDROPDOWNMENU_MENU_VALUE == "fontsize" then
+                local info = UIDropDownMenu_CreateInfo()
+                info.text = "Small"
+                info.func = function()
+                    -- Set small font size
+                    Objectives_label:SetFontObject("GameFontNormalSmall")
+                    Objectives_frame:SavePosition()
+                    UpdateFrameSize()
+                end
+                UIDropDownMenu_AddButton(info, level)
+
+                info = UIDropDownMenu_CreateInfo()
+                info.text = "Normal"
+                info.func = function()
+                    -- Set normal font size
+                    Objectives_label:SetFontObject("GameFontNormal")
+                    Objectives_frame:SavePosition()
+                    UpdateFrameSize()
+                end
+                UIDropDownMenu_AddButton(info, level)
+
+                info = UIDropDownMenu_CreateInfo()
+                info.text = "Large"
+                info.func = function()
+                    -- Set large font size
+                    Objectives_label:SetFontObject("GameFontNormalLarge")
+                    Objectives_frame:SavePosition()
+                    UpdateFrameSize()
+                end
+                UIDropDownMenu_AddButton(info, level)
             end
         end
     end
@@ -221,7 +262,8 @@ function Objectives_frame:SavePosition()
         xOfs = xOfs,
         yOfs = yOfs,
         alpha = a, -- Save the alpha value of the backdrop color
-        colorPicked = colorPicked -- Save the selected color option
+        colorPicked = colorPicked, -- Save the selected color option
+        fontSize = Objectives_label:GetFontObject():GetName() -- Save the selected font size
     }
 end
 
@@ -262,72 +304,65 @@ function GetScenarioObjectives()
     local bossTimeToKill
 
     -- Check if there are any objectives available
-        for i = 1, steps do
-            local objectiveName, _, completed, progress = C_Scenario.GetCriteriaInfo(i)
-            local timePassed = ""
-            local formattedObjectiveName = objectiveName
-            bossTimeToKill = localDB.BestBossKillTime[objectiveName] -- Set bossTimeToKill from db
+    for i = 1, steps do
+        local objectiveName, _, completed, progress = C_Scenario.GetCriteriaInfo(i)
+        local timePassed = ""
+        local formattedObjectiveName = objectiveName
+        bossTimeToKill = localDB.BestBossKillTime[objectiveName] -- Set bossTimeToKill from db
 
-            if bossTimeToKill == nil or bossTimeToKill == "" or bossTimeToKill == "00:00" then -- if there is no time stored in db 
-                localDB.BestBossKillTime[objectiveName] = "N/A"
-                bossTimeToKill = "N/A"
-            end
-
-            -- Check if objective is completed and the completion time has not been recorded yet
-            if completed and not completionTimes[i] then
-                -- Record the completion time for this objective
-
-                timePassed = secondsToString(timeElapsed)
-                if(timePassed~="00:00") then
-                    completionTimes[i] = timePassed
-                end
-                -- print(objectiveName .. timePassed) -- Print to chat
-            elseif completionTimes[i] then
-                -- If completion time has already been recorded, use it
-
-                if localDB.BestBossKillTime[objectiveName] then
-                    bossTimeToKill = localDB.BestBossKillTime[objectiveName]
-                end
-
-                timePassed = completionTimes[i] -- secondsToString(completionTimes[i])
-
-                if localDB.BestBossKillTime[objectiveName] == "N/A" or localDB.BestBossKillTime[objectiveName] == "" or
-                    timeStringToSeconds(localDB.BestBossKillTime[objectiveName]) >
-                    timeStringToSeconds(completionTimes[i]) then
-                    localDB.BestBossKillTime[objectiveName] = completionTimes[i]
-                    bossTimeToKill = completionTimes[i]
-                end
-            end
-            if completed and localDB.BestBossKillTime[objectiveName] == "N/A" then
-                localDB.BestBossKillTime[objectiveName] = completionTimes[i]
-            end
-            --print("bossneme: ",objectiveName, "time:", localDB.BestBossKillTime[objectiveName])
-            --print("completionTimes:",i,": ", completionTimes[i])
-            -- Check if objective is completed and format the name with color for display
-            if completed then
-                formattedObjectiveName = "|cFF00FF00" .. formattedObjectiveName .. "|r" -- Green color for completion
-            end
-
-            table.insert(objectives, {
-                name = formattedObjectiveName, -- Store the formatted name with colors
-                progress = progress,
-                timePassed = timePassed,
-                bossTimeToKill = bossTimeToKill
-            })
+        if bossTimeToKill == nil or bossTimeToKill == "" or bossTimeToKill == "00:00" then -- if there is no time stored in db 
+            localDB.BestBossKillTime[objectiveName] = "N/A"
+            bossTimeToKill = "N/A"
         end
+
+        -- Check if objective is completed and the completion time has not been recorded yet
+        if completed and not completionTimes[i] then
+            -- Record the completion time for this objective
+
+            timePassed = secondsToString(timeElapsed)
+            if (timePassed ~= "00:00") then
+                completionTimes[i] = timePassed
+            end
+            -- print(objectiveName .. timePassed) -- Print to chat
+        elseif completionTimes[i] then
+            -- If completion time has already been recorded, use it
+
+            if localDB.BestBossKillTime[objectiveName] then
+                bossTimeToKill = localDB.BestBossKillTime[objectiveName]
+            end
+
+            timePassed = completionTimes[i] -- secondsToString(completionTimes[i])
+
+            if localDB.BestBossKillTime[objectiveName] == "N/A" or localDB.BestBossKillTime[objectiveName] == "" or
+                timeStringToSeconds(localDB.BestBossKillTime[objectiveName]) > timeStringToSeconds(completionTimes[i]) then
+                localDB.BestBossKillTime[objectiveName] = completionTimes[i]
+                bossTimeToKill = completionTimes[i]
+            end
+        end
+        if completed and localDB.BestBossKillTime[objectiveName] == "N/A" then
+            localDB.BestBossKillTime[objectiveName] = completionTimes[i]
+        end
+        -- print("bossneme: ",objectiveName, "time:", localDB.BestBossKillTime[objectiveName])
+        -- print("completionTimes:",i,": ", completionTimes[i])
+        -- Check if objective is completed and format the name with color for display
+        if completed then
+            formattedObjectiveName = "|cFF00FF00" .. formattedObjectiveName .. "|r" -- Green color for completion
+        end
+
+        table.insert(objectives, {
+            name = formattedObjectiveName, -- Store the formatted name with colors
+            progress = progress,
+            timePassed = timePassed,
+            bossTimeToKill = bossTimeToKill
+        })
+    end
 
     return objectives
 end
 
--- Function to check if all objectives are complete
--- function AreObjectivesComplete()
---     local objectives = GetScenarioObjectives()
---     if objectives then
---         objectives_Completed = false 
---     else
---         objectives_Completed = true  -- Return true if all objectives are complete
---     end
--- end
+function OnWorldStateTimerStop()
+    Objectives_frame:SetScript("OnUpdate", nil)
+ end
 
 -- Register events
 Objectives_frame:RegisterEvent("START_TIMER")
@@ -350,7 +385,7 @@ Objectives_frame:SetScript("OnEvent", function(self, event, ...)
         completionTimes = {}
         UpdateObjectivesLabel()
     elseif event == "WORLD_STATE_TIMER_STOP" then
-        Objectives_frame:SetScript("OnUpdate", nil)
+        OnWorldStateTimerStop()
     elseif event == "PLAYER_ENTERING_WORLD" then
         completionTimes = {}
         -- Check if the player is in a challenge mode instance
@@ -367,16 +402,17 @@ Objectives_frame:SetScript("OnEvent", function(self, event, ...)
     elseif event == "CHALLENGE_MODE_COMPLETED" then
         UpdateObjectivesLabel()
     elseif event == "CRITERIA_COMPLETE" then
-         -- Record the completion time for the last boss if it hasn't been recorded already
-         local objectives = GetScenarioObjectives()
-         local lastObjective = objectives[#objectives-1] -- Get the last objective
-         if lastObjective and lastObjective.progress == lastObjective.totalQuantity and not completionTimes[#objectives-1] then
-             -- Record completion time for the last boss
-             completionTimes[#objectives-1] = secondsToString(timeElapsed)
-             -- Save the completion time to the database
-             timesDB.BestBossKillTime[lastObjective.name] = completionTimes[#objectives-1]
-         end
-         -- Update the objectives label
+        -- Record the completion time for the last boss if it hasn't been recorded already
+        local objectives = GetScenarioObjectives()
+        local lastObjective = objectives[#objectives - 1] -- Get the last objective
+        if lastObjective and lastObjective.progress == lastObjective.totalQuantity and
+            not completionTimes[#objectives - 1] then
+            -- Record completion time for the last boss
+            completionTimes[#objectives - 1] = secondsToString(timeElapsed)
+            -- Save the completion time to the database
+            timesDB.BestBossKillTime[lastObjective.name] = completionTimes[#objectives - 1]
+        end
+        -- Update the objectives label
         UpdateObjectivesLabel()
     elseif event == "ZONE_CHANGED_NEW_AREA" then
 
@@ -388,17 +424,24 @@ Objectives_frame:SetScript("OnEvent", function(self, event, ...)
                 savedPosition.yOfs)
             Objectives_frame:SetBackdropColor(0, 0, 0, savedPosition.alpha)
             colorPicked = savedPosition.colorPicked or 0
+            -- Load the selected font size
+            local fontName = savedPosition.fontSize
+            if fontName then
+                local fontObject = _G[fontName]
+                if fontObject then
+                    Objectives_label:SetFontObject(fontObject)
+                end
+            end
         end
     elseif event == "INSTANCE_RESET" then
 
     elseif event == "ENCOUNTER_START" then
-        
+
     elseif event == "ENCOUNTER_END" then
 
     elseif event == "ADDON_LOADED" then
         if not CmHelperDB then
-            CmHelperDB = {
-            }
+            CmHelperDB = {}
         end
         if not timesDB then
             timesDB = {
