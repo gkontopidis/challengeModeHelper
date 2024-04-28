@@ -397,6 +397,8 @@ Objectives_frame:SetScript("OnEvent", function(self, event, ...)
             Objectives_frame:Show()
         else
             Objectives_frame:Hide()
+            WatchFrame:SetScript("OnEvent", nil)
+            WatchFrame:Show()
         end
         UpdateObjectivesLabel()
     elseif event == "CHALLENGE_MODE_COMPLETED" then
