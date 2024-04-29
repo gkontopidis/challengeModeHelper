@@ -20,8 +20,105 @@ local colorPicked2 = "0" -- Variable to store the selected color option
 local selectedCountDown = "realmBest"
 local challengeName
 local PortalButtonState = "NotPressed"
+local opacitySliderFrame = nil -- Variable to keep track of the opacity slider frame
 
 timeElapsed = 0
+
+-- Function to create and show the opacity slider frame
+local function ShowOpacitySliderFrame()
+    -- Check if the frame is already shown
+    if opacitySliderFrame and opacitySliderFrame:IsShown() then
+        opacitySliderFrame:Hide() -- Hide the existing frame
+    else
+        -- Create the frame if it doesn't exist
+        opacitySliderFrame = CreateFrame("Frame", "MyAddon_OpacitySliderFrame", UIParent)
+        opacitySliderFrame:SetSize(250, 130) -- Increased height to accommodate the label
+        opacitySliderFrame:SetPoint("CENTER", 0, 0)
+        opacitySliderFrame:SetBackdrop({
+            bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+            edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+            tile = true,
+            tileSize = 16,
+            edgeSize = 16,
+            insets = {
+                left = 4,
+                right = 4,
+                top = 4,
+                bottom = 4
+            }
+        })
+        opacitySliderFrame:SetBackdropColor(0, 0, 0, 1)
+
+        -- Create slider and label
+        local sliderLabel = opacitySliderFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+        sliderLabel:SetPoint("TOPLEFT", 10, -10)
+        sliderLabel:SetText("Opacity:")
+
+        local sliderValueLabel = opacitySliderFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+        sliderValueLabel:SetPoint("TOPLEFT", sliderLabel, "BOTTOMLEFT", 0, -5) -- Position below the slider label
+        sliderValueLabel:SetText(math.floor(colorPicked2 * 100)) -- Initial value without decimal points
+
+        local slider = CreateFrame("Slider", "MyAddon_OpacitySlider", opacitySliderFrame, "OptionsSliderTemplate")
+        slider:SetWidth(180)
+        slider:SetHeight(20)
+        slider:SetPoint("TOPLEFT", 10, -30)
+        slider:SetMinMaxValues(0, 100)
+        slider:SetValue(colorPicked2 * 100) -- Assuming colorPicked2 is in range 0-1
+        slider:SetOrientation("HORIZONTAL")
+
+        local smoothTimer -- Variable to store the smooth movement timer
+
+        -- Function to smoothly update the slider value
+        local function SmoothUpdate(newValue)
+            local currentValue = slider:GetValue()
+            local diff = newValue - currentValue -- Calculate the difference between current and target values
+            local step = 0.05 * diff -- Adjust the step size based on the difference
+
+            -- Clear any existing smooth movement timer
+            if smoothTimer then
+                smoothTimer:Cancel()
+            end
+
+            -- Create a new timer to gradually update the slider value
+            smoothTimer = C_Timer.NewTicker(0.01, function()
+                currentValue = currentValue + step -- Update the current value
+                slider:SetValue(currentValue) -- Set the new value
+                sliderValueLabel:SetText(math.floor(currentValue)) -- Update the value label
+                if math.abs(newValue - currentValue) <= 0.5 then
+                    smoothTimer:Cancel() -- Stop the timer when close to the target value
+                end
+            end)
+        end
+
+        -- Update the color and label when the value changes
+        slider:SetScript("OnValueChanged", function(self, value)
+            colorPicked2 = value / 100 -- Normalize value to range 0-1
+            labelFrame:SetBackdropColor(0, 0, 0, colorPicked2)
+            sliderValueLabel:SetText(math.floor(colorPicked2 * 100)) -- Update the value label
+        end)
+
+        -- Create close button
+        local closeButton = CreateFrame("Button", nil, opacitySliderFrame, "UIPanelButtonTemplate")
+        closeButton:SetText("Save")
+        closeButton:SetSize(80, 20)
+        closeButton:SetPoint("BOTTOM", 0, 10)
+        closeButton:SetScript("OnClick", function()
+            opacitySliderFrame:Hide() -- Hide the frame
+            -- Save the slider value when closing the frame
+            labelFrame:SavePosition()
+        end)
+
+        opacitySliderFrame:Show()
+    end
+end
+
+local function AddSeparator(dropdownMenu, level)
+    local info = UIDropDownMenu_CreateInfo()
+    info.isTitle = true
+    info.notCheckable = true
+    info.text = "--------------------------"
+    UIDropDownMenu_AddButton(info, level)
+end
 
 -- Function to create the addon frame
 local function CreateAddonFrame()
@@ -297,26 +394,6 @@ local function CreateAddonFrame()
     dropdownMenu.initialize = function(self, level)
 
         if level == 1 then
-            local info = UIDropDownMenu_CreateInfo()
-            -- Add the Lock/Unlock option based on labelFrame.isLocked state
-            if labelFrame.isLocked then
-                info.text = "Unlock"
-                info.notCheckable = true
-                info.func = function()
-                    labelFrame.isLocked = false
-                    UIDropDownMenu_Refresh(self)
-                end
-            else
-                info.text = "Lock"
-                info.notCheckable = true
-                info.func = function()
-                    labelFrame.isLocked = true
-                    labelFrame:StopMovingOrSizing()
-                    UIDropDownMenu_Refresh(self)
-                end
-            end
-
-            UIDropDownMenu_AddButton(info, level)
 
             local resetInfo = UIDropDownMenu_CreateInfo()
             resetInfo.text = "Reset Timer"
@@ -334,91 +411,125 @@ local function CreateAddonFrame()
                 resetButton = resetInfo
             end
 
-            local backgroundFrame = UIDropDownMenu_CreateInfo()
-            backgroundFrame.text = "Background"
-            backgroundFrame.notCheckable = true
-            backgroundFrame.hasArrow = true
-            backgroundFrame.value = "background"
-            UIDropDownMenu_AddButton(backgroundFrame, level)
+            -- local backgroundFrame = UIDropDownMenu_CreateInfo()
+            -- backgroundFrame.text = "Background"
+            -- backgroundFrame.notCheckable = true
+            -- backgroundFrame.hasArrow = true
+            -- backgroundFrame.value = "background"
+            -- UIDropDownMenu_AddButton(backgroundFrame, level)
 
-            local timeToBeatMenu = UIDropDownMenu_CreateInfo()
-            timeToBeatMenu.text = "Time to beat"
-            timeToBeatMenu.notCheckable = true -- Sub-options won't have checkboxes
-            timeToBeatMenu.hasArrow = true
-            timeToBeatMenu.value = "timeToBeat"
-            UIDropDownMenu_AddButton(info, level)
+            -- Define a new variable for the timeToBeatMenu
+            local timeToBeatInfo = UIDropDownMenu_CreateInfo()
+            timeToBeatInfo.text = "Time to beat"
+            timeToBeatInfo.notCheckable = true -- Sub-options won't have checkboxes
+            timeToBeatInfo.hasArrow = true
+            timeToBeatInfo.value = "timeToBeat"
+            UIDropDownMenu_AddButton(timeToBeatInfo, level)
+
+            -- Add a separator
+            AddSeparator(self, level)
+
+            local lockUnlockInfo = UIDropDownMenu_CreateInfo() -- Changed variable name to avoid conflict
+            -- Add the Lock/Unlock option based on labelFrame.isLocked state
+            if labelFrame.isLocked then
+                lockUnlockInfo.text = "Unlock"
+                lockUnlockInfo.notCheckable = true
+                lockUnlockInfo.func = function()
+                    labelFrame.isLocked = false
+                    UIDropDownMenu_Refresh(self)
+                end
+            else
+                lockUnlockInfo.text = "Lock"
+                lockUnlockInfo.notCheckable = true
+                lockUnlockInfo.func = function()
+                    labelFrame.isLocked = true
+                    labelFrame:StopMovingOrSizing()
+                    UIDropDownMenu_Refresh(self)
+                end
+            end
+
+            UIDropDownMenu_AddButton(lockUnlockInfo, level)
+
+            local transparencyButton = UIDropDownMenu_CreateInfo()
+            transparencyButton.text = "Opacity"
+            transparencyButton.notCheckable = true
+            transparencyButton.func = function()
+                ShowOpacitySliderFrame()
+            end
+            UIDropDownMenu_AddButton(transparencyButton, level)
 
         elseif level == 2 then
-            if UIDROPDOWNMENU_MENU_VALUE == "background" then
-                local info = UIDropDownMenu_CreateInfo()
-                info.text = "0%"
-				info.notCheckable = true
-                info.func = function()
-                    labelFrame:SetBackdropColor(0, 0, 0, 0)
-                    UIDropDownMenu_SetSelectedValue(dropdownMenu, 0)
-                    colorPicked2 = 0 -- Update colorPicked2 variable
-                    -- UpdateObjectivesLabel() -- Update label after changing background
-                    labelFrame:SavePosition()
-                end
-                info.checked = colorPicked2 == 0 and 1 or nil
-                UIDropDownMenu_AddButton(info, level)
+            -- if UIDROPDOWNMENU_MENU_VALUE == "background" then
+            --     local info = UIDropDownMenu_CreateInfo()
+            --     info.text = "0%"
+            --     info.notCheckable = true
+            --     info.func = function()
+            --         labelFrame:SetBackdropColor(0, 0, 0, 0)
+            --         UIDropDownMenu_SetSelectedValue(dropdownMenu, 0)
+            --         colorPicked2 = 0 -- Update colorPicked2 variable
+            --         -- UpdateObjectivesLabel() -- Update label after changing background
+            --         labelFrame:SavePosition()
+            --     end
+            --     info.checked = colorPicked2 == 0 and 1 or nil
+            --     UIDropDownMenu_AddButton(info, level)
 
-                info = UIDropDownMenu_CreateInfo()
-                info.text = "25%"
-				info.notCheckable = true
-                info.func = function()
-                    labelFrame:SetBackdropColor(0, 0, 0, 0.25)
-                    UIDropDownMenu_SetSelectedValue(dropdownMenu, 0.25)
-                    colorPicked2 = 0.25 -- Update colorPicked2 variable
-                    -- UpdateObjectivesLabel() -- Update label after changing background
-                    labelFrame:SavePosition()
-                end
-                info.checked = colorPicked2 == 0.25 and 1 or nil
-                UIDropDownMenu_AddButton(info, level)
+            --     info = UIDropDownMenu_CreateInfo()
+            --     info.text = "25%"
+            --     info.notCheckable = true
+            --     info.func = function()
+            --         labelFrame:SetBackdropColor(0, 0, 0, 0.25)
+            --         UIDropDownMenu_SetSelectedValue(dropdownMenu, 0.25)
+            --         colorPicked2 = 0.25 -- Update colorPicked2 variable
+            --         -- UpdateObjectivesLabel() -- Update label after changing background
+            --         labelFrame:SavePosition()
+            --     end
+            --     info.checked = colorPicked2 == 0.25 and 1 or nil
+            --     UIDropDownMenu_AddButton(info, level)
 
-                info = UIDropDownMenu_CreateInfo()
-                info.text = "50%"
-				info.notCheckable = true
-                info.func = function()
-                    labelFrame:SetBackdropColor(0, 0, 0, 0.50)
-                    UIDropDownMenu_SetSelectedValue(dropdownMenu, 0.50)
-                    colorPicked2 = 0.50 -- Update colorPicked2 variable
-                    -- UpdateObjectivesLabel() -- Update label after changing background
-                    labelFrame:SavePosition()
-                end
-                info.checked = colorPicked2 == 0.50 and 1 or nil
-                UIDropDownMenu_AddButton(info, level)
+            --     info = UIDropDownMenu_CreateInfo()
+            --     info.text = "50%"
+            --     info.notCheckable = true
+            --     info.func = function()
+            --         labelFrame:SetBackdropColor(0, 0, 0, 0.50)
+            --         UIDropDownMenu_SetSelectedValue(dropdownMenu, 0.50)
+            --         colorPicked2 = 0.50 -- Update colorPicked2 variable
+            --         -- UpdateObjectivesLabel() -- Update label after changing background
+            --         labelFrame:SavePosition()
+            --     end
+            --     info.checked = colorPicked2 == 0.50 and 1 or nil
+            --     UIDropDownMenu_AddButton(info, level)
 
-                info = UIDropDownMenu_CreateInfo()
-                info.text = "75%"
-				info.notCheckable = true
-                info.func = function()
-                    labelFrame:SetBackdropColor(0, 0, 0, 0.75)
-                    UIDropDownMenu_SetSelectedValue(dropdownMenu, 0.75)
-                    colorPicked2 = 0.75 -- Update colorPicked2 variable
-                    -- UpdateObjectivesLabel() -- Update label after changing background
-                    labelFrame:SavePosition()
-                end
-                info.checked = colorPicked2 == 0.75 and 1 or nil
-                UIDropDownMenu_AddButton(info, level)
+            --     info = UIDropDownMenu_CreateInfo()
+            --     info.text = "75%"
+            --     info.notCheckable = true
+            --     info.func = function()
+            --         labelFrame:SetBackdropColor(0, 0, 0, 0.75)
+            --         UIDropDownMenu_SetSelectedValue(dropdownMenu, 0.75)
+            --         colorPicked2 = 0.75 -- Update colorPicked2 variable
+            --         -- UpdateObjectivesLabel() -- Update label after changing background
+            --         labelFrame:SavePosition()
+            --     end
+            --     info.checked = colorPicked2 == 0.75 and 1 or nil
+            --     UIDropDownMenu_AddButton(info, level)
 
-                info = UIDropDownMenu_CreateInfo()
-                info.text = "100%"
-				info.notCheckable = true
-                info.func = function()
-                    labelFrame:SetBackdropColor(0, 0, 0, 1)
-                    UIDropDownMenu_SetSelectedValue(dropdownMenu, 1)
-                    colorPicked2 = 1 -- Update colorPicked2 variable
-                    -- UpdateObjectivesLabel() -- Update label after changing background
-                    labelFrame:SavePosition()
-                end
-                info.checked = colorPicked2 == 1 and 1 or nil
-                UIDropDownMenu_AddButton(info, level)
+            --     info = UIDropDownMenu_CreateInfo()
+            --     info.text = "100%"
+            --     info.notCheckable = true
+            --     info.func = function()
+            --         labelFrame:SetBackdropColor(0, 0, 0, 1)
+            --         UIDropDownMenu_SetSelectedValue(dropdownMenu, 1)
+            --         colorPicked2 = 1 -- Update colorPicked2 variable
+            --         -- UpdateObjectivesLabel() -- Update label after changing background
+            --         labelFrame:SavePosition()
+            --     end
+            --     info.checked = colorPicked2 == 1 and 1 or nil
+            --     UIDropDownMenu_AddButton(info, level)
 
-            elseif UIDROPDOWNMENU_MENU_VALUE == "timeToBeat" then
+            if UIDROPDOWNMENU_MENU_VALUE == "timeToBeat" then
+
                 local timeToBeatFrame = UIDropDownMenu_CreateInfo()
                 timeToBeatFrame.text = "Realm best"
-				timeToBeatFrame.notCheckable = true
+                timeToBeatFrame.notCheckable = true
                 timeToBeatFrame.func = function()
                     UIDropDownMenu_SetSelectedValue(dropdownMenu, "realmBest")
                     selectedCountDown = "realmBest"
@@ -429,7 +540,7 @@ local function CreateAddonFrame()
 
                 timeToBeatFrame = UIDropDownMenu_CreateInfo()
                 timeToBeatFrame.text = "Guild best"
-				timeToBeatFrame.notCheckable = true
+                timeToBeatFrame.notCheckable = true
                 timeToBeatFrame.func = function()
                     UIDropDownMenu_SetSelectedValue(dropdownMenu, "guildBest")
                     selectedCountDown = "guildBest"
@@ -437,6 +548,7 @@ local function CreateAddonFrame()
                 end
                 timeToBeatFrame.checked = selectedCountDown == "guildBest" and 1 or nil
                 UIDropDownMenu_AddButton(timeToBeatFrame, level)
+
             end
         end
     end
