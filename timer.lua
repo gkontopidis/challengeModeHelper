@@ -352,6 +352,7 @@ local function CreateAddonFrame()
             if UIDROPDOWNMENU_MENU_VALUE == "background" then
                 local info = UIDropDownMenu_CreateInfo()
                 info.text = "0%"
+				info.notCheckable = true
                 info.func = function()
                     labelFrame:SetBackdropColor(0, 0, 0, 0)
                     UIDropDownMenu_SetSelectedValue(dropdownMenu, 0)
@@ -364,6 +365,7 @@ local function CreateAddonFrame()
 
                 info = UIDropDownMenu_CreateInfo()
                 info.text = "25%"
+				info.notCheckable = true
                 info.func = function()
                     labelFrame:SetBackdropColor(0, 0, 0, 0.25)
                     UIDropDownMenu_SetSelectedValue(dropdownMenu, 0.25)
@@ -376,6 +378,7 @@ local function CreateAddonFrame()
 
                 info = UIDropDownMenu_CreateInfo()
                 info.text = "50%"
+				info.notCheckable = true
                 info.func = function()
                     labelFrame:SetBackdropColor(0, 0, 0, 0.50)
                     UIDropDownMenu_SetSelectedValue(dropdownMenu, 0.50)
@@ -388,6 +391,7 @@ local function CreateAddonFrame()
 
                 info = UIDropDownMenu_CreateInfo()
                 info.text = "75%"
+				info.notCheckable = true
                 info.func = function()
                     labelFrame:SetBackdropColor(0, 0, 0, 0.75)
                     UIDropDownMenu_SetSelectedValue(dropdownMenu, 0.75)
@@ -400,6 +404,7 @@ local function CreateAddonFrame()
 
                 info = UIDropDownMenu_CreateInfo()
                 info.text = "100%"
+				info.notCheckable = true
                 info.func = function()
                     labelFrame:SetBackdropColor(0, 0, 0, 1)
                     UIDropDownMenu_SetSelectedValue(dropdownMenu, 1)
@@ -413,6 +418,7 @@ local function CreateAddonFrame()
             elseif UIDROPDOWNMENU_MENU_VALUE == "timeToBeat" then
                 local timeToBeatFrame = UIDropDownMenu_CreateInfo()
                 timeToBeatFrame.text = "Realm best"
+				timeToBeatFrame.notCheckable = true
                 timeToBeatFrame.func = function()
                     UIDropDownMenu_SetSelectedValue(dropdownMenu, "realmBest")
                     selectedCountDown = "realmBest"
@@ -423,6 +429,7 @@ local function CreateAddonFrame()
 
                 timeToBeatFrame = UIDropDownMenu_CreateInfo()
                 timeToBeatFrame.text = "Guild best"
+				timeToBeatFrame.notCheckable = true
                 timeToBeatFrame.func = function()
                     UIDropDownMenu_SetSelectedValue(dropdownMenu, "guildBest")
                     selectedCountDown = "guildBest"
