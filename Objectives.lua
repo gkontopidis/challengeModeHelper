@@ -387,7 +387,7 @@ Objectives_frame:SetScript("OnEvent", function(self, event, ...)
     elseif event == "WORLD_STATE_TIMER_STOP" then
         OnWorldStateTimerStop()
     elseif event == "PLAYER_ENTERING_WORLD" then
-        completionTimes = {}
+        --completionTimes = {}
         -- Check if the player is in a challenge mode instance
         local _, _, _, difficultyName = GetInstanceInfo()
         if difficultyName == "Challenge Mode" then
@@ -402,7 +402,7 @@ Objectives_frame:SetScript("OnEvent", function(self, event, ...)
         end
         UpdateObjectivesLabel()
     elseif event == "CHALLENGE_MODE_COMPLETED" then
-        UpdateObjectivesLabel()
+        --UpdateObjectivesLabel()
     elseif event == "CRITERIA_COMPLETE" then
         -- Record the completion time for the last boss if it hasn't been recorded already
         local objectives = GetScenarioObjectives()
