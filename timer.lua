@@ -77,7 +77,6 @@ slider:SetScript("OnValueChanged", function(self, value)
     colorPicked2 = value / 100 -- Normalize value to range 0-1
     labelFrame:SetBackdropColor(0, 0, 0, colorPicked2)
     sliderValueLabel:SetText(math.floor(colorPicked2 * 100)) -- Update the value label
-    print("valuechanged: ", math.floor(colorPicked2 * 100))
 end)
 
         -- Create close button
@@ -89,7 +88,6 @@ end)
             
             -- Save the slider value when closing the frame
             labelFrame:SavePosition()
-            print("save: ",math.floor(colorPicked2 * 100))
             opacitySliderFrame:Hide() -- Hide the frame
         end)
 
