@@ -386,6 +386,10 @@ local function CreateAddonFrame()
             silverText:SetPoint("LEFT", silverIcon, "RIGHT", 10, 0)
             bronzeIcon:SetPoint("LEFT", silverText, "RIGHT", 20, 0)
             bronzeText:SetPoint("LEFT", bronzeIcon, "RIGHT", 10, 0)
+            
+            goldText:SetFontObject("GameFontNormalLarge")
+            silverText:SetFontObject("GameFontNormalLarge")
+            bronzeText:SetFontObject("GameFontNormalLarge")
         elseif not IsInGroup() then
             labelFrame:SetSize(270, 90) -- Set the size of the label frame
 
@@ -407,6 +411,10 @@ local function CreateAddonFrame()
             silverText:SetPoint("LEFT", silverIcon, "RIGHT", 10, 0)
             bronzeIcon:SetPoint("LEFT", silverText, "RIGHT", 20, 0)
             bronzeText:SetPoint("LEFT", bronzeIcon, "RIGHT", 10, 0)
+
+            goldText:SetFontObject("GameFontNormalLarge")
+            silverText:SetFontObject("GameFontNormalLarge")
+            bronzeText:SetFontObject("GameFontNormalLarge")
         else
             button:Hide() -- Hide the button if the player is in a group but not the leader
 
@@ -421,12 +429,17 @@ local function CreateAddonFrame()
             -- Position the best clear time label below the realm best time label
             bestClearLabel:SetPoint("LEFT", labelFrame, "LEFT", 10, 0) -- Adjust the offset as needed
 
-            goldicon:SetPoint("LEFT", realmBestLabel, "RIGHT", 50, 0)
-            goldText:SetPoint("LEFT", goldicon, "RIGHT", 10, 0)
-            silverIcon:SetPoint("LEFT", goldicon, "LEFT", 0, -20)
-            silverText:SetPoint("LEFT", silverIcon, "RIGHT", 10, 0)
-            bronzeIcon:SetPoint("LEFT", silverIcon, "LEFT", 0, -20)
-            bronzeText:SetPoint("LEFT", bronzeIcon, "RIGHT", 10, 0)
+            goldicon:SetPoint("LEFT", labelFrame, "BOTTOM", -95, -12)
+            goldText:SetPoint("LEFT", goldicon, "RIGHT", 0, 0)
+            silverIcon:SetPoint("LEFT", goldText, "RIGHT", 17, 0)
+            silverText:SetPoint("LEFT", silverIcon, "RIGHT", 0, 0)
+            bronzeIcon:SetPoint("LEFT", silverText, "RIGHT", 17, 0)
+            bronzeText:SetPoint("LEFT", bronzeIcon, "RIGHT", 0, 0)
+
+            goldText:SetFontObject("GameFontNormal")
+            silverText:SetFontObject("GameFontNormal")
+            bronzeText:SetFontObject("GameFontNormal")
+  
         end
     end
 
