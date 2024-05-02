@@ -73,11 +73,11 @@ local function ShowOpacitySliderFrame()
         sliderValueLabel:SetText(math.floor(initialColorPicked2 * 100))
 
         -- Update the OnValueChanged callback function to correctly update colorPicked2
-slider:SetScript("OnValueChanged", function(self, value)
-    colorPicked2 = value / 100 -- Normalize value to range 0-1
-    labelFrame:SetBackdropColor(0, 0, 0, colorPicked2)
-    sliderValueLabel:SetText(math.floor(colorPicked2 * 100)) -- Update the value label
-end)
+        slider:SetScript("OnValueChanged", function(self, value)
+            colorPicked2 = value / 100 -- Normalize value to range 0-1
+            labelFrame:SetBackdropColor(0, 0, 0, colorPicked2)
+            sliderValueLabel:SetText(math.floor(colorPicked2 * 100)) -- Update the value label
+        end)
 
         -- Create close button
         local closeButton = CreateFrame("Button", nil, slider, "UIPanelButtonTemplate")
@@ -85,7 +85,7 @@ end)
         closeButton:SetSize(80, 20)
         closeButton:SetPoint("BOTTOM", 0, -30)
         closeButton:SetScript("OnClick", function()
-            
+
             -- Save the slider value when closing the frame
             labelFrame:SavePosition()
             opacitySliderFrame:Hide() -- Hide the frame
@@ -202,71 +202,6 @@ local function CreateAddonFrame()
         CreateButton(hoverFrame, index, portalInfo.name, portalInfo.iconPath, portalInfo.id) -- Create and store each button
     end
 
-    -- Create a button
-    local button = CreateFrame("Button", nil, labelFrame, "UIPanelButtonTemplate")
-    button:SetText("RESET")
-    button:SetSize(60, 60)
-    button:SetPoint("LEFT", 10, 0) -- Adjust the position as needed
-
-    -- Set the button's icon texture
-    button:SetNormalTexture("Interface\\Icons\\SPELL_HOLY_BORROWEDTIME")
-
-    -- Set the text label's position
-    button:GetFontString():SetPoint("BOTTOM", 0, 5) -- Adjust the position as needed
-
-    -- Set the text label's font properties
-    button:GetFontString():SetFont("Fonts\\FRIZQT__.TTF", 16, "OUTLINE") -- Adjust font, size, and style
-    button:GetFontString():SetTextColor(1, 1, 1) -- Set text color to white
-
-    -- Function to create the glow effect
-    local function CreateGlow()
-        -- Create a glow texture
-        button.glow = button:CreateTexture(nil, "BACKGROUND")
-        button.glow:SetTexture("Interface\\Buttons\\CheckButtonHilight")
-        button.glow:SetBlendMode("ADD")
-        button.glow:SetAllPoints(button)
-        button.glow:SetAlpha(0.7) -- Adjust the alpha to make the glow more visible
-        button.glow:Hide() -- Initially hide the glow
-    end
-
-    -- Set the button's OnEnter handler to show the glow effect
-    button:SetScript("OnEnter", function()
-        if not button.glow then
-            CreateGlow()
-        end
-        button.glow:Show()
-    end)
-
-    -- Set the button's OnLeave handler to hide the glow effect
-    button:SetScript("OnLeave", function()
-        if button.glow then
-            button.glow:Hide()
-        end
-    end)
-
-    -- Set the button's OnClick handler to run the script
-    button:SetScript("OnClick", function()
-        RunScript("ResetChallengeMode()")
-    end)
-
-    -- Function to update the button state
-    local function UpdateButtonState()
-        if IsInGroup() and UnitIsGroupLeader("player") then
-            button:Show() -- Show the button if the player is the group leader
-        elseif not IsInGroup() then
-            button:Show() -- Show the button if the player is alone
-        else
-            button:Hide() -- Hide the button if the player is in a group but not the leader
-        end
-    end
-
-    -- Register an event to update the button state
-    button:RegisterEvent("GROUP_ROSTER_UPDATE")
-    button:SetScript("OnEvent", UpdateButtonState)
-
-    -- Initial update of the button state
-    UpdateButtonState()
-
     -- Create font strings to display the timer parts
     local minutesLabel = labelFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     local secondsLabel = labelFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
@@ -380,6 +315,127 @@ local function CreateAddonFrame()
 
     -- Set the frame to be locked by default
     labelFrame.isLocked = true
+
+    -- Create a button
+    local button = CreateFrame("Button", nil, labelFrame, "UIPanelButtonTemplate")
+    button:SetText("RESET")
+    button:SetSize(60, 60)
+    button:SetPoint("LEFT", 10, 0) -- Adjust the position as needed
+
+    -- Set the button's icon texture
+    button:SetNormalTexture("Interface\\Icons\\SPELL_HOLY_BORROWEDTIME")
+
+    -- Set the text label's position
+    button:GetFontString():SetPoint("BOTTOM", 0, 5) -- Adjust the position as needed
+
+    -- Set the text label's font properties
+    button:GetFontString():SetFont("Fonts\\FRIZQT__.TTF", 16, "OUTLINE") -- Adjust font, size, and style
+    button:GetFontString():SetTextColor(1, 1, 1) -- Set text color to white
+
+    -- Function to create the glow effect
+    local function CreateGlow()
+        -- Create a glow texture
+        button.glow = button:CreateTexture(nil, "BACKGROUND")
+        button.glow:SetTexture("Interface\\Buttons\\CheckButtonHilight")
+        button.glow:SetBlendMode("ADD")
+        button.glow:SetAllPoints(button)
+        button.glow:SetAlpha(0.7) -- Adjust the alpha to make the glow more visible
+        button.glow:Hide() -- Initially hide the glow
+    end
+
+    -- Set the button's OnEnter handler to show the glow effect
+    button:SetScript("OnEnter", function()
+        if not button.glow then
+            CreateGlow()
+        end
+        button.glow:Show()
+    end)
+
+    -- Set the button's OnLeave handler to hide the glow effect
+    button:SetScript("OnLeave", function()
+        if button.glow then
+            button.glow:Hide()
+        end
+    end)
+
+    -- Set the button's OnClick handler to run the script
+    button:SetScript("OnClick", function()
+        RunScript("ResetChallengeMode()")
+    end)
+
+    -- Function to update the button state
+    local function UpdateButtonState()
+        if IsInGroup() and UnitIsGroupLeader("player") then
+            labelFrame:SetSize(270, 90) -- Set the size of the label frame
+
+            button:Show() -- Show the button if the player is the group leader
+
+            -- Position the realm best time label
+            realmBestLabel:SetPoint("LEFT", labelFrame, "LEFT", 80, 20) -- Adjust the offset as needed
+            PortalButton:SetPoint("LEFT", minutesLabel, "RIGHT", 120, -1) -- Adjust the position as needed
+            -- Position the font strings within the label frame
+            minutesLabel:SetPoint("LEFT", 80, -20)
+            secondsLabel:SetPoint("LEFT", minutesLabel, "RIGHT", 0, 0)
+            millisecondsLabel:SetPoint("LEFT", secondsLabel, "RIGHT", 0, -1) -- Adjusted the Y offset here
+            -- Position the best clear time label below the realm best time label
+            bestClearLabel:SetPoint("LEFT", labelFrame, "LEFT", 80, 0) -- Adjust the offset as needed
+
+            goldicon:SetPoint("LEFT", labelFrame, "BOTTOM", -135, -12)
+            goldText:SetPoint("LEFT", goldicon, "RIGHT", 10, 0)
+            silverIcon:SetPoint("LEFT", goldText, "RIGHT", 20, 0)
+            silverText:SetPoint("LEFT", silverIcon, "RIGHT", 10, 0)
+            bronzeIcon:SetPoint("LEFT", silverText, "RIGHT", 20, 0)
+            bronzeText:SetPoint("LEFT", bronzeIcon, "RIGHT", 10, 0)
+        elseif not IsInGroup() then
+            labelFrame:SetSize(270, 90) -- Set the size of the label frame
+
+            button:Show() -- Show the button if the player is alone
+
+            -- Position the realm best time label
+            realmBestLabel:SetPoint("LEFT", labelFrame, "LEFT", 80, 20) -- Adjust the offset as needed
+            PortalButton:SetPoint("LEFT", minutesLabel, "RIGHT", 120, -1) -- Adjust the position as needed
+            -- Position the font strings within the label frame
+            minutesLabel:SetPoint("LEFT", 80, -20)
+            secondsLabel:SetPoint("LEFT", minutesLabel, "RIGHT", 0, 0)
+            millisecondsLabel:SetPoint("LEFT", secondsLabel, "RIGHT", 0, -1) -- Adjusted the Y offset here
+            -- Position the best clear time label below the realm best time label
+            bestClearLabel:SetPoint("LEFT", labelFrame, "LEFT", 80, 0) -- Adjust the offset as needed
+
+            goldicon:SetPoint("LEFT", labelFrame, "BOTTOM", -135, -12)
+            goldText:SetPoint("LEFT", goldicon, "RIGHT", 10, 0)
+            silverIcon:SetPoint("LEFT", goldText, "RIGHT", 20, 0)
+            silverText:SetPoint("LEFT", silverIcon, "RIGHT", 10, 0)
+            bronzeIcon:SetPoint("LEFT", silverText, "RIGHT", 20, 0)
+            bronzeText:SetPoint("LEFT", bronzeIcon, "RIGHT", 10, 0)
+        else
+            button:Hide() -- Hide the button if the player is in a group but not the leader
+
+            labelFrame:SetSize(200, 90) -- Set the size of the label frame
+            -- Position the realm best time label
+            realmBestLabel:SetPoint("LEFT", labelFrame, "LEFT", 10, 20) -- Adjust the offset as needed
+            PortalButton:SetPoint("LEFT", minutesLabel, "RIGHT", 120, -1) -- Adjust the position as needed
+            -- Position the font strings within the label frame
+            minutesLabel:SetPoint("LEFT", 10, -20)
+            secondsLabel:SetPoint("LEFT", minutesLabel, "RIGHT", 0, 0)
+            millisecondsLabel:SetPoint("LEFT", secondsLabel, "RIGHT", 0, -1) -- Adjusted the Y offset here
+            -- Position the best clear time label below the realm best time label
+            bestClearLabel:SetPoint("LEFT", labelFrame, "LEFT", 10, 0) -- Adjust the offset as needed
+
+            goldicon:SetPoint("LEFT", realmBestLabel, "RIGHT", 50, 0)
+            goldText:SetPoint("LEFT", goldicon, "RIGHT", 10, 0)
+            silverIcon:SetPoint("LEFT", goldicon, "LEFT", 0, -20)
+            silverText:SetPoint("LEFT", silverIcon, "RIGHT", 10, 0)
+            bronzeIcon:SetPoint("LEFT", silverIcon, "LEFT", 0, -20)
+            bronzeText:SetPoint("LEFT", bronzeIcon, "RIGHT", 10, 0)
+        end
+    end
+
+    -- Register an event to update the button state
+    button:RegisterEvent("GROUP_ROSTER_UPDATE")
+    button:SetScript("OnEvent", UpdateButtonState)
+
+    -- Initial update of the button state
+    UpdateButtonState()
 
     -- Function to show the legend
     function ShowLegend()
