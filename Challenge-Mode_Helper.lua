@@ -19,8 +19,48 @@ function f:InitializeOptions()
     self.panel.name = "MoP CM Helper"
 
     -- Create FontString for text
+    -- local addon_info1 = self.panel:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+    -- addon_info1:SetPoint("TOPLEFT", 10, -20)
+    -- addon_info1:SetJustifyH("LEFT")
+    -- addon_info1:SetText("|cffffd700Mop CM Helper |r |cffffffffis an essential addon tailored to competitive groups striving to enhance their \nperformance in Mist of Pandaria Challenge Modes. Boasting two distinct panels, this tool offers \ncomprehensive insights crucial for refining strategies and achieving optimal times and ranks.")
+
+    -- local addon_info2 = self.panel:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+    -- addon_info2:SetPoint("TOPLEFT", 10, -60)
+    -- addon_info2:SetJustifyH("LEFT")
+    -- addon_info2:SetText("|cffffffffThe primary panel displays essential metrics such as elapsed and remaining time, along with \nvaluable data on the best server and guild times. Additionally, it provides convenient functionalities \nlike effortless leader resets and accessible dungeon portals for all party members.")
+
+    -- local addon_info3 = self.panel:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+    -- addon_info3:SetPoint("TOPLEFT", 10, -100)
+    -- addon_info3:SetJustifyH("LEFT")
+    -- addon_info3:SetText("|cffffffffMeanwhile, the secondary panel serves as a treasure trove of information, featuring the best \nkill times and real-time updates on current run times for each dungeon boss. Armed with these \ninsights, teams can meticulously analyze their performance, identify areas for improvement, and \nrecalibrate their strategies for greater success.")
+
+    -- local addon_info4 = self.panel:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+    -- addon_info4:SetPoint("TOPLEFT", 10, -150)
+    -- addon_info4:SetJustifyH("LEFT")
+    -- addon_info4:SetText("|cffffd700Mop CM Helper |r |cffffffffisn't just an addon; it's a strategic ally for those committed to mastering \nMist of Pandaria Challenge Modes and dominating the leaderboards.")
+
+    local addon_info1 = self.panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
+    addon_info1:SetPoint("TOPLEFT", 7, -20)
+    addon_info1:SetJustifyH("LEFT")
+    addon_info1:SetText("|cffffd700Mop CM Helper |r |cffffffffis an essential addon tailored to competitive groups \nstriving to enhance their performance in Mist of Pandaria Challenge Modes. \nBoasting two distinct panels, this tool offers comprehensive insights \ncrucial for refining strategies and achieving optimal times and ranks.")
+
+    local addon_info2 = self.panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
+    addon_info2:SetPoint("TOPLEFT", addon_info1, "BOTTOMLEFT", 0, -10)
+    addon_info2:SetJustifyH("LEFT")
+    addon_info2:SetText("|cffffffffThe primary panel displays essential metrics such as elapsed and remaining \ntime, along with valuable data on the best server and guild times. \nAdditionally, it provides convenient functionalities like effortless leader \nresets and accessible dungeon portals for all party members.")
+
+    local addon_info3 = self.panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
+    addon_info3:SetPoint("TOPLEFT", addon_info2, "BOTTOMLEFT", 0, -10)
+    addon_info3:SetJustifyH("LEFT")
+    addon_info3:SetText("|cffffffffMeanwhile, the secondary panel serves as a treasure trove of information, \nfeaturing the best kill times and real-time updates on current run times for \neach dungeon boss. Armed with these insights, teams can meticulously \nanalyze their performance, identify areas for improvement, and \nrecalibrate their strategies for greater success.")
+
+    local addon_info4 = self.panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
+    addon_info4:SetPoint("TOPLEFT", addon_info3, "BOTTOMLEFT", 0, -10)
+    addon_info4:SetJustifyH("LEFT")
+    addon_info4:SetText("|cffffd700Mop CM Helper |r |cffffffffisn't just an addon; it's a strategic ally for those \ncommitted to mastering Mist of Pandaria Challenge Modes \nand dominating the leaderboards.")
+
     local text1 = self.panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-    text1:SetPoint("TOPLEFT", 20, -400)
+    text1:SetPoint("TOPLEFT", 7, -420)
     text1:SetText("|cffffd700Authors:|r |cffffffffClopy, Snapshot")
 
     local text2 = self.panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
@@ -37,65 +77,45 @@ function f:InitializeOptions()
     text4:SetText(
         "|cffffd700Thanks:|r |cffffffffPrasinos, Plaquetas, Deadmouse, Locative, Christina\nand the guy who created the Weak Aura for Challenge modes,\nit was our inspiration")
 
+    -- Create a frame for the image
+    local imageFrame = CreateFrame("Frame", nil, self.panel)
+    imageFrame:SetPoint("TOPLEFT", 5, 0)
+    imageFrame:SetSize(615, 565)
 
-        -- Create a frame for the image
-local imageFrame = CreateFrame("Frame", nil, self.panel)
-imageFrame:SetPoint("TOPLEFT", 5, 0)
-imageFrame:SetSize(615, 565)
-
--- Create a texture for the image
-local imageTexture = imageFrame:CreateTexture(nil, "OVERLAY")
-imageTexture:SetTexture("Interface\\AddOns\\Challenge-Mode_Helper\\logo")
-imageTexture:SetAllPoints()  -- Fill the entire frame with the texture
--- Set the opacity (alpha) of the texture
-imageTexture:SetAlpha(0.1) -- 10% opacity
-
-    -- local title = self.panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-    -- title:SetPoint("TOPLEFT", 5, 0)
-    -- title:SetFormattedText("|T%s:%d|t %s", "Interface\\AddOns\\Challenge-Mode_Helper\\logo", 470, "Macro Toolkit")
-
-    -- local version = self.panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-    -- version:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -10)
-    -- version:SetText("Version: 1.0")
-
-    -- local author = self.panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-    -- author:SetPoint("TOPLEFT", version, "BOTTOMLEFT", 0, -10)
-    -- author:SetText("Author: Your Name")
-
-    -- local frame = CreateFrame("Frame", "MacroToolkitOptionsMain")
-    -- version:SetFormattedText("%s %s", _G.GAME_VERSION_LABEL, GetAddOnMetadata("MacroToolkit", "Version"))
-    -- version:SetPoint("CENTER", frame, "CENTER", 0, 130)
-    -- author:SetFormattedText("%s: Deepac", L["Author"])
-    -- author:SetPoint("CENTER", frame, "CENTER", 0, 100)
-    -- return frame
-    -- 	-- Debugging output
-    --     print("Image path:", "Interface\\AddOns\\Challenge-Mode_Helper\\logo.tga")
+-- Button to Delete Saved Data
+local btn = CreateFrame("Button", nil, self.panel, "UIPanelButtonTemplate")
+btn:SetPoint("CENTER", 0, -80)
+btn:SetText("Delete Saved Boss Kill Times")
+btn:SetWidth(350)
+btn:SetHeight(50)
+btn:SetScript("OnClick", function()
+    StaticPopupDialogs["CONFIRM_DELETE_TIMES"] = {
+        text = "Are you sure you want to delete saved data for boss kill times?",
+        button1 = "Yes - Will Relog",
+        button2 = "No",
+        OnAccept = function()
+            -- Delete saved boss kill times
+            -- Your code to delete saved boss kill times goes here
+            
+            -- Logout from the game
+            Logout()
+        end,
+        timeout = 0,
+        whileDead = true,
+        hideOnEscape = true,
+        preferredIndex = 3,
+    }
+    StaticPopup_Show("CONFIRM_DELETE_TIMES")
+end)
 
     -- -- Create a texture for the image
-    -- local texture = self.panel:CreateTexture(nil, "ARTWORK")
-    -- texture:SetTexture("Interface\\AddOns\\Challenge-Mode_Helper\\logo.tga") -- Set your image path here
-    -- texture:SetSize(128, 128) -- Set the size of the image
-    -- texture:SetPoint("TOPLEFT", 20, 0) -- Adjust position as needed
+    -- local imageTexture = imageFrame:CreateTexture(nil, "OVERLAY")
+    -- imageTexture:SetTexture("Interface\\AddOns\\Challenge-Mode_Helper\\logo")
+    -- imageTexture:SetAllPoints() -- Fill the entire frame with the texture
+    -- -- Set the opacity (alpha) of the texture
+    -- imageTexture:SetAlpha(0.2) -- 10% opacity
 
-    --     -- Check if texture is loaded
-    --     if not texture:GetTexture() then
-    --         print("Texture not loaded!")
-    --     else
-    --         print("Texture loaded successfully!")
-    --     end
 
-    --     -- Check texture dimensions
-        -- local width, height = text4:GetSize()
-        -- print("Texture dimensions:", width, "x", height)
-
-    -- Button to reload UI
-    local btn = CreateFrame("Button", nil, self.panel, "UIPanelButtonTemplate")
-    btn:SetPoint("TOPLEFT", 20, -50)
-    btn:SetText("RELOAD UI")
-    btn:SetWidth(230)
-    btn:SetScript("OnClick", function()
-        ReloadUI()
-    end)
 
     InterfaceOptions_AddCategory(self.panel)
 end
