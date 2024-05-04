@@ -390,16 +390,16 @@ Objectives_frame:SetScript("OnEvent", function(self, event, ...)
         --completionTimes = {}
         -- Check if the player is in a challenge mode instance
         local _, _, _, difficultyName = GetInstanceInfo()
-        if difficultyName == "Challenge Mode" then
-            -- If in a challenge mode instance, hide the WatchFrame UI
-            WatchFrame:SetScript("OnEvent", nil)
-            WatchFrame:Hide()
-            Objectives_frame:Show()
-        else
-            Objectives_frame:Hide()
-            WatchFrame:SetScript("OnEvent", nil)
-            WatchFrame:Show()
-        end
+         if difficultyName == "Challenge Mode" then
+             -- If in a challenge mode instance, hide the WatchFrame UI
+        --     WatchFrame:SetScript("OnEvent", nil)
+             WatchFrame:Hide()
+             Objectives_frame:Show()
+         else
+             Objectives_frame:Hide()
+        --     WatchFrame:SetScript("OnEvent", nil)
+             WatchFrame:Show()
+         end
         UpdateObjectivesLabel()
     elseif event == "CHALLENGE_MODE_COMPLETED" then
         --UpdateObjectivesLabel()
