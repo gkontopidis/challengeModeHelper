@@ -3,7 +3,7 @@ local Objectives_label
 local completionTimes = {} -- Define a table to store completion times for objectives
 local colorPicked = 0 -- Variable to store the selected color option
 local TotalEnemies = "" -- Initialize TotalEnemies variable
-local localDB = {
+localDB = {
     BestBossKillTime = {}
 }
 

@@ -80,8 +80,11 @@ function f:InitializeOptions()
             button1 = "Yes - Will Relog",
             button2 = "No",
             OnAccept = function()
-                -- Clear saved boss kill times
-                CmHelperDB.bossKillTimes = {}
+                -- Clear the contents of localDB.BestBossKillTime
+                wipe(localDB.BestBossKillTime)
+                wipe(timesDB.BestBossKillTime)
+                print("Saved boss kill times cleared.")
+
                 -- Logout from the game
                 Logout()
             end,
