@@ -8,7 +8,8 @@ function f:OnEvent(event, addOnName)
             self.db = CmHelperDB
             self:InitializeOptions()
             -- Inform the player about the addon's purpose
-            print("|cff00ccffChallenge-Mode Helper loaded. An essential addon for Mist of Pandaria Challenge Modes! Enhance your performance with valuable insights and convenient functionalities.")
+            print(
+                "|cff00ccffChallenge-Mode Helper loaded. An essential addon for Mist of Pandaria Challenge Modes! Enhance your performance with valuable insights and convenient functionalities.")
             print("|cff00ccffType /cm or /cmhelper to access options and reset boss kill times.")
         end
     elseif event == "WORLD_STATE_TIMER_STOP" then
@@ -69,9 +70,9 @@ function f:InitializeOptions()
 
     -- Button to Delete Saved Data
     local btn = CreateFrame("Button", nil, self.panel, "UIPanelButtonTemplate")
-    btn:SetPoint("CENTER", 0, -80)
-    btn:SetText("Delete Saved Boss Kill Times")
-    btn:SetWidth(350)
+    btn:SetPoint("RIGHT", -50, -80)
+    btn:SetText("Clear Saved Boss Kill Times")
+    btn:SetWidth(250)
     btn:SetHeight(50)
     btn:SetScript("OnClick", function()
         StaticPopupDialogs["CONFIRM_DELETE_TIMES"] = {
@@ -79,9 +80,8 @@ function f:InitializeOptions()
             button1 = "Yes - Will Relog",
             button2 = "No",
             OnAccept = function()
-                -- Delete saved boss kill times
-                -- Your code to delete saved boss kill times goes here
-
+                -- Clear saved boss kill times
+                CmHelperDB.bossKillTimes = {}
                 -- Logout from the game
                 Logout()
             end,
@@ -91,6 +91,17 @@ function f:InitializeOptions()
             preferredIndex = 3
         }
         StaticPopup_Show("CONFIRM_DELETE_TIMES")
+    end)
+
+    -- Button to Restore Frames Positions
+    local btn2 = CreateFrame("Button", nil, self.panel, "UIPanelButtonTemplate")
+    btn2:SetPoint("LEFT", 50, -80)
+    btn2:SetText("Reset Frames Positions")
+    btn2:SetWidth(250)
+    btn2:SetHeight(50)
+    btn2:SetScript("OnClick", function()
+        ResetLabelFramePosition()
+        ResetObjectivesFramePosition()
     end)
 
     InterfaceOptions_AddCategory(self.panel)

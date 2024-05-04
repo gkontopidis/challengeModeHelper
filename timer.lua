@@ -124,6 +124,14 @@ local function CreateAddonFrame()
         }
     })
 
+    function ResetLabelFramePosition()
+        if labelFrame then
+            labelFrame.isLocked = false
+            labelFrame:ClearAllPoints() -- Clear previous position
+            labelFrame:SetPoint("CENTER", UIParent, "CENTER") -- Move to the center of the screen
+        end
+    end
+
     -- Create the hover frame
     hoverFrame = CreateFrame("Frame", "MyAddonHoverFrame", UIParent)
     frameHeight = getAvailableTeleportButtons()
@@ -386,7 +394,7 @@ local function CreateAddonFrame()
             silverText:SetPoint("LEFT", silverIcon, "RIGHT", 10, 0)
             bronzeIcon:SetPoint("LEFT", silverText, "RIGHT", 20, 0)
             bronzeText:SetPoint("LEFT", bronzeIcon, "RIGHT", 10, 0)
-            
+
             goldText:SetFontObject("GameFontNormalLarge")
             silverText:SetFontObject("GameFontNormalLarge")
             bronzeText:SetFontObject("GameFontNormalLarge")
@@ -439,7 +447,7 @@ local function CreateAddonFrame()
             goldText:SetFontObject("GameFontNormal")
             silverText:SetFontObject("GameFontNormal")
             bronzeText:SetFontObject("GameFontNormal")
-  
+
         end
     end
 

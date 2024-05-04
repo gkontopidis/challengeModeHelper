@@ -82,6 +82,14 @@ Objectives_frame:SetBackdrop({
     }
 })
 
+function ResetObjectivesFramePosition()
+    if Objectives_frame then
+        Objectives_frame.isLocked = false
+        Objectives_frame:ClearAllPoints() -- Clear previous position
+        Objectives_frame:SetPoint("CENTER", UIParent, "CENTER") -- Move to the center of the screen
+    end
+end
+
 -- Create a font string to display the objectives inside the objectives frame
 Objectives_label = Objectives_frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 Objectives_label:SetPoint("TOPLEFT", Objectives_frame, "TOPLEFT", 10, -10) -- Adjust position for the label
@@ -289,15 +297,6 @@ end
 
 -- Function to get scenario objectives
 function GetScenarioObjectives()
-    -- -- TESTING ---
-
-    -- if timeElapsed > 7 and timeElapsed < 9 then
-    --     -- Replace the original C_Scenario.GetCriteriaInfo() function with the mock version
-    --     C_Scenario.GetCriteriaInfo = Mock_GetCriteriaInfo
-    -- elseif timeElapsed > 9 then
-    --     C_Scenario.GetCriteriaInfo = Mock_GetCriteriaInfo2
-    -- end
-    -- -- /END TESTING ---
 
     local dungeon, _, steps = C_Scenario.GetStepInfo()
     local objectives = {}
@@ -362,7 +361,7 @@ end
 
 function OnWorldStateTimerStop()
     Objectives_frame:SetScript("OnUpdate", nil)
- end
+end
 
 -- Register events
 Objectives_frame:RegisterEvent("START_TIMER")
@@ -387,22 +386,22 @@ Objectives_frame:SetScript("OnEvent", function(self, event, ...)
     elseif event == "WORLD_STATE_TIMER_STOP" then
         OnWorldStateTimerStop()
     elseif event == "PLAYER_ENTERING_WORLD" then
-        --completionTimes = {}
+        -- completionTimes = {}
         -- Check if the player is in a challenge mode instance
         local _, _, _, difficultyName = GetInstanceInfo()
-         if difficultyName == "Challenge Mode" then
-             -- If in a challenge mode instance, hide the WatchFrame UI
-        --     WatchFrame:SetScript("OnEvent", nil)
-             WatchFrame:Hide()
-             Objectives_frame:Show()
-         else
-             Objectives_frame:Hide()
-        --     WatchFrame:SetScript("OnEvent", nil)
-             WatchFrame:Show()
-         end
+        if difficultyName == "Challenge Mode" then
+            -- If in a challenge mode instance, hide the WatchFrame UI
+            --     WatchFrame:SetScript("OnEvent", nil)
+            WatchFrame:Hide()
+            Objectives_frame:Show()
+        else
+            Objectives_frame:Hide()
+            --     WatchFrame:SetScript("OnEvent", nil)
+            WatchFrame:Show()
+        end
         UpdateObjectivesLabel()
     elseif event == "CHALLENGE_MODE_COMPLETED" then
-        --UpdateObjectivesLabel()
+        -- UpdateObjectivesLabel()
     elseif event == "CRITERIA_COMPLETE" then
         -- Record the completion time for the last boss if it hasn't been recorded already
         local objectives = GetScenarioObjectives()
