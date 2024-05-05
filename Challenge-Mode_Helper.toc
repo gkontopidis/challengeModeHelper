@@ -10,3 +10,5 @@ Challenge-Mode_Helper.lua
 Timer.lua
 Objectives.lua
 cmCompletionTimes.lua
+Strategies.lua
+StrategyData.lua
