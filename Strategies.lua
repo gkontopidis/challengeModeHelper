@@ -1,5 +1,4 @@
 -- MyChallengeAddon.lua
-
 -- Saved variable to store positions
 local SavedPositions = {}
 
@@ -21,18 +20,40 @@ local function CreateNewStrategyFrame()
     newStrategyFrame.title = newStrategyFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     newStrategyFrame.title:SetPoint("TOP", 0, -5)
     newStrategyFrame.title:SetText("Add New Strategy")
+    newStrategyFrame:SetMovable(true)
+    newStrategyFrame:RegisterForDrag("LeftButton")
+    newStrategyFrame:EnableMouse(true)
+    newStrategyFrame:SetScript("OnDragStart", function(self)
+        self:StartMoving()
+    end)
+    newStrategyFrame:SetScript("OnDragStop", function(self)
+        self:StopMovingOrSizing()
+        SavePosition(self) -- Save position when dragging stops
+    end)
 
-    newStrategyFrame.editBox = CreateFrame("EditBox", nil, newStrategyFrame, "InputBoxTemplate")
-    newStrategyFrame.editBox:SetSize(250, 100)
-    newStrategyFrame.editBox:SetPoint("TOP", 0, -30)
-    newStrategyFrame.editBox:SetAutoFocus(true)
+    -- Create ScrollFrame
+    local scrollFrame = CreateFrame("ScrollFrame", "NewStrategyScrollFrame", newStrategyFrame,
+        "UIPanelScrollFrameTemplate")
+    scrollFrame:SetPoint("TOPLEFT", 10, -30)
+    scrollFrame:SetPoint("BOTTOMRIGHT", -30, 10)
+
+    -- Create EditBox inside ScrollFrame
+    local editBox = CreateFrame("EditBox", nil, scrollFrame)
+    editBox:SetSize(250, 100)
+    editBox:SetMultiLine(true)
+    editBox:SetAutoFocus(true)
+    editBox:SetFontObject(GameFontHighlight)
+    editBox:SetScript("OnEscapePressed", function(self)
+        self:ClearFocus()
+    end)
+    scrollFrame:SetScrollChild(editBox)
 
     local confirmButton = CreateFrame("Button", nil, newStrategyFrame, "UIPanelButtonTemplate")
     confirmButton:SetText("Confirm")
     confirmButton:SetSize(80, 25)
     confirmButton:SetPoint("BOTTOMLEFT", 20, 20)
     confirmButton:SetScript("OnClick", function()
-        local newStrategy = newStrategyFrame.editBox:GetText()
+        local newStrategy = editBox:GetText()
         AddNewStrategyConfirmation(newStrategy)
         newStrategyFrame:Hide()
     end)
@@ -110,7 +131,7 @@ function CreateButton(parent, scenarioName, strategyIndex, buttonIndex)
     button:SetText(BUTTON_LABEL_TEMPLATE:format(buttonIndex))
     button:SetSize(80, 25)
     button:SetPoint("TOP", 0, -buttonIndex * 30)
-    
+
     -- OnClick handler
     button:SetScript("OnClick", function()
         local strategy = StrategyData[scenarioName][strategyIndex]
@@ -118,7 +139,7 @@ function CreateButton(parent, scenarioName, strategyIndex, buttonIndex)
             SendChatMessage(strategy, "SAY")
         end
     end)
-    
+
     -- OnEnter handler
     button:SetScript("OnEnter", function(self)
         local strategy = StrategyData[scenarioName][strategyIndex]
@@ -128,7 +149,7 @@ function CreateButton(parent, scenarioName, strategyIndex, buttonIndex)
             GameTooltip:Show()
         end
     end)
-    
+
     -- OnLeave handler
     button:SetScript("OnLeave", function()
         GameTooltip:Hide()
@@ -243,7 +264,7 @@ local function CreateAddNewStrategyPopup()
         end,
         OnHide = function(self)
             self.editBox:SetText("")
-        end,
+        end
     }
 end
 
@@ -262,7 +283,7 @@ function UpdateButtons()
         if strategies then
             frame:SetSize(100, #strategies * 50) -- Adjust size based on the number of strategies
             frame:SetPoint(unpack(GetSavedPosition(frame))) -- Set position based on saved position
-            
+
             -- Enable frame for movement
             frame:RegisterForDrag("LeftButton")
             frame:SetMovable(true)
