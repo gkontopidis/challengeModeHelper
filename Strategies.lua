@@ -13,6 +13,41 @@ local function SavePosition(frame)
     SavedPositions[frame:GetName()] = {frame:GetPoint()}
 end
 
+-- Function to create the "Add New" strategy frame
+local function CreateNewStrategyFrame()
+    local newStrategyFrame = CreateFrame("Frame", "NewStrategyFrame", UIParent, "BasicFrameTemplate")
+    newStrategyFrame:SetSize(300, 200)
+    newStrategyFrame:SetPoint("CENTER")
+    newStrategyFrame.title = newStrategyFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    newStrategyFrame.title:SetPoint("TOP", 0, -5)
+    newStrategyFrame.title:SetText("Add New Strategy")
+
+    newStrategyFrame.editBox = CreateFrame("EditBox", nil, newStrategyFrame, "InputBoxTemplate")
+    newStrategyFrame.editBox:SetSize(250, 100)
+    newStrategyFrame.editBox:SetPoint("TOP", 0, -30)
+    newStrategyFrame.editBox:SetAutoFocus(true)
+
+    local confirmButton = CreateFrame("Button", nil, newStrategyFrame, "UIPanelButtonTemplate")
+    confirmButton:SetText("Confirm")
+    confirmButton:SetSize(80, 25)
+    confirmButton:SetPoint("BOTTOMLEFT", 20, 20)
+    confirmButton:SetScript("OnClick", function()
+        local newStrategy = newStrategyFrame.editBox:GetText()
+        AddNewStrategyConfirmation(newStrategy)
+        newStrategyFrame:Hide()
+    end)
+
+    local cancelButton = CreateFrame("Button", nil, newStrategyFrame, "UIPanelButtonTemplate")
+    cancelButton:SetText("Cancel")
+    cancelButton:SetSize(80, 25)
+    cancelButton:SetPoint("BOTTOMRIGHT", -20, 20)
+    cancelButton:SetScript("OnClick", function()
+        newStrategyFrame:Hide()
+    end)
+
+    newStrategyFrame:Show()
+end
+
 -- Create the frame
 local frame = CreateFrame("Frame", "StrategyFrame", UIParent)
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")
@@ -149,3 +184,102 @@ toggleButton:SetScript("OnEvent", function(self, event, ...)
         SavePosition(toggleButton)
     end
 end)
+
+-- Function to create the "Add New" button
+local function CreateAddNewButton(parent)
+    local button = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
+    button:SetText("Add New")
+    button:SetSize(80, 25)
+    button:SetPoint("BOTTOM", 0, 10)
+
+    button:SetScript("OnClick", function()
+        CreateNewStrategyFrame()
+    end)
+
+    return button
+end
+
+-- Function to handle adding a new strategy
+local function AddNewStrategy(scenarioName, newStrategy)
+    if StrategyData[scenarioName] == nil then
+        StrategyData[scenarioName] = {}
+    end
+    table.insert(StrategyData[scenarioName], newStrategy)
+end
+
+-- Function to handle the confirmation of adding a new strategy
+function AddNewStrategyConfirmation(text)
+    local scenarioName, _, _, difficultyName = GetInstanceInfo()
+    if difficultyName == "Challenge Mode" then
+        AddNewStrategy(scenarioName, text)
+        UpdateButtons() -- Update the UI to reflect the new strategy
+    end
+end
+
+-- Function to create the add new strategy popup dialog
+local function CreateAddNewStrategyPopup()
+    StaticPopupDialogs["ADD_NEW_STRATEGY"] = {
+        text = "Enter the new strategy:",
+        button1 = "Confirm",
+        button2 = "Cancel",
+        OnAccept = function(self)
+            local editBox = self.editBox
+            local text = editBox:GetText()
+            if text ~= "" then
+                AddNewStrategyConfirmation(text)
+            end
+            editBox:SetText("")
+        end,
+        EditBoxOnEscapePressed = function(self)
+            self:GetParent():Hide()
+        end,
+        timeout = 0,
+        whileDead = true,
+        hideOnEscape = true,
+        hasEditBox = true,
+        preferredIndex = 3,
+        OnShow = function(self)
+            self.editBox:SetFocus()
+        end,
+        OnHide = function(self)
+            self.editBox:SetText("")
+        end,
+    }
+end
+
+-- Call the function to create the add new strategy popup dialog
+CreateAddNewStrategyPopup()
+
+-- Create the "Add New" button and attach it to the frame
+local addButton = CreateAddNewButton(frame)
+
+-- Function to update buttons after adding a new strategy
+function UpdateButtons()
+    frame:Hide() -- Hide the frame temporarily to clear existing buttons
+    local scenarioName, _, _, difficultyName = GetInstanceInfo()
+    if difficultyName == "Challenge Mode" then
+        local strategies = StrategyData[scenarioName]
+        if strategies then
+            frame:SetSize(100, #strategies * 50) -- Adjust size based on the number of strategies
+            frame:SetPoint(unpack(GetSavedPosition(frame))) -- Set position based on saved position
+            
+            -- Enable frame for movement
+            frame:RegisterForDrag("LeftButton")
+            frame:SetMovable(true)
+            frame:EnableMouse(true)
+            frame:SetScript("OnDragStart", function(self)
+                self:StartMoving()
+            end)
+            frame:SetScript("OnDragStop", function(self)
+                self:StopMovingOrSizing()
+                SavePosition(self) -- Save position when dragging stops
+            end)
+
+            -- Create buttons for each strategy
+            for i, strategy in ipairs(strategies) do
+                CreateButton(frame, scenarioName, i, i)
+            end
+        end
+    end
+    frame:Show() -- Show the frame again after updating buttons
+end
