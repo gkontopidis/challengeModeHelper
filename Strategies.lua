@@ -1,15 +1,173 @@
--- MyChallengeAddon.lua
--- Saved variable to store positions
+-- Saved variable to store strategies
+local SavedStrategies = {}
 local SavedPositions = {}
+local RemoveStrategyIcon="Interface\\Buttons\\UI-GroupLoot-Pass-Down"
 
--- Define the GetSavedPosition function
+-- Function to get saved position for a frame
 local function GetSavedPosition(frame)
     return SavedPositions[frame:GetName()] or {"CENTER", UIParent, "CENTER", 0, 0}
 end
 
--- Define the SavePosition function
+-- Function to set position for a frame
+local function SetSavedPosition(frame)
+    local position = GetSavedPosition(frame)
+    frame:SetPoint(unpack(position))
+end
+
+-- Function to save position for a frame
 local function SavePosition(frame)
     SavedPositions[frame:GetName()] = {frame:GetPoint()}
+end
+
+-- Function to save strategies
+local function SaveStrategies()
+    CmHelperDB.Strategies = SavedStrategies
+end
+
+-- Function to load strategies
+local function LoadStrategies()
+    SavedStrategies = CmHelperDB.Strategies or {}
+end
+
+-- Function to destroy all child frames of a parent frame
+local function ClearAllChildFrames(parentFrame)
+    local children = {parentFrame:GetChildren()}
+    for _, child in ipairs(children) do
+        child:Hide() -- Hide the child frame
+        child:SetParent(nil) -- Remove its parent reference
+    end
+end
+
+-- Function to handle removing a strategy
+local function RemoveStrategy(scenarioName, strategyIndex)
+    if SavedStrategies[scenarioName] then
+        table.remove(SavedStrategies[scenarioName], strategyIndex)
+        -- After removing the strategy, update the buttons
+        UpdateButtons()
+    end
+end
+
+-- Function to create the "Remove Strategy" button
+local function CreateRemoveButton(parent, scenarioName, strategyIndex)
+    local removeButton = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
+    removeButton:SetSize(15, 15)
+    removeButton:SetPoint("RIGHT", 15, 0)
+    removeButton:SetNormalTexture(RemoveStrategyIcon)
+    
+    removeButton:SetScript("OnClick", function()
+        StaticPopupDialogs["CONFIRM_REMOVE_STRATEGY"] = {
+            text = "Are you sure you want to remove this strategy?",
+            button1 = "Yes",
+            button2 = "No",
+            OnAccept = function()
+                RemoveStrategy(scenarioName, strategyIndex)
+                UpdateButtons()
+                _G["MyChallengeAddonFrame"]:Show()
+            end,
+            timeout = 0,
+            whileDead = true,
+            hideOnEscape = true,
+            showAlert = true,
+        }
+        StaticPopup_Show("CONFIRM_REMOVE_STRATEGY")
+    end)
+
+    return removeButton
+end
+
+-- Function to create a button
+local function CreateButton(parent, scenarioName, strategyIndex, buttonIndex)
+    local button = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
+    button:SetText("Strategy " .. buttonIndex)
+    button:SetSize(80, 25)
+    button:SetPoint("TOP", 0, -buttonIndex * 30)
+
+    -- OnClick handler
+    button:SetScript("OnClick", function()
+        local strategy = SavedStrategies[scenarioName][strategyIndex]
+        if strategy then
+            SendChatMessage(strategy, "SAY")
+        end
+    end)
+
+    -- OnEnter handler
+    button:SetScript("OnEnter", function(self)
+        local strategy = SavedStrategies[scenarioName][strategyIndex]
+        if strategy then
+            GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+            GameTooltip:SetText(strategy, nil, nil, nil, nil, true)
+            GameTooltip:Show()
+        end
+    end)
+
+    -- OnLeave handler
+    button:SetScript("OnLeave", function()
+        GameTooltip:Hide()
+    end)
+
+    -- Create remove button
+    local removeButton = CreateRemoveButton(button, scenarioName, strategyIndex)
+end
+
+
+-- Function to update buttons after adding a new strategy
+function UpdateButtons()
+    local frame = MyChallengeAddonFrame
+    local strategies
+    frame:Hide()
+    local scenarioName, _, _, difficultyName = GetInstanceInfo()
+    if difficultyName == "Challenge Mode" then
+        strategies = SavedStrategies[scenarioName]
+        if strategies then
+            frame:SetSize(100, #strategies * 50) -- Adjust size based on the number of strategies
+            frame:SetPoint(unpack(GetSavedPosition(frame))) -- Set position based on saved position
+
+            -- Enable frame for movement
+            frame:RegisterForDrag("LeftButton")
+            frame:SetMovable(true)
+            frame:EnableMouse(true)
+            frame:SetScript("OnDragStart", function(self)
+                self:StartMoving()
+            end)
+            frame:SetScript("OnDragStop", function(self)
+                self:StopMovingOrSizing()
+                SavePosition(self) -- Save position when dragging stops
+            end)
+
+            -- Clear existing buttons
+            ClearAllChildFrames(frame)
+
+            -- Create buttons for each strategy
+            for i, strategy in ipairs(strategies) do
+                CreateButton(frame, scenarioName, i, i)
+            end
+        else
+            ClearAllChildFrames(frame)
+        end
+        frame:Hide() -- Show the frame again after updating buttons
+    else
+        frame:Hide()
+    end
+end
+
+-- Function to handle adding a new strategy
+local function AddNewStrategy(scenarioName, newStrategy)
+    if SavedStrategies[scenarioName] == nil then
+        SavedStrategies[scenarioName] = {}
+    end
+    table.insert(SavedStrategies[scenarioName], newStrategy)
+    -- After adding the new strategy, update the buttons
+    UpdateButtons()
+end
+
+-- Function to handle adding a new strategy
+local function AddNewStrategyConfirmation(text)
+    local scenarioName, _, _, difficultyName = GetInstanceInfo()
+    if difficultyName == "Challenge Mode" then
+        AddNewStrategy(scenarioName, text)
+        UpdateButtons() -- Update the UI to reflect the new strategy
+        MyChallengeAddonFrame:Show()
+    end
 end
 
 -- Function to create the "Add New" strategy frame
@@ -48,6 +206,7 @@ local function CreateNewStrategyFrame()
     end)
     scrollFrame:SetScrollChild(editBox)
 
+    -- Create Confirm Button
     local confirmButton = CreateFrame("Button", nil, newStrategyFrame, "UIPanelButtonTemplate")
     confirmButton:SetText("Confirm")
     confirmButton:SetSize(80, 25)
@@ -58,6 +217,7 @@ local function CreateNewStrategyFrame()
         newStrategyFrame:Hide()
     end)
 
+    -- Create Cancel Button
     local cancelButton = CreateFrame("Button", nil, newStrategyFrame, "UIPanelButtonTemplate")
     cancelButton:SetText("Cancel")
     cancelButton:SetSize(80, 25)
@@ -69,238 +229,113 @@ local function CreateNewStrategyFrame()
     newStrategyFrame:Show()
 end
 
--- Create the frame
-local frame = CreateFrame("Frame", "StrategyFrame", UIParent)
-frame:RegisterEvent("PLAYER_ENTERING_WORLD")
-frame:RegisterEvent("PLAYER_LOGOUT") -- Register logout event
-frame:RegisterEvent("ADDON_LOADED")
-
--- Define a flag to track the visibility of the frame
-local frameVisible = false
-
--- Set up frame event handling
-frame:SetScript("OnEvent", function(self, event, ...)
-    if event == "PLAYER_ENTERING_WORLD" then
-        local scenarioName, _, _, difficultyName = GetInstanceInfo()
-        if difficultyName == "Challenge Mode" then
-            local strategies = StrategyData[scenarioName]
-            if strategies then
-                frame:SetSize(100, #strategies * 50) -- Adjust size based on the number of strategies
-                frame:SetPoint(unpack(GetSavedPosition(frame))) -- Set position based on saved position
-                
-                -- Enable frame for movement
-                frame:RegisterForDrag("LeftButton")
-                frame:SetMovable(true)
-                frame:EnableMouse(true)
-                frame:SetScript("OnDragStart", function(self)
-                    self:StartMoving()
-                end)
-                frame:SetScript("OnDragStop", function(self)
-                    self:StopMovingOrSizing()
-                    SavePosition(self) -- Save position when dragging stops
-                end)
-
-                -- Create buttons for each strategy
-                for i, strategy in ipairs(strategies) do
-                    CreateButton(frame, scenarioName, i, i)
-                end
-            end
-            frame:Hide()
-        else
-            frame:Hide()
-        end
-    elseif event == "PLAYER_LOGOUT" then
-        -- Save positions on logout
-        SavePosition(frame)
-        frame:Hide() 
-        CmHelperDB.SavedPositions = SavedPositions
-    elseif event == "PLAYER_LOGIN" then
-        -- Function to load frame position
-        if CmHelperDB and CmHelperDB.SavedPositions then
-            SavedPositions = CmHelperDB.SavedPositions
-        end
-        frame:setPoint(SavedPositions.StrategyFrame)
-    end
-end)
-
--- Define a template for the button labels
-local BUTTON_LABEL_TEMPLATE = "Strategy %d"
-
-function CreateButton(parent, scenarioName, strategyIndex, buttonIndex)
-    local button = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
-    button:SetText(BUTTON_LABEL_TEMPLATE:format(buttonIndex))
-    button:SetSize(80, 25)
-    button:SetPoint("TOP", 0, -buttonIndex * 30)
-
-    -- OnClick handler
-    button:SetScript("OnClick", function()
-        local strategy = StrategyData[scenarioName][strategyIndex]
-        if strategy then
-            SendChatMessage(strategy, "SAY")
-        end
+-- Function to create the toggle button
+local function CreateToggleButton()
+    local button = CreateFrame("Button", "ToggleStrategiesButton", UIParent, "UIPanelButtonTemplate")
+    button:SetText("Strategies")
+    button:SetSize(120, 25)
+    button:SetPoint("TOPLEFT", 20, -20)
+    button:RegisterForDrag("LeftButton")
+    button:SetMovable(true)
+    button:EnableMouse(true)
+    button:SetScript("OnDragStart", function(self)
+        self:StartMoving()
+    end)
+    button:SetScript("OnDragStop", function(self)
+        self:StopMovingOrSizing()
+        SavePosition(self) -- Save position when dragging stops
     end)
 
-    -- OnEnter handler
-    button:SetScript("OnEnter", function(self)
-        local strategy = StrategyData[scenarioName][strategyIndex]
-        if strategy then
-            GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-            GameTooltip:SetText(strategy, nil, nil, nil, nil, true)
-            GameTooltip:Show()
-        end
-    end)
-
-    -- OnLeave handler
-    button:SetScript("OnLeave", function()
-        GameTooltip:Hide()
-    end)
-end
-
--- Load saved positions on addon load
-frame:SetScript("OnLoad", function(self)
-    self:SetPoint(unpack(GetSavedPosition(self)))
-end)
-
--- Create the toggle button
-local toggleButton = CreateFrame("Button", "MyToggleAddonButton", UIParent, "UIPanelButtonTemplate")
-toggleButton:RegisterEvent("PLAYER_ENTERING_WORLD")
-toggleButton:RegisterEvent("PLAYER_LOGOUT") -- Register logout event
-
-toggleButton:SetText("Strategies")
-toggleButton:SetSize(100, 25)
-
-toggleButton:RegisterForDrag("LeftButton")
-toggleButton:SetMovable(true)
-toggleButton:EnableMouse(true)
-toggleButton:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", 10, 10) -- Set default position
-
-toggleButton:SetScript("OnDragStart", function(self)
-    self:StartMoving()
-end)
-
-toggleButton:SetScript("OnDragStop", function(self)
-    self:StopMovingOrSizing()
-    SavePosition(self) -- Save position when dragging stops
-end)
-
-toggleButton:SetScript("OnClick", function()
-    if frameVisible then
-        frame:Hide()
-        frameVisible = false
-    else
-        frame:Show()
-        frameVisible = true
-    end
-end)
-toggleButton:Hide()
-toggleButton:SetScript("OnEvent", function(self, event, ...)
-    if event == "PLAYER_ENTERING_WORLD" then
-        local scenarioName, _, _, difficultyName = GetInstanceInfo()
-        if difficultyName == "Challenge Mode" then
-            toggleButton:Show()
-        else
-            toggleButton:Hide()
-        end
-    elseif event == "PLAYER_LOGOUT" then
-        SavePosition(toggleButton)
-    end
-end)
-
--- Function to create the "Add New" button
-local function CreateAddNewButton(parent)
-    local button = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
-    button:SetText("Add New")
-    button:SetSize(80, 25)
-    button:SetPoint("BOTTOM", 0, 10)
-
-    button:SetScript("OnClick", function()
+    -- Create "Add New" button
+    local addButton = CreateFrame("Button", "AddStrategyButton", UIParent, "UIPanelButtonTemplate")
+    addButton:SetText("Add New")
+    addButton:SetSize(80, 25)
+    addButton:SetPoint("LEFT", button, "RIGHT", 10, 0)
+    addButton:SetScript("OnClick", function()
         CreateNewStrategyFrame()
+    end)
+
+    -- Initially hide the "Add New" button
+    addButton:Hide()
+
+    button:SetScript("OnClick", function()
+        if MyChallengeAddonFrame:IsShown() then
+            MyChallengeAddonFrame:Hide()
+            addButton:Hide()
+        else
+            MyChallengeAddonFrame:Show()
+            --if IsAddNewButtonVisible then
+                addButton:Show() -- Show the "Add New" button only if it's set to be visible
+           -- end
+        end
     end)
 
     return button
 end
 
--- Function to handle adding a new strategy
-local function AddNewStrategy(scenarioName, newStrategy)
-    if StrategyData[scenarioName] == nil then
-        StrategyData[scenarioName] = {}
-    end
-    table.insert(StrategyData[scenarioName], newStrategy)
-end
+-- Initialize the addon
+local function Init()
+    -- Create the main frame
+    local frame = CreateFrame("Frame", "MyChallengeAddonFrame", UIParent)
+    frame:RegisterEvent("PLAYER_ENTERING_WORLD")
+    frame:RegisterEvent("PLAYER_LOGOUT") -- Register logout event
+    frame:RegisterEvent("ADDON_LOADED")
+    frame:RegisterEvent("PLAYER_LOGIN") -- Register login event
 
--- Function to handle the confirmation of adding a new strategy
-function AddNewStrategyConfirmation(text)
-    local scenarioName, _, _, difficultyName = GetInstanceInfo()
-    if difficultyName == "Challenge Mode" then
-        AddNewStrategy(scenarioName, text)
-        UpdateButtons() -- Update the UI to reflect the new strategy
-    end
-end
+    -- Create the toggle button
+    local toggleButton = CreateToggleButton()
 
--- Function to create the add new strategy popup dialog
-local function CreateAddNewStrategyPopup()
-    StaticPopupDialogs["ADD_NEW_STRATEGY"] = {
-        text = "Enter the new strategy:",
-        button1 = "Confirm",
-        button2 = "Cancel",
-        OnAccept = function(self)
-            local editBox = self.editBox
-            local text = editBox:GetText()
-            if text ~= "" then
-                AddNewStrategyConfirmation(text)
+    -- Set up frame event handling
+    frame:SetScript("OnEvent", function(self, event, ...)
+        if event == "PLAYER_ENTERING_WORLD" then
+            local scenarioName, _, _, difficultyName = GetInstanceInfo()
+            if difficultyName == "Challenge Mode" then
+                LoadStrategies()
+                if not _G["ToggleStrategiesButton"] then
+                    CreateToggleButton()
+                else
+                    _G["ToggleStrategiesButton"]:Show()
+                end
+            else
+                if _G["ToggleStrategiesButton"] then
+                    _G["ToggleStrategiesButton"]:Hide()
+                    _G["AddStrategyButton"]:Hide()
+                end
             end
-            editBox:SetText("")
-        end,
-        EditBoxOnEscapePressed = function(self)
-            self:GetParent():Hide()
-        end,
-        timeout = 0,
-        whileDead = true,
-        hideOnEscape = true,
-        hasEditBox = true,
-        preferredIndex = 3,
-        OnShow = function(self)
-            self.editBox:SetFocus()
-        end,
-        OnHide = function(self)
-            self.editBox:SetText("")
-        end
-    }
-end
-
--- Call the function to create the add new strategy popup dialog
-CreateAddNewStrategyPopup()
-
--- Create the "Add New" button and attach it to the frame
-local addButton = CreateAddNewButton(frame)
-
--- Function to update buttons after adding a new strategy
-function UpdateButtons()
-    frame:Hide() -- Hide the frame temporarily to clear existing buttons
-    local scenarioName, _, _, difficultyName = GetInstanceInfo()
-    if difficultyName == "Challenge Mode" then
-        local strategies = StrategyData[scenarioName]
-        if strategies then
-            frame:SetSize(100, #strategies * 50) -- Adjust size based on the number of strategies
-            frame:SetPoint(unpack(GetSavedPosition(frame))) -- Set position based on saved position
-
-            -- Enable frame for movement
-            frame:RegisterForDrag("LeftButton")
-            frame:SetMovable(true)
-            frame:EnableMouse(true)
-            frame:SetScript("OnDragStart", function(self)
-                self:StartMoving()
-            end)
-            frame:SetScript("OnDragStop", function(self)
-                self:StopMovingOrSizing()
-                SavePosition(self) -- Save position when dragging stops
-            end)
-
-            -- Create buttons for each strategy
-            for i, strategy in ipairs(strategies) do
-                CreateButton(frame, scenarioName, i, i)
+            UpdateButtons()
+        elseif event == "PLAYER_LOGOUT" then
+            -- Save positions on logout
+            SaveStrategies()
+            SavePosition(self)
+            SavePosition(toggleButton) -- Save toggle button's position
+            self:Hide()
+            CmHelperDB.SavedPositions = SavedPositions
+        elseif event == "PLAYER_LOGIN" then
+            -- Load saved strategies on login
+            LoadStrategies()
+            -- Update UI to reflect loaded strategies
+            UpdateButtons()
+            -- Load saved positions on login
+            if CmHelperDB and CmHelperDB.SavedPositions then
+                SavedPositions = CmHelperDB.SavedPositions
+            end
+            SetSavedPosition(self)
+            SetSavedPosition(toggleButton) -- Set toggle button's position
+            self:SetPoint(unpack(GetSavedPosition(self)))
+        elseif event == "ADDON_LOADED" then
+            local addonName = ...
+            if addonName == "Challenge-Mode_Helper" then
+                -- Call the UpdateButtons function once after ADDON_LOADED event
+                UpdateButtons()
             end
         end
-    end
-    frame:Show() -- Show the frame again after updating buttons
+    end)
+
+    -- Call the UpdateButtons function once after ADDON_LOADED event
+    frame:SetScript("OnLoad", function()
+        UpdateButtons()
+    end)
 end
+
+-- Call the initialization function
+Init()
