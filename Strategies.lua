@@ -28,6 +28,10 @@ end
 -- Function to load strategies
 local function LoadStrategies()
     SavedStrategies = CmHelperDB.Strategies or {}
+    -- Ensure SavedStrategies is initialized as an empty table if it's nil
+    if not next(SavedStrategies) then
+        SavedStrategies = {}
+    end
 end
 
 -- Function to destroy all child frames of a parent frame
