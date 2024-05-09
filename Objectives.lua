@@ -7,6 +7,75 @@ localDB = {
     BestBossKillTime = {}
 }
 
+-- Function to create and show the opacity slider frame
+local function ShowOpacitySliderFrame()
+    -- Check if the frame is already shown
+    if opacitySliderFrame and opacitySliderFrame:IsShown() then
+        opacitySliderFrame:Hide() -- Hide the existing frame
+    else
+        -- Create the frame if it doesn't exist
+        opacitySliderFrame = CreateFrame("Frame", "MyAddon_OpacitySliderFrame", UIParent)
+        opacitySliderFrame:SetSize(200, 90) -- Increased height to accommodate the label
+        opacitySliderFrame:SetPoint("CENTER", 0, 0)
+        opacitySliderFrame:SetBackdrop({
+            bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+            edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+            tile = true,
+            tileSize = 16,
+            edgeSize = 16,
+            insets = {
+                left = 4,
+                right = 4,
+                top = 4,
+                bottom = 4
+            }
+        })
+        opacitySliderFrame:SetBackdropColor(0, 0, 0, 1)
+
+        -- Create slider and label
+        local sliderLabel = opacitySliderFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+        sliderLabel:SetPoint("TOPLEFT", 10, -10)
+        sliderLabel:SetText("Opacity:")
+
+        local sliderValueLabel = opacitySliderFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+        sliderValueLabel:SetPoint("LEFT", sliderLabel, "RIGHT", 5, 0) -- Position below the slider label
+
+        local slider = CreateFrame("Slider", "MyAddon_OpacitySlider", opacitySliderFrame, "OptionsSliderTemplate")
+        slider:SetWidth(180)
+        slider:SetHeight(20)
+        slider:SetPoint("TOPLEFT", 10, -30)
+        slider:SetMinMaxValues(0, 100)
+        slider:SetOrientation("HORIZONTAL")
+
+        -- Load colorPicked value from CmHelperDB if available, otherwise use default value
+        local initialColorPicked =
+            (CmHelperDB and CmHelperDB.Objectives_frame and CmHelperDB.Objectives_frame.colorPicked) or 1
+        slider:SetValue(initialColorPicked * 100)
+        sliderValueLabel:SetText(math.floor(initialColorPicked * 100))
+
+        -- Update the OnValueChanged callback function to correctly update colorPicked
+        slider:SetScript("OnValueChanged", function(self, value)
+            colorPicked = value / 100 -- Normalize value to range 0-1
+            Objectives_frame:SetBackdropColor(0, 0, 0, colorPicked)
+            sliderValueLabel:SetText(math.floor(colorPicked * 100)) -- Update the value label
+        end)
+
+        -- Create close button
+        local closeButton = CreateFrame("Button", nil, slider, "UIPanelButtonTemplate")
+        closeButton:SetText("Save")
+        closeButton:SetSize(80, 20)
+        closeButton:SetPoint("BOTTOM", 0, -30)
+        closeButton:SetScript("OnClick", function()
+
+            -- Save the slider value when closing the frame
+            Objectives_frame:SavePosition()
+            opacitySliderFrame:Hide() -- Hide the frame
+        end)
+
+        opacitySliderFrame:Show()
+    end
+end
+
 -- Function to update the size of the frame based on the text size
 local function UpdateFrameSize()
     local textWidth = Objectives_label:GetStringWidth() + 20 -- Add some padding
@@ -139,12 +208,13 @@ local function CreateDropdownMenu()
             end
             UIDropDownMenu_AddButton(info, level)
 
-            info = UIDropDownMenu_CreateInfo()
-            info.text = "Background"
-            info.hasArrow = true
-            info.notCheckable = true
-            info.value = "background"
-            UIDropDownMenu_AddButton(info, level)
+            local transparencyButton = UIDropDownMenu_CreateInfo()
+            transparencyButton.text = "Opacity"
+            transparencyButton.notCheckable = true
+            transparencyButton.func = function()
+                ShowOpacitySliderFrame()
+            end
+            UIDropDownMenu_AddButton(transparencyButton, level)
 
             info = UIDropDownMenu_CreateInfo()
             info.text = "Font Size"
@@ -153,69 +223,10 @@ local function CreateDropdownMenu()
             info.value = "fontsize"
             UIDropDownMenu_AddButton(info, level)
         elseif level == 2 then
-            if UIDROPDOWNMENU_MENU_VALUE == "background" then
-                local info = UIDropDownMenu_CreateInfo()
-                info.text = "0%"
-                info.func = function()
-                    Objectives_frame:SetBackdropColor(0, 0, 0, 0)
-                    UIDropDownMenu_SetSelectedValue(dropdownMenu, 0)
-                    colorPicked = 0 -- Update colorPicked variable
-                    UpdateObjectivesLabel() -- Update label after changing background
-                    Objectives_frame:SavePosition()
-                end
-                info.checked = colorPicked == 0 and 1 or nil
-                UIDropDownMenu_AddButton(info, level)
-
-                info = UIDropDownMenu_CreateInfo()
-                info.text = "25%"
-                info.func = function()
-                    Objectives_frame:SetBackdropColor(0, 0, 0, 0.25)
-                    UIDropDownMenu_SetSelectedValue(dropdownMenu, 0.25)
-                    colorPicked = 0.25 -- Update colorPicked variable
-                    UpdateObjectivesLabel() -- Update label after changing background
-                    Objectives_frame:SavePosition()
-                end
-                info.checked = colorPicked == 0.25 and 1 or nil
-                UIDropDownMenu_AddButton(info, level)
-
-                info = UIDropDownMenu_CreateInfo()
-                info.text = "50%"
-                info.func = function()
-                    Objectives_frame:SetBackdropColor(0, 0, 0, 0.50)
-                    UIDropDownMenu_SetSelectedValue(dropdownMenu, 0.50)
-                    colorPicked = 0.50 -- Update colorPicked variable
-                    UpdateObjectivesLabel() -- Update label after changing background
-                    Objectives_frame:SavePosition()
-                end
-                info.checked = colorPicked == 0.50 and 1 or nil
-                UIDropDownMenu_AddButton(info, level)
-
-                info = UIDropDownMenu_CreateInfo()
-                info.text = "75%"
-                info.func = function()
-                    Objectives_frame:SetBackdropColor(0, 0, 0, 0.75)
-                    UIDropDownMenu_SetSelectedValue(dropdownMenu, 0.75)
-                    colorPicked = 0.75 -- Update colorPicked variable
-                    UpdateObjectivesLabel() -- Update label after changing background
-                    Objectives_frame:SavePosition()
-                end
-                info.checked = colorPicked == 0.75 and 1 or nil
-                UIDropDownMenu_AddButton(info, level)
-
-                info = UIDropDownMenu_CreateInfo()
-                info.text = "100%"
-                info.func = function()
-                    Objectives_frame:SetBackdropColor(0, 0, 0, 1)
-                    UIDropDownMenu_SetSelectedValue(dropdownMenu, 1)
-                    colorPicked = 1 -- Update colorPicked variable
-                    UpdateObjectivesLabel() -- Update label after changing background
-                    Objectives_frame:SavePosition()
-                end
-                info.checked = colorPicked == 1 and 1 or nil
-                UIDropDownMenu_AddButton(info, level)
-            elseif UIDROPDOWNMENU_MENU_VALUE == "fontsize" then
+            if UIDROPDOWNMENU_MENU_VALUE == "fontsize" then
                 local info = UIDropDownMenu_CreateInfo()
                 info.text = "Small"
+                info.notCheckable = true
                 info.func = function()
                     -- Set small font size
                     Objectives_label:SetFontObject("GameFontNormalSmall")
@@ -226,6 +237,7 @@ local function CreateDropdownMenu()
 
                 info = UIDropDownMenu_CreateInfo()
                 info.text = "Normal"
+                info.notCheckable = true
                 info.func = function()
                     -- Set normal font size
                     Objectives_label:SetFontObject("GameFontNormal")
@@ -236,6 +248,7 @@ local function CreateDropdownMenu()
 
                 info = UIDropDownMenu_CreateInfo()
                 info.text = "Large"
+                info.notCheckable = true
                 info.func = function()
                     -- Set large font size
                     Objectives_label:SetFontObject("GameFontNormalLarge")
