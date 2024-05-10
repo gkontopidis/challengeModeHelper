@@ -18,32 +18,11 @@ function f:OnEvent(event, addOnName)
 end
 
 function f:InitializeOptions()
-    self.panel = CreateFrame("Frame")
+
+    -- Options Panel Frame
+    self.panel = CreateFrame("Frame", nil, UIParent, "OptionsBoxTemplate")
+    self.panel:Hide()
     self.panel.name = "MoP CM Helper"
-
-    local addon_info1 = self.panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-    addon_info1:SetPoint("TOPLEFT", 7, -20)
-    addon_info1:SetJustifyH("LEFT")
-    addon_info1:SetText(
-        "|cffffd700Mop CM Helper |r |cffffffffis an essential addon tailored to competitive groups \nstriving to enhance their performance in Mist of Pandaria Challenge Modes. \nBoasting two distinct panels, this tool offers comprehensive insights \ncrucial for refining strategies and achieving optimal times and ranks.")
-
-    local addon_info2 = self.panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-    addon_info2:SetPoint("TOPLEFT", addon_info1, "BOTTOMLEFT", 0, -10)
-    addon_info2:SetJustifyH("LEFT")
-    addon_info2:SetText(
-        "|cffffffffThe primary panel displays essential metrics such as elapsed and remaining \ntime, along with valuable data on the best server and guild times. \nAdditionally, it provides convenient functionalities like effortless leader \nresets and accessible dungeon portals for all party members.")
-
-    local addon_info3 = self.panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-    addon_info3:SetPoint("TOPLEFT", addon_info2, "BOTTOMLEFT", 0, -10)
-    addon_info3:SetJustifyH("LEFT")
-    addon_info3:SetText(
-        "|cffffffffMeanwhile, the secondary panel serves as a treasure trove of information, \nfeaturing the best kill times and real-time updates on current run times for \neach dungeon boss. Armed with these insights, teams can meticulously \nanalyze their performance, identify areas for improvement, and \nrecalibrate their strategies for greater success.")
-
-    local addon_info4 = self.panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-    addon_info4:SetPoint("TOPLEFT", addon_info3, "BOTTOMLEFT", 0, -10)
-    addon_info4:SetJustifyH("LEFT")
-    addon_info4:SetText(
-        "|cffffd700Mop CM Helper |r |cffffffffisn't just an addon; it's a strategic ally for those \ncommitted to mastering Mist of Pandaria Challenge Modes \nand dominating the leaderboards.")
 
     local text1 = self.panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
     text1:SetPoint("TOPLEFT", 7, -420)
@@ -68,8 +47,20 @@ function f:InitializeOptions()
     imageFrame:SetPoint("TOPLEFT", 5, 0)
     imageFrame:SetSize(615, 565)
 
+    -- InterfaceOptions_AddCategory(self.panel)
+    -- panel elements here
+
+    InterfaceOptions_AddCategory(self.panel)
+
+    -- Options Panel
+    self.panel.BL = CreateFrame("Frame", nil, UIParent, "OptionsBoxTemplate")
+    self.panel.BL:Hide()
+    self.panel.BL.name = "Options"
+    self.panel.BL.parent = "MoP CM Helper"
+
+    -- panel elements here
     -- Button to Delete Saved Data
-    local btn = CreateFrame("Button", nil, self.panel, "UIPanelButtonTemplate")
+    local btn = CreateFrame("Button", nil, self.panel.BL, "UIPanelButtonTemplate")
     btn:SetPoint("RIGHT", -50, -80)
     btn:SetText("Clear Saved Boss Kill Times")
     btn:SetWidth(250)
@@ -97,7 +88,7 @@ function f:InitializeOptions()
     end)
 
     -- Button to Restore Frames Positions
-    local btn2 = CreateFrame("Button", nil, self.panel, "UIPanelButtonTemplate")
+    local btn2 = CreateFrame("Button", nil, self.panel.BL, "UIPanelButtonTemplate")
     btn2:SetPoint("LEFT", 50, -80)
     btn2:SetText("Reset Frames Positions")
     btn2:SetWidth(250)
@@ -107,7 +98,41 @@ function f:InitializeOptions()
         ResetObjectivesFramePosition()
     end)
 
-    InterfaceOptions_AddCategory(self.panel)
+    InterfaceOptions_AddCategory(self.panel.BL)
+
+    -- About Panel
+    self.panel.BL = CreateFrame("Frame", nil, UIParent, "OptionsBoxTemplate")
+    self.panel.BL:Hide()
+    self.panel.BL.name = "About"
+    self.panel.BL.parent = "MoP CM Helper"
+
+    -- panel elements here
+    local addon_info1 = self.panel.BL:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
+    addon_info1:SetPoint("TOPLEFT", 7, -20)
+    addon_info1:SetJustifyH("LEFT")
+    addon_info1:SetText(
+        "|cffffd700Mop CM Helper |r |cffffffffis an essential addon tailored to competitive groups \nstriving to enhance their performance in Mist of Pandaria Challenge Modes. \nBoasting two distinct panels, this tool offers comprehensive insights \ncrucial for refining strategies and achieving optimal times and ranks.")
+
+    local addon_info2 = self.panel.BL:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
+    addon_info2:SetPoint("TOPLEFT", addon_info1, "BOTTOMLEFT", 0, -10)
+    addon_info2:SetJustifyH("LEFT")
+    addon_info2:SetText(
+        "|cffffffffThe primary panel displays essential metrics such as elapsed and remaining \ntime, along with valuable data on the best server and guild times. \nAdditionally, it provides convenient functionalities like effortless leader \nresets and accessible dungeon portals for all party members.")
+
+    local addon_info3 = self.panel.BL:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
+    addon_info3:SetPoint("TOPLEFT", addon_info2, "BOTTOMLEFT", 0, -10)
+    addon_info3:SetJustifyH("LEFT")
+    addon_info3:SetText(
+        "|cffffffffMeanwhile, the secondary panel serves as a treasure trove of information, \nfeaturing the best kill times and real-time updates on current run times for \neach dungeon boss. Armed with these insights, teams can meticulously \nanalyze their performance, identify areas for improvement, and \nrecalibrate their strategies for greater success.")
+
+    local addon_info4 = self.panel.BL:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
+    addon_info4:SetPoint("TOPLEFT", addon_info3, "BOTTOMLEFT", 0, -10)
+    addon_info4:SetJustifyH("LEFT")
+    addon_info4:SetText(
+        "|cffffd700Mop CM Helper |r |cffffffffisn't just an addon; it's a strategic ally for those \ncommitted to mastering Mist of Pandaria Challenge Modes \nand dominating the leaderboards.")
+
+    InterfaceOptions_AddCategory(self.panel.BL)
+
 end
 
 -- Function to set default frame position
