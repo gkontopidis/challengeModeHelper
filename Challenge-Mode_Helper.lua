@@ -19,36 +19,86 @@ end
 
 function f:InitializeOptions()
 
+    -- "BACKGROUND" -- Drawn behind other textures
+    -- "BORDER"     -- Drawn on top of other textures but beneath any artwork
+    -- "ARTWORK"    -- Drawn on top of any other textures or artwork
+    -- "OVERLAY"    -- Drawn on top of all other textures and artwork
+
     -- Options Panel Frame
     self.panel = CreateFrame("Frame", nil, UIParent, "OptionsBoxTemplate")
     self.panel:Hide()
     self.panel.name = "MoP CM Helper"
 
-    local text1 = self.panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-    text1:SetPoint("TOPLEFT", 7, -420)
+    -- Create a base frame to contain all layers
+    local compositeFrame = CreateFrame("Frame", nil, self.panel)
+    compositeFrame:SetPoint("TOPLEFT", 2, -2)
+    compositeFrame:SetSize(950, 764) -- Adjust the size as needed
+
+    -- Create medal_image
+    local medal_image = compositeFrame:CreateTexture(nil, "OVERLAY")
+    medal_image:SetTexture("Interface\\Challenges\\challenges-gold.blp")
+    medal_image:SetSize(300, 300)
+    medal_image:SetPoint("TOPLEFT", compositeFrame, "TOPLEFT", 0, 0)
+
+    -- Create pattern_image
+    local pattern_image = compositeFrame:CreateTexture(nil, "BORDER")
+    pattern_image:SetTexture("Interface\\Challenges\\challenges-background.blp")
+    pattern_image:SetSize(955, 800)
+    pattern_image:SetPoint("TOPLEFT", compositeFrame, "TOPLEFT", 0, 0)
+
+    -- Create banner_image
+    local banner_image = compositeFrame:CreateTexture(nil, "ARTWORK")
+    banner_image:SetTexture("Interface\\Challenges\\challenges-besttime-bg.blp")
+    banner_image:SetSize(952, 170)
+    banner_image:SetPoint("TOPLEFT", compositeFrame, "TOPLEFT", -166, -70)
+
+    -- Create textFrame
+    local textFrame = CreateFrame("Frame", nil, compositeFrame)
+    textFrame:SetAllPoints(compositeFrame) -- Make the text frame cover the entire composite frame
+
+    -- Create base_background_image
+    local base_background_image = compositeFrame:CreateTexture(nil, "BACKGROUND")
+    base_background_image:SetTexture("Interface\\FriendsFrame\\PlusManz-BattleNetBG.blp")
+    base_background_image:SetSize(843, 830)
+    base_background_image:SetPoint("TOPLEFT", compositeFrame, "TOPLEFT", -112, 130)
+    base_background_image:SetAlpha(0.3)
+
+    local text1 = textFrame:CreateFontString(nil, compositeFrame, "GameFontNormalLarge") -- Set text to OVERLAY layer
+    text1:SetPoint("CENTER", -160, 30)
     text1:SetText("|cffffd700Authors:|r |cffffffffClopy, Snapshot")
+    text1:SetTextColor(1, 0.82, 0) -- Set text color to yellow
+    text1:SetShadowColor(0, 0, 0) -- Set shadow color to black
+    text1:SetShadowOffset(2, -2) -- Set shadow offset to create a shadow effect
 
-    local text2 = self.panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-    text2:SetPoint("TOPLEFT", text1, "BOTTOMLEFT", 0, -10)
+    local text2 = textFrame:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
+    text2:SetPoint("CENTER", text1, "CENTER", 0, -30)
     text2:SetText("|cffffd700Version:|r |cffffffff4.03")
+    text2:SetTextColor(1, 0.82, 0) -- Set text color to yellow
+    text2:SetShadowColor(0, 0, 0) -- Set shadow color to black
+    text2:SetShadowOffset(2, -2) -- Set shadow offset to create a shadow effect
 
-    local text3 = self.panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-    text3:SetPoint("TOPLEFT", text2, "BOTTOMLEFT", 0, -10)
+    local text3 = textFrame:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
+    text3:SetPoint("CENTER", text2, "CENTER", 0, -30)
     text3:SetText("|cffffd700Contact:|r |cffffffffClopy#0540 (Discord)")
+    text3:SetTextColor(1, 0.82, 0) -- Set text color to yellow
+    text3:SetShadowColor(0, 0, 0) -- Set shadow color to black
+    text3:SetShadowOffset(2, -2) -- Set shadow offset to create a shadow effect
 
-    local text4 = self.panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-    text4:SetPoint("TOPLEFT", text3, "BOTTOMLEFT", 0, -10)
-    text4:SetJustifyH("LEFT")
+    local text4 = textFrame:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
+    text4:SetPoint("CENTER", text3, "CENTER", 0, -80)
+    text4:SetJustifyH("CENTER")
     text4:SetText(
-        "|cffffd700Thanks:|r |cffffffffPrasinos, Plaquetas, Deadmouse, Locative, Christina\nand the guy who created the Weak Aura for Challenge modes,\nit was our inspiration")
+        "|cffffd700Thanks to:|r |cffffffff\n\nPrasinos\nPlaquetas, Deadmouse, Locative, Christina\nand the guy who created the Weak Aura for Challenge modes,\nit was our inspiration")
+    text4:SetTextColor(1, 0.82, 0) -- Set text color to yellow
+    text4:SetShadowColor(0, 0, 0) -- Set shadow color to black
+    text4:SetShadowOffset(2, -2) -- Set shadow offset to create a shadow effect
 
-    -- Create a frame for the image
-    local imageFrame = CreateFrame("Frame", nil, self.panel)
-    imageFrame:SetPoint("TOPLEFT", 5, 0)
-    imageFrame:SetSize(615, 565)
-
-    -- InterfaceOptions_AddCategory(self.panel)
-    -- panel elements here
+    local text5 = textFrame:CreateFontString(nil, "ARTWORK", "GameFontNormalHuge")
+    text5:SetPoint("CENTER", textFrame, "CENTER", -50, 230)
+    text5:SetText("|cffffffffMists of Pandaria\n\n|r|cffffd700Challenge Mode|r|cffffffff\n\nHelper") -- Use |r to reset color
+    text5:SetFont("Fonts\\FRIZQT__.TTF", 72) -- Adjust the font size here
+    text5:SetShadowColor(0, 0, 0) -- Set shadow color to black
+    text5:SetShadowOffset(2, -2) -- Set shadow offset to create a shadow effect
 
     InterfaceOptions_AddCategory(self.panel)
 
