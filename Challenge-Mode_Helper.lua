@@ -1,5 +1,4 @@
--- Addon Initialization
-local f = CreateFrame("Frame")
+local f = CreateFrame("Frame") -- Addon Initialization
 
 function f:OnEvent(event, addOnName)
     if event == "ADDON_LOADED" then
@@ -222,46 +221,221 @@ function f:InitializeOptions()
     objectives_options_title:SetShadowColor(0, 0, 0) -- Set shadow color to black
     objectives_options_title:SetShadowOffset(2, -2) -- Set shadow offset to create a shadow effect
 
-    -- -- Button to Delete Saved Data
-    -- local btn = CreateFrame("Button", nil, self.panel.BL, "UIPanelButtonTemplate")
-    -- btn:SetFrameLevel(3) -- This ensures that the button is at the correct level within the OVERLAY strata
-    -- btn:SetPoint("RIGHT", -50, -80)
-    -- btn:SetText("Clear Saved Boss Kill Times")
-    -- btn:SetWidth(250)
-    -- btn:SetHeight(50)
-    -- btn:SetScript("OnClick", function()
-    --     StaticPopupDialogs["CONFIRM_DELETE_TIMES"] = {
-    --         text = "Are you sure you want to delete saved data for boss kill times?",
-    --         button1 = "Yes - Will Relog",
-    --         button2 = "No",
-    --         OnAccept = function()
-    --             -- Clear the contents of localDB.BestBossKillTime
-    --             wipe(localDB.BestBossKillTime)
-    --             wipe(timesDB.BestBossKillTime)
-    --             print("Saved boss kill times cleared.")
+    -- Button to Restore Timer_Frame_Position_Reset_Button
+    local Timer_Frame_Position_Reset_Button = CreateFrame("Button", nil, self.panel.BL, "UIPanelButtonTemplate")
+    Timer_Frame_Position_Reset_Button:SetFrameLevel(3) -- This ensures that the button is at the correct level within the OVERLAY strata
+    Timer_Frame_Position_Reset_Button:SetPoint("CENTER", timer_options_title, "CENTER", 5, -50)
+    Timer_Frame_Position_Reset_Button:SetText("Reset Timer Position")
+    Timer_Frame_Position_Reset_Button:SetWidth(200)
+    Timer_Frame_Position_Reset_Button:SetHeight(40)
+    Timer_Frame_Position_Reset_Button:SetScript("OnClick", function()
+        ResetLabelFramePosition()
+    end)
 
-    --             -- Logout from the game
-    --             Logout()
-    --         end,
-    --         timeout = 0,
-    --         whileDead = true,
-    --         hideOnEscape = true,
-    --         preferredIndex = 3
-    --     }
-    --     StaticPopup_Show("CONFIRM_DELETE_TIMES")
-    -- end)
+    -- Button to Restore Objectives_Frame_Position_Reset_Button
+    local Objectives_Frame_Position_Reset_Button = CreateFrame("Button", nil, self.panel.BL, "UIPanelButtonTemplate")
+    Objectives_Frame_Position_Reset_Button:SetFrameLevel(3) -- This ensures that the button is at the correct level within the OVERLAY strata
+    Objectives_Frame_Position_Reset_Button:SetPoint("CENTER", objectives_options_title, "CENTER", 5, -50)
+    Objectives_Frame_Position_Reset_Button:SetText("Reset Objectives Position")
+    Objectives_Frame_Position_Reset_Button:SetWidth(200)
+    Objectives_Frame_Position_Reset_Button:SetHeight(40)
+    Objectives_Frame_Position_Reset_Button:SetScript("OnClick", function()
+        ResetObjectivesFramePosition()
+    end)
 
-    -- -- Button to Restore Frames Positions
-    -- local btn2 = CreateFrame("Button", nil, self.panel.BL, "UIPanelButtonTemplate")
-    -- btn2:SetFrameLevel(3) -- This ensures that the button is at the correct level within the OVERLAY strata
-    -- btn2:SetPoint("LEFT", 50, -80)
-    -- btn2:SetText("Reset Frames Positions")
-    -- btn2:SetWidth(250)
-    -- btn2:SetHeight(50)
-    -- btn2:SetScript("OnClick", function()
-    --     ResetLabelFramePosition()
-    --     ResetObjectivesFramePosition()
-    -- end)
+    -- Button to Delete_Boss_Data_Button
+    local Delete_Boss_Data_Button = CreateFrame("Button", nil, self.panel.BL, "UIPanelButtonTemplate")
+    Delete_Boss_Data_Button:SetFrameLevel(3) -- This ensures that the button is at the correct level within the OVERLAY strata
+    Delete_Boss_Data_Button:SetPoint("CENTER", Objectives_Frame_Position_Reset_Button, "CENTER", 0, -50)
+    Delete_Boss_Data_Button:SetText("Clear Saved Boss Kill Times")
+    Delete_Boss_Data_Button:SetWidth(200)
+    Delete_Boss_Data_Button:SetHeight(40)
+    Delete_Boss_Data_Button:SetScript("OnClick", function()
+        StaticPopupDialogs["CONFIRM_DELETE_TIMES"] = {
+            text = "Are you sure you want to delete saved data for boss kill times?",
+            button1 = "Yes - Will Relog",
+            button2 = "No",
+            OnAccept = function()
+                -- Clear the contents of localDB.BestBossKillTime
+                wipe(localDB.BestBossKillTime)
+                wipe(timesDB.BestBossKillTime)
+                print("Saved boss kill times cleared.")
+
+                -- Logout from the game
+                Logout()
+            end,
+            timeout = 0,
+            whileDead = true,
+            hideOnEscape = true,
+            preferredIndex = 3
+        }
+        StaticPopup_Show("CONFIRM_DELETE_TIMES")
+    end)
+
+    -- Create Opacity_Label Objectives
+    local Opacity_Label = textFrame2:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    Opacity_Label:SetPoint("TOP", Delete_Boss_Data_Button, "BOTTOM", 0, -30)
+    Opacity_Label:SetText("Opacity")
+
+    -- Create Slider Objectives
+    local slider = CreateFrame("Slider", nil, self.panel.BL, "OptionsSliderTemplate")
+    slider:SetPoint("TOP", Opacity_Label, "BOTTOM", 0, -10)
+    slider:SetWidth(200)
+    slider:SetHeight(20)
+    slider:SetMinMaxValues(1, 100)
+    slider:SetValue(50)
+    slider:SetValueStep(1)
+
+    -- Slider Label Objectives
+    local sliderLabel = slider:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    sliderLabel:SetPoint("TOP", slider, "BOTTOM", 0, -5)
+    sliderLabel:SetText("Value: " .. slider:GetValue())
+
+    -- Create Opacity_Label Timer
+    local Timer_Opacity_Label = textFrame2:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    Timer_Opacity_Label:SetPoint("CENTER", Timer_Frame_Position_Reset_Button, "CENTER", 5, -35)
+    Timer_Opacity_Label:SetText("Opacity")
+
+    -- Create Slider Timer
+    local Timer_slider = CreateFrame("Slider", nil, self.panel.BL, "OptionsSliderTemplate")
+    Timer_slider:SetPoint("TOP", Timer_Opacity_Label, "BOTTOM", 0, -10)
+    Timer_slider:SetWidth(200)
+    Timer_slider:SetHeight(20)
+    Timer_slider:SetMinMaxValues(1, 100)
+    Timer_slider:SetValue(50)
+    Timer_slider:SetValueStep(1)
+
+    -- Slider Label Timer
+    local sliderLabel2 = Timer_slider:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    sliderLabel2:SetPoint("TOP", Timer_slider, "BOTTOM", 0, -5)
+    sliderLabel2:SetText("Value: " .. Timer_slider:GetValue())
+
+    -- Label Combobox_Objectives_Size_Label
+    local Combobox_Objectives_Size_Label = textFrame2:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    Combobox_Objectives_Size_Label:SetPoint("TOP", slider, "BOTTOM", 0, -55)
+    Combobox_Objectives_Size_Label:SetText("Objectives Frame Size")
+
+    -- Create the combobox frame within compositeFrame2
+    local comboBox = CreateFrame("Frame", "MyComboBoxFrame", compositeFrame2, "UIDropDownMenuTemplate")
+    comboBox:SetPoint("TOP", Combobox_Objectives_Size_Label, "BOTTOM", 0, -10)
+    comboBox:SetSize(200, 30)
+
+    -- Function to initialize the combobox
+    local function InitializeComboBox(self, level)
+        local info = UIDropDownMenu_CreateInfo()
+
+        -- Define the options for the combobox
+        local options = {"Small Size", "Normal Size", "Large Size"}
+
+        -- Add each option to the combobox
+        for _, option in ipairs(options) do
+            info.text = option
+            info.value = option
+            info.notCheckable = true
+            info.func = function(self)
+                UIDropDownMenu_SetSelectedValue(comboBox, self.value)
+                print("Selected Option:", self.value) -- Print the selected option to chat
+            end
+            UIDropDownMenu_AddButton(info, level)
+        end
+    end
+
+    -- Initialize the combobox
+    UIDropDownMenu_Initialize(comboBox, InitializeComboBox)
+    UIDropDownMenu_SetWidth(comboBox, 200) -- Set the width of the dropdown menu
+    UIDropDownMenu_SetButtonWidth(comboBox, 124) -- Set the width of the button
+    UIDropDownMenu_SetSelectedValue(comboBox, "") -- Set the default selected value
+
+
+
+
+
+
+ -- Define the checkbox variable outside any function to make it accessible globally
+local Show_Legend_Checkbox
+
+-- Function to initialize the checkbox
+local function InitializeCheckbox()
+    local isChecked = CmHelperDB.framePosition.legendHidden == "False" -- Check the value from the database
+    Show_Legend_Checkbox:SetChecked(isChecked)
+    print(isChecked)
+end
+
+-- Create Show_Legend_Checkbox
+Show_Legend_Checkbox = CreateFrame("CheckButton", nil, self.panel.BL, "UICheckButtonTemplate")
+Show_Legend_Checkbox:SetPoint("TOP", sliderLabel2, "LEFT", -60, -25)
+Show_Legend_Checkbox.text:SetText("Hide Legend")
+Show_Legend_Checkbox:SetScript("OnShow", InitializeCheckbox) -- Call initialization function when the checkbox is shown
+
+-- Function to handle checkbox state change
+local function OnCheckboxStateChanged(self)
+    local isChecked = self:GetChecked()
+    CmHelperDB.framePosition.legendHidden = isChecked and "True" or "False" -- Update the value in the database
+    
+    -- Call the corresponding function based on the checkbox state
+    if isChecked then
+        HideLegend()
+
+        CmHelperDB.framePosition.legendHidden = "False"
+    else
+        ShowLegend()
+
+        CmHelperDB.framePosition.legendHidden = "True"
+    end
+
+
+end
+
+Show_Legend_Checkbox:SetScript("OnClick", OnCheckboxStateChanged) -- Set script to handle checkbox state change
+
+
+
+
+
+
+
+
+    -- Create Show_Teleports_Checkbox
+    local Show_Teleports_Checkbox = CreateFrame("CheckButton", nil, self.panel.BL, "UICheckButtonTemplate")
+    Show_Teleports_Checkbox:SetPoint("TOP", Show_Legend_Checkbox, "CENTER", 0, -25)
+    Show_Teleports_Checkbox.text:SetText("Show Teleporters Button")
+    Show_Teleports_Checkbox:SetChecked(false)
+
+    -- Label Time_To_Beat_Label
+    local Time_To_Beat_Label = textFrame2:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    Time_To_Beat_Label:SetPoint("TOP", Timer_Opacity_Label, "BOTTOM", 0, -155)
+    Time_To_Beat_Label:SetText("Time To Beat")
+
+    -- Create the combobox frame within compositeFrame2
+    local Time_To_Beat_ComboBox = CreateFrame("Frame", "MyComboBoxFrame2", compositeFrame2, "UIDropDownMenuTemplate")
+    Time_To_Beat_ComboBox:SetPoint("TOP", Time_To_Beat_Label, "BOTTOM", 0, -10)
+    Time_To_Beat_ComboBox:SetSize(200, 30)
+
+    -- Function to initialize the combobox
+    local function InitializeComboBox(self, level)
+        local info = UIDropDownMenu_CreateInfo()
+
+        -- Define the options for the combobox
+        local options = {"Guild Best", "Realm Best"}
+
+        -- Add each option to the combobox
+        for _, option in ipairs(options) do
+            info.text = option
+            info.value = option
+            info.notCheckable = true
+            info.func = function(self)
+                UIDropDownMenu_SetSelectedValue(Time_To_Beat_ComboBox, self.value)
+                print("Selected Option:", self.value) -- Print the selected option to chat
+            end
+            UIDropDownMenu_AddButton(info, level)
+        end
+    end
+
+    -- Initialize the combobox
+    UIDropDownMenu_Initialize(Time_To_Beat_ComboBox, InitializeComboBox)
+    UIDropDownMenu_SetWidth(Time_To_Beat_ComboBox, 200) -- Set the width of the dropdown menu
+    UIDropDownMenu_SetButtonWidth(Time_To_Beat_ComboBox, 124) -- Set the width of the button
+    UIDropDownMenu_SetSelectedValue(Time_To_Beat_ComboBox, "") -- Set the default selected value
 
     InterfaceOptions_AddCategory(self.panel.BL)
 

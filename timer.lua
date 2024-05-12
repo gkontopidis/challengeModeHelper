@@ -12,10 +12,10 @@ local lastTenSecondsTimer = nil
 local C_Timer = C_Timer or nil
 local soundPlayed = {}
 local isFirstLoad = true -- Global variable to track whether it's the first time the addon loads
-local yOfs = -21.22220802307129
-local xOfs = 7.110173225402832
-local point = "TOP"
-local relativePoint = "TOP"
+local yOfs --= 0
+local xOfs --= 0
+local point --= "CENTER"
+local relativePoint --= "CENTER"
 local colorPicked2 = "1" -- Variable to store the selected color option
 local selectedCountDown = "realmBest"
 local challengeName
@@ -23,6 +23,7 @@ local PortalButtonState = "NotPressed"
 local opacitySliderFrame = nil -- Variable to keep track of the opacity slider frame
 local legendToggleButton -- Define legendToggleButton before dropdown menu initialization
 local legendHidden -- = "False"
+local PortalButtonVisible
 
 timeElapsed = 0
 
@@ -104,7 +105,7 @@ local function AddSeparator(dropdownMenu, level)
 end
 
 -- Function to create the addon frame
-local function CreateAddonFrame()
+function CreateAddonFrame()
     -- Create a frame for the label
     labelFrame = CreateFrame("Frame", "MyAddonLabelFrame", UIParent)
     labelFrame:SetSize(270, 90) -- Set the size of the label frame
@@ -661,6 +662,7 @@ local function CreateAddonFrame()
 
     -- Function to save frame position and legend visibility state
     function labelFrame:SavePosition()
+ 
         local point, _, relativePoint, xOfs, yOfs = self:GetPoint()
         local r, g, b, a = self:GetBackdropColor()
 
@@ -907,16 +909,20 @@ frame:RegisterEvent("PLAYER_LOGIN")
 frame:RegisterEvent("START_TIMER")
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 frame:RegisterEvent("WORLD_MAP_UPDATE")
+frame:RegisterEvent("PLAYER_LOGOUT")
 
 frame:SetScript("OnEvent", function(self, event, ...)
     if event == "PLAYER_ENTERING_WORLD" then
-        -- If it's the first load, center the labelFrame on the screen
-        if isFirstLoad and not CmHelperDB then
-            isFirstLoad = false
-            if labelFrame then
-                labelFrame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
-            end
-        end
+
+        -- -- If it's the first load, center the labelFrame on the screen
+        -- if isFirstLoad and not CmHelperDB then
+        --     isFirstLoad = false
+        --     if labelFrame then
+        --         labelFrame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
+        --     end
+        --     -- CmHelperDB.framePosition.colorPicked2 = "1"
+        --     -- CmHelperDB.framePosition.legendHidden = "True"
+        -- end
         local _, _, _, difficultyName = GetInstanceInfo()
         if difficultyName == "Challenge Mode" then
             -- Reset the timer labels to "00:00:000"
@@ -938,6 +944,16 @@ frame:SetScript("OnEvent", function(self, event, ...)
             PortalButtonState = "NotPressed"
             PortalButton:SetNormalTexture("Interface\\Icons\\misc_arrowright")
         end
+    elseif event == "PLAYER_LOGOUT" then
+        if not CmHelperDB.framePosition.colorPicked2 then
+            CmHelperDB.framePosition.colorPicked2 = "1" -- Variable to store the selected color option
+        end
+        if not CmHelperDB.framePosition.legendHidden then
+            CmHelperDB.framePosition.legendHidden = "False" -- Variable to store the selected color option
+        end
+        if not CmHelperDB.framePosition.PortalButtonVisible then
+            CmHelperDB.framePosition.PortalButtonVisible = "True" -- Variable to store the selected color option
+        end
     elseif event == "WORLD_STATE_TIMER_START" then
         -- OnWorldStateTimerStart()
     elseif event == "WORLD_STATE_TIMER_STOP" then
@@ -957,7 +973,8 @@ frame:SetScript("OnEvent", function(self, event, ...)
     elseif event == "PLAYER_LOGIN" then
 
         -- Function to load frame position and legend visibility state
-        if CmHelperDB and CmHelperDB.framePosition then
+        if  CmHelperDB and CmHelperDB.framePosition then -- 
+print("douleuei")
             if not labelFrame then
                 labelFrame, minutesLabel, secondsLabel, millisecondsLabel = CreateAddonFrame()
             end
@@ -979,14 +996,23 @@ frame:SetScript("OnEvent", function(self, event, ...)
             end
         else
             -- Initialize CmHelperDB with the default values
+            -- *********************************************
+            -- *********************************************
+            -- *********************************************
+            -- *********************************************
+            -- auto den ekteleitai
+            -- auto den ekteleitai
+            -- auto den ekteleitai
+            -- auto den ekteleitai
+            print("default")
             CmHelperDB = {
                 framePosition = {
                     yOfs = -21.22220802307129,
                     xOfs = 7.110173225402832,
                     point = "TOP",
                     relativePoint = "TOP",
-                    colorPicked2 = colorPicked2,
-                    alpha = a,
+                    colorPicked2 = "1",
+                    alpha = "1",
                     legendHidden = "True" -- Default legend visibility state
                 }
             }
