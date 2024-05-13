@@ -22,7 +22,7 @@ local challengeName
 local PortalButtonState = "NotPressed"
 local opacitySliderFrame = nil -- Variable to keep track of the opacity slider frame
 local legendToggleButton -- Define legendToggleButton before dropdown menu initialization
-local legendHidden -- = "False"
+local ShowLegend -- = "False"
 local PortalButtonVisible
 
 timeElapsed = 0
@@ -460,7 +460,7 @@ function CreateAddonFrame()
     UpdateButtonState()
 
     -- Function to show the legend
-    function ShowLegend()
+    function ShowLegend_Function()
         -- Show gold icon and text
         if goldicon then
             goldicon:Show()
@@ -487,7 +487,7 @@ function CreateAddonFrame()
     end
 
     -- Function to hide the legend
-    function HideLegend()
+    function HideLegend_Function()
         -- Hide gold icon and text
         if goldicon then
             goldicon:Hide()
@@ -579,13 +579,13 @@ function CreateAddonFrame()
             -- Define legendToggleButton inside dropdown menu initialization
             legendToggleButton = UIDropDownMenu_CreateInfo()
 
-            if legendHidden == "True" then
+            if ShowLegend == "True" then
                 legendToggleButton.text = "Hide Legend"
                 legendToggleButton.notCheckable = true
 
                 legendToggleButton.func = function()
-                    HideLegend() -- Hide the legend
-                    legendHidden = "False"
+                    HideLegend_Function() -- Hide the legend
+                    ShowLegend = "False"
                     UIDropDownMenu_Refresh(self)
                     updateFrame()
                     labelFrame:SavePosition()
@@ -595,8 +595,8 @@ function CreateAddonFrame()
                 legendToggleButton.notCheckable = true
 
                 legendToggleButton.func = function()
-                    ShowLegend() -- Show the legend
-                    legendHidden = "True"
+                    ShowLegend_Function() -- Show the legend
+                    ShowLegend = "True"
                     UIDropDownMenu_Refresh(self)
                     updateFrame()
                     labelFrame:SavePosition()
@@ -673,7 +673,7 @@ function CreateAddonFrame()
             yOfs = yOfs,
             colorPicked2 = colorPicked2, -- Save the selected color option
             alpha = a,
-            legendHidden = legendHidden -- Save the legend visibility state
+            ShowLegend = ShowLegend -- Save the legend visibility state
         }
 
     end
@@ -921,7 +921,7 @@ frame:SetScript("OnEvent", function(self, event, ...)
         --         labelFrame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
         --     end
         --     -- CmHelperDB.framePosition.colorPicked2 = "1"
-        --     -- CmHelperDB.framePosition.legendHidden = "True"
+        --     -- CmHelperDB.framePosition.ShowLegend = "True"
         -- end
         local _, _, _, difficultyName = GetInstanceInfo()
         if difficultyName == "Challenge Mode" then
@@ -948,8 +948,8 @@ frame:SetScript("OnEvent", function(self, event, ...)
         if not CmHelperDB.framePosition.colorPicked2 then
             CmHelperDB.framePosition.colorPicked2 = "1" -- Variable to store the selected color option
         end
-        if not CmHelperDB.framePosition.legendHidden then
-            CmHelperDB.framePosition.legendHidden = "False" -- Variable to store the selected color option
+        if not CmHelperDB.framePosition.ShowLegend then
+            CmHelperDB.framePosition.ShowLegend = "False" -- Variable to store the selected color option
         end
         if not CmHelperDB.framePosition.PortalButtonVisible then
             CmHelperDB.framePosition.PortalButtonVisible = "True" -- Variable to store the selected color option
@@ -984,15 +984,15 @@ print("douleuei")
             labelFrame:SetBackdropColor(0, 0, 0, CmHelperDB.framePosition.colorPicked2)
 
             -- Load the legend visibility state
-            legendHidden = CmHelperDB.framePosition.legendHidden
+            ShowLegend = CmHelperDB.framePosition.ShowLegend
 
             -- Update the legend visibility based on the loaded state
-            if legendHidden == "False" then
+            if ShowLegend == "False" then
                 -- Hide legend if it was hidden before
-                HideLegend()
+                HideLegend_Function()
             else
                 -- Show legend if it was shown before
-                ShowLegend()
+                ShowLegend_Function()
             end
         else
             -- Initialize CmHelperDB with the default values
@@ -1013,14 +1013,14 @@ print("douleuei")
                     relativePoint = "TOP",
                     colorPicked2 = "1",
                     alpha = "1",
-                    legendHidden = "True" -- Default legend visibility state
+                    ShowLegend = "True" -- Default legend visibility state
                 }
             }
             labelFrame, minutesLabel, secondsLabel, millisecondsLabel = CreateAddonFrame()
             labelFrame:SetBackdropColor(0, 0, 0, CmHelperDB.framePosition.colorPicked2)
 
             -- Since it's the first load, we assume legend is hidden by default
-            HideLegend()
+            HideLegend_Function()
         end
         updateFrame()
 

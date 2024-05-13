@@ -356,7 +356,7 @@ local Show_Legend_Checkbox
 
 -- Function to initialize the checkbox
 local function InitializeCheckbox()
-    local isChecked = CmHelperDB.framePosition.legendHidden == "False" -- Check the value from the database
+    local isChecked = CmHelperDB.framePosition.ShowLegend == "False" -- Check the value from the database
     Show_Legend_Checkbox:SetChecked(isChecked)
     print(isChecked)
 end
@@ -370,17 +370,17 @@ Show_Legend_Checkbox:SetScript("OnShow", InitializeCheckbox) -- Call initializat
 -- Function to handle checkbox state change
 local function OnCheckboxStateChanged(self)
     local isChecked = self:GetChecked()
-    CmHelperDB.framePosition.legendHidden = isChecked and "True" or "False" -- Update the value in the database
+    CmHelperDB.framePosition.ShowLegend = isChecked and "True" or "False" -- Update the value in the database
     
     -- Call the corresponding function based on the checkbox state
     if isChecked then
-        HideLegend()
+        HideLegend_Function()
 
-        CmHelperDB.framePosition.legendHidden = "False"
+        CmHelperDB.framePosition.ShowLegend = "False"
     else
-        ShowLegend()
+        ShowLegend_Function()
 
-        CmHelperDB.framePosition.legendHidden = "True"
+        CmHelperDB.framePosition.ShowLegend = "True"
     end
 
 
