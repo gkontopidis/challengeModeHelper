@@ -358,7 +358,6 @@ local Show_Legend_Checkbox
 local function InitializeCheckbox()
     local isChecked = CmHelperDB.framePosition.ShowLegend == "False" -- Check the value from the database
     Show_Legend_Checkbox:SetChecked(isChecked)
-    print(isChecked)
 end
 
 -- Create Show_Legend_Checkbox
@@ -516,8 +515,8 @@ local function SetDefaultFramePosition()
     end
     if not CmHelperDB.framePosition then
         CmHelperDB.framePosition = {
-            yOfs = -100, -- Adjust these values to set the default position
-            xOfs = 100,
+            yOfs = 0, -- Adjust these values to set the default position
+            xOfs = 0,
             point = "CENTER",
             relativePoint = "CENTER"
         }

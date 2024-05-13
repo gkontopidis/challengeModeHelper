@@ -34,7 +34,7 @@ local function ShowOpacitySliderFrame()
         opacitySliderFrame:Hide() -- Hide the existing frame
     else
         -- Create the frame if it doesn't exist
-        opacitySliderFrame = CreateFrame("Frame", "MyAddon_OpacitySliderFrame", UIParent)
+        opacitySliderFrame = CreateFrame("Frame", "MoPCMHelper_OpacitySliderFrame", UIParent)
         opacitySliderFrame:SetSize(200, 90) -- Increased height to accommodate the label
         opacitySliderFrame:SetPoint("CENTER", 0, 0)
         opacitySliderFrame:SetBackdrop({
@@ -60,7 +60,7 @@ local function ShowOpacitySliderFrame()
         local sliderValueLabel = opacitySliderFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
         sliderValueLabel:SetPoint("LEFT", sliderLabel, "RIGHT", 5, 0) -- Position below the slider label
 
-        local slider = CreateFrame("Slider", "MyAddon_OpacitySlider", opacitySliderFrame, "OptionsSliderTemplate")
+        local slider = CreateFrame("Slider", "MoPCMHelper_OpacitySlider", opacitySliderFrame, "OptionsSliderTemplate")
         slider:SetWidth(180)
         slider:SetHeight(20)
         slider:SetPoint("TOPLEFT", 10, -30)
@@ -107,7 +107,7 @@ end
 -- Function to create the addon frame
 function CreateAddonFrame()
     -- Create a frame for the label
-    labelFrame = CreateFrame("Frame", "MyAddonLabelFrame", UIParent)
+    labelFrame = CreateFrame("Frame", "MoPCMHelperLabelFrame", UIParent)
     labelFrame:SetSize(270, 90) -- Set the size of the label frame
 
     -- Set up backdrop for the frame
@@ -134,7 +134,7 @@ function CreateAddonFrame()
     end
 
     -- Create the hover frame
-    hoverFrame = CreateFrame("Frame", "MyAddonHoverFrame", UIParent)
+    hoverFrame = CreateFrame("Frame", "MoPCMHelperHoverFrame", UIParent)
     frameHeight = getAvailableTeleportButtons()
     hoverFrame:SetSize(55, #frameHeight * 44)
     hoverFrame:SetPoint("TOP", labelFrame, "RIGHT", 22, 44) -- Adjust position as needed
@@ -154,7 +154,7 @@ function CreateAddonFrame()
     hoverFrame:Hide() -- Hide the hover frame initially
 
     local function CreateButton(parent, index, portalName, iconPath, spellID)
-        local button = CreateFrame("Button", "MyAddonHoverButton" .. index, parent, "SecureActionButtonTemplate")
+        local button = CreateFrame("Button", "MoPCMHelperHoverButton" .. index, parent, "SecureActionButtonTemplate")
         button:SetSize(40, 40) -- Set the size of each button
         button:SetPoint("TOP", parent, "TOP", 0, -((index - 1) * 40)) -- Position each button vertically
 
@@ -514,7 +514,7 @@ function CreateAddonFrame()
     end
 
     -- Create a dropdown menu
-    local dropdownMenu = CreateFrame("Frame", "MyAddonDropdownMenu", UIParent, "UIDropDownMenuTemplate")
+    local dropdownMenu = CreateFrame("Frame", "MoPCMHelperDropdownMenu", UIParent, "UIDropDownMenuTemplate")
     dropdownMenu.displayMode = "MENU"
     dropdownMenu.initialize = function(self, level)
 
@@ -664,7 +664,7 @@ function CreateAddonFrame()
     function labelFrame:SavePosition()
  
         local point, _, relativePoint, xOfs, yOfs = self:GetPoint()
-        local r, g, b, a = self:GetBackdropColor()
+        -- local r, g, b, a = self:GetBackdropColor()
 
         CmHelperDB.framePosition = {
             point = point,
@@ -672,7 +672,7 @@ function CreateAddonFrame()
             xOfs = xOfs,
             yOfs = yOfs,
             colorPicked2 = colorPicked2, -- Save the selected color option
-            alpha = a,
+            -- alpha = a,
             ShowLegend = ShowLegend -- Save the legend visibility state
         }
 
@@ -974,7 +974,7 @@ frame:SetScript("OnEvent", function(self, event, ...)
 
         -- Function to load frame position and legend visibility state
         if  CmHelperDB and CmHelperDB.framePosition then -- 
-print("douleuei")
+
             if not labelFrame then
                 labelFrame, minutesLabel, secondsLabel, millisecondsLabel = CreateAddonFrame()
             end

@@ -14,7 +14,7 @@ local function ShowOpacitySliderFrame()
         opacitySliderFrame:Hide() -- Hide the existing frame
     else
         -- Create the frame if it doesn't exist
-        opacitySliderFrame = CreateFrame("Frame", "MyAddon_OpacitySliderFrame", UIParent)
+        opacitySliderFrame = CreateFrame("Frame", "MoPCMHelper_OpacitySliderFrame", UIParent)
         opacitySliderFrame:SetSize(200, 90) -- Increased height to accommodate the label
         opacitySliderFrame:SetPoint("CENTER", 0, 0)
         opacitySliderFrame:SetBackdrop({
@@ -40,7 +40,7 @@ local function ShowOpacitySliderFrame()
         local sliderValueLabel = opacitySliderFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
         sliderValueLabel:SetPoint("LEFT", sliderLabel, "RIGHT", 5, 0) -- Position below the slider label
 
-        local slider = CreateFrame("Slider", "MyAddon_OpacitySlider", opacitySliderFrame, "OptionsSliderTemplate")
+        local slider = CreateFrame("Slider", "MoPCMHelper_OpacitySlider", opacitySliderFrame, "OptionsSliderTemplate")
         slider:SetWidth(180)
         slider:SetHeight(20)
         slider:SetPoint("TOPLEFT", 10, -30)
@@ -133,7 +133,7 @@ local function UpdateObjectivesLabel()
 end
 
 -- Create a frame for the label
-Objectives_frame = CreateFrame("Frame", "MyAddonObjectivesFrame", UIParent)
+Objectives_frame = CreateFrame("Frame", "MoPCMHelperObjectivesFrame", UIParent)
 Objectives_frame:SetPoint("CENTER", UIParent, "CENTER")
 
 -- Set up backdrop for the frame
@@ -183,7 +183,7 @@ Objectives_frame.isLocked = true
 
 -- Function to create the dropdown menu
 local function CreateDropdownMenu()
-    local dropdownMenu = CreateFrame("Frame", "MyAddonDropdownMenu", UIParent, "UIDropDownMenuTemplate")
+    local dropdownMenu = CreateFrame("Frame", "MoPCMHelperDropdownMenu", UIParent, "UIDropDownMenuTemplate")
     dropdownMenu.displayMode = "MENU"
     dropdownMenu.initialize = function(self, level)
         if level == 1 then
@@ -275,14 +275,14 @@ end)
 
 -- Function to save frame position
 function Objectives_frame:SavePosition()
-    local point, _, relativePoint, xOfs, yOfs = self:GetPoint()
-    local r, g, b, a = self:GetBackdropColor()
+    -- local point, _, relativePoint, xOfs, yOfs = self:GetPoint()
+    -- local r, g, b, a = self:GetBackdropColor()
     CmHelperDB.Objectives_frame = {
-        point = point,
-        relativePoint = relativePoint,
-        xOfs = xOfs,
-        yOfs = yOfs,
-        alpha = a, -- Save the alpha value of the backdrop color
+        -- point = point,
+        -- relativePoint = relativePoint,
+        -- xOfs = xOfs,
+        -- yOfs = yOfs,
+        -- alpha = a, -- Save the alpha value of the backdrop color
         colorPicked = colorPicked, -- Save the selected color option
         fontSize = Objectives_label:GetFontObject():GetName() -- Save the selected font size
     }
@@ -434,9 +434,9 @@ Objectives_frame:SetScript("OnEvent", function(self, event, ...)
         -- Load saved position, transparency, and colorPicked
         local savedPosition = CmHelperDB.Objectives_frame
         if savedPosition then
-            Objectives_frame:SetPoint(savedPosition.point, UIParent, savedPosition.relativePoint, savedPosition.xOfs,
-                savedPosition.yOfs)
-            Objectives_frame:SetBackdropColor(0, 0, 0, savedPosition.alpha)
+            -- Objectives_frame:SetPoint(savedPosition.point, UIParent, savedPosition.relativePoint, savedPosition.xOfs,
+            --     savedPosition.yOfs)
+            -- Objectives_frame:SetBackdropColor(0, 0, 0, savedPosition.alpha)
             colorPicked = savedPosition.colorPicked or 0
             -- Load the selected font size
             local fontName = savedPosition.fontSize
