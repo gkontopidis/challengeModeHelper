@@ -346,59 +346,75 @@ function f:InitializeOptions()
     UIDropDownMenu_SetButtonWidth(comboBox, 124) -- Set the width of the button
     UIDropDownMenu_SetSelectedValue(comboBox, "") -- Set the default selected value
 
+    -- Define the checkbox variable outside any function to make it accessible globally
+    local Show_Legend_Checkbox
 
-
-
-
-
- -- Define the checkbox variable outside any function to make it accessible globally
-local Show_Legend_Checkbox
-
--- Function to initialize the checkbox
-local function InitializeCheckbox()
-    local isChecked = CmHelperDB.framePosition.ShowLegend == "False" -- Check the value from the database
-    Show_Legend_Checkbox:SetChecked(isChecked)
-end
-
--- Create Show_Legend_Checkbox
-Show_Legend_Checkbox = CreateFrame("CheckButton", nil, self.panel.BL, "UICheckButtonTemplate")
-Show_Legend_Checkbox:SetPoint("TOP", sliderLabel2, "LEFT", -60, -25)
-Show_Legend_Checkbox.text:SetText("Hide Legend")
-Show_Legend_Checkbox:SetScript("OnShow", InitializeCheckbox) -- Call initialization function when the checkbox is shown
-
--- Function to handle checkbox state change
-local function OnCheckboxStateChanged(self)
-    local isChecked = self:GetChecked()
-    CmHelperDB.framePosition.ShowLegend = isChecked and "True" or "False" -- Update the value in the database
-    
-    -- Call the corresponding function based on the checkbox state
-    if isChecked then
-        HideLegend_Function()
-
-        CmHelperDB.framePosition.ShowLegend = "False"
-    else
-        ShowLegend_Function()
-
-        CmHelperDB.framePosition.ShowLegend = "True"
+    -- Function to initialize the checkbox
+    local function InitializeCheckbox()
+        local isChecked = CmHelperDB.framePosition.ShowLegend == "False" -- Check the value from the database
+        Show_Legend_Checkbox:SetChecked(isChecked)
     end
 
+    -- Create Show_Legend_Checkbox
+    Show_Legend_Checkbox = CreateFrame("CheckButton", nil, self.panel.BL, "UICheckButtonTemplate")
+    Show_Legend_Checkbox:SetPoint("TOP", sliderLabel2, "LEFT", -60, -25)
+    Show_Legend_Checkbox.text:SetText("Hide Legend")
+    Show_Legend_Checkbox:SetScript("OnShow", InitializeCheckbox) -- Call initialization function when the checkbox is shown
 
-end
+    -- Function to handle Hide Legend checkbox state change
+    local function OnHideLegendCheckboxStateChanged(self)
+        local isChecked = self:GetChecked()
+        CmHelperDB.framePosition.ShowLegend = isChecked and "True" or "False" -- Update the value in the database
 
-Show_Legend_Checkbox:SetScript("OnClick", OnCheckboxStateChanged) -- Set script to handle checkbox state change
+        -- Call the corresponding function based on the checkbox state
+        if isChecked then
+            HideLegend_Function()
 
+            CmHelperDB.framePosition.ShowLegend = "False"
+        else
+            ShowLegend_Function()
 
+            CmHelperDB.framePosition.ShowLegend = "True"
+        end
 
+    end
 
+    Show_Legend_Checkbox:SetScript("OnClick", OnHideLegendCheckboxStateChanged) -- Set script to handle checkbox state change
 
+    -- Define the checkbox variable outside any function to make it accessible globally
+    local Show_Teleports_Checkbox
 
-
+    -- Function to initialize the checkbox
+    local function InitializeCheckbox_Portals()
+        local isChecked2 = CmHelperDB.framePosition.ShowPortalsButton == "False" -- Check the value from the database
+        Show_Teleports_Checkbox:SetChecked(isChecked2)
+    end
 
     -- Create Show_Teleports_Checkbox
-    local Show_Teleports_Checkbox = CreateFrame("CheckButton", nil, self.panel.BL, "UICheckButtonTemplate")
+    Show_Teleports_Checkbox = CreateFrame("CheckButton", nil, self.panel.BL, "UICheckButtonTemplate")
     Show_Teleports_Checkbox:SetPoint("TOP", Show_Legend_Checkbox, "CENTER", 0, -25)
-    Show_Teleports_Checkbox.text:SetText("Show Teleporters Button")
-    Show_Teleports_Checkbox:SetChecked(false)
+    Show_Teleports_Checkbox.text:SetText("Hide Teleporters Button")
+    Show_Teleports_Checkbox:SetScript("OnShow", InitializeCheckbox_Portals) -- Call initialization function when the checkbox is shown
+
+    -- Function to handle Hide Legend checkbox state change
+    local function OnHidePortalButtonCheckboxStateChanged(self)
+        local isChecked2 = self:GetChecked()
+        CmHelperDB.framePosition.ShowPortalsButton = isChecked2 and "True" or "False" -- Update the value in the database
+
+        -- Call the corresponding function based on the checkbox state
+        if isChecked2 then
+            Hide_Portals_Function()
+
+            CmHelperDB.framePosition.ShowPortalsButton = "False"
+        else
+            Show_Portals_Function()
+
+            CmHelperDB.framePosition.ShowPortalsButton = "True"
+        end
+
+    end
+
+    Show_Teleports_Checkbox:SetScript("OnClick", OnHidePortalButtonCheckboxStateChanged) -- Set script to handle checkbox state change
 
     -- Label Time_To_Beat_Label
     local Time_To_Beat_Label = textFrame2:CreateFontString(nil, "OVERLAY", "GameFontHighlight")

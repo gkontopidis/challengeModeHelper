@@ -12,10 +12,10 @@ local lastTenSecondsTimer = nil
 local C_Timer = C_Timer or nil
 local soundPlayed = {}
 local isFirstLoad = true -- Global variable to track whether it's the first time the addon loads
-local yOfs --= 0
-local xOfs --= 0
-local point --= "CENTER"
-local relativePoint --= "CENTER"
+local yOfs -- = 0
+local xOfs -- = 0
+local point -- = "CENTER"
+local relativePoint -- = "CENTER"
 local colorPicked2 = "1" -- Variable to store the selected color option
 local selectedCountDown = "realmBest"
 local challengeName
@@ -23,7 +23,7 @@ local PortalButtonState = "NotPressed"
 local opacitySliderFrame = nil -- Variable to keep track of the opacity slider frame
 local legendToggleButton -- Define legendToggleButton before dropdown menu initialization
 local ShowLegend -- = "False"
-local PortalButtonVisible
+local ShowPortalsButton
 
 timeElapsed = 0
 
@@ -513,6 +513,22 @@ function CreateAddonFrame()
         end
     end
 
+    -- Function to show the portals button
+    function Show_Portals_Function()
+        -- Show PortalButton
+        if PortalButton then
+            PortalButton:Show()
+        end
+    end
+
+    -- Function to hide the the portals button
+    function Hide_Portals_Function()
+        -- Hide PortalButton
+        if PortalButton then
+            PortalButton:Hide()
+        end
+    end
+
     -- Create a dropdown menu
     local dropdownMenu = CreateFrame("Frame", "MoPCMHelperDropdownMenu", UIParent, "UIDropDownMenuTemplate")
     dropdownMenu.displayMode = "MENU"
@@ -662,7 +678,7 @@ function CreateAddonFrame()
 
     -- Function to save frame position and legend visibility state
     function labelFrame:SavePosition()
- 
+
         local point, _, relativePoint, xOfs, yOfs = self:GetPoint()
         -- local r, g, b, a = self:GetBackdropColor()
 
@@ -949,10 +965,10 @@ frame:SetScript("OnEvent", function(self, event, ...)
             CmHelperDB.framePosition.colorPicked2 = "1" -- Variable to store the selected color option
         end
         if not CmHelperDB.framePosition.ShowLegend then
-            CmHelperDB.framePosition.ShowLegend = "False" -- Variable to store the selected color option
+            CmHelperDB.framePosition.ShowLegend = "True" -- Variable to store the selected color option
         end
-        if not CmHelperDB.framePosition.PortalButtonVisible then
-            CmHelperDB.framePosition.PortalButtonVisible = "True" -- Variable to store the selected color option
+        if not CmHelperDB.framePosition.ShowPortalsButton then
+            CmHelperDB.framePosition.ShowPortalsButton = "True" -- Variable to store the selected color option
         end
     elseif event == "WORLD_STATE_TIMER_START" then
         -- OnWorldStateTimerStart()
@@ -973,7 +989,7 @@ frame:SetScript("OnEvent", function(self, event, ...)
     elseif event == "PLAYER_LOGIN" then
 
         -- Function to load frame position and legend visibility state
-        if  CmHelperDB and CmHelperDB.framePosition then -- 
+        if CmHelperDB and CmHelperDB.framePosition then -- 
 
             if not labelFrame then
                 labelFrame, minutesLabel, secondsLabel, millisecondsLabel = CreateAddonFrame()
@@ -993,6 +1009,19 @@ frame:SetScript("OnEvent", function(self, event, ...)
             else
                 -- Show legend if it was shown before
                 ShowLegend_Function()
+            end
+
+            -- Load the Portal Button visibility state
+            ShowPortalsButton = CmHelperDB.framePosition.ShowPortalsButton
+
+            -- Update the Portal Button visibility based on the loaded state
+            if ShowPortalsButton == "False" then
+                -- Hide Portal Button if it was hidden before
+                Hide_Portals_Function()
+            else
+                -- Show Portal Button if it was shown before
+
+                Show_Portals_Function()
             end
         else
             -- Initialize CmHelperDB with the default values
