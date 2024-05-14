@@ -14,3 +14,8 @@ cmCompletionTimes.lua
 
 
 
+--otan anoigoun ta options na emfanizei ta frame kai ekso apo cmCompletionTimes
+--tank mark, healer mark
+--leader ready check
+--na diavazei ta realm best sto login kai na ta bazei se db
+
