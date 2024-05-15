@@ -376,7 +376,7 @@ function CreateAddonFrame()
     local Ready_Check_Button = CreateFrame("Button", "MyWowButton", labelFrame, "UIPanelButtonTemplate")
     Ready_Check_Button:SetSize(20, 20)
     Ready_Check_Button:SetPoint("LEFT", minutesLabel, "RIGHT", 120, -1)
-    Ready_Check_Button:SetNormalTexture("Interface\\Icons\\INV_Misc_QuestionMark")
+    Ready_Check_Button:SetNormalTexture("Interface\\CURSOR\\thumbsup")
 
     Ready_Check_Button:SetScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
@@ -430,7 +430,7 @@ end)
 local Role_Marks_Button = CreateFrame("Button", "MyMarkButton", labelFrame, "UIPanelButtonTemplate")
 Role_Marks_Button:SetSize(20, 20)
 Role_Marks_Button:SetPoint("LEFT", Ready_Check_Button, "RIGHT", -60, 0)
-Role_Marks_Button:SetNormalTexture("Interface\\Icons\\INV_Misc_QuestionMark")
+Role_Marks_Button:SetNormalTexture("Interface\\CURSOR\\Crosshairs")
 
 Role_Marks_Button:SetScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
@@ -442,110 +442,48 @@ Role_Marks_Button:SetScript("OnEnter", function(self)
         GameTooltip:Hide()
     end)
 
--- Function to get the role of a player based on class and specialization
-local function GetPlayerRole(unit)
-    local _, class = UnitClass(unit)
-    local specIndex = GetSpecialization(unit)
-    local role
-
-    if class == "DRUID" then
-        if specIndex == 3 then -- Restoration
-            role = "HEALER"
-        elseif specIndex == 2 then -- Guardian
-            role = "TANK"
-        else
-            role = "DAMAGER"  -- Assuming other specs are DPS
+function ClearAllRaidMarks()
+    for raidIndex = 1, GetNumGroupMembers() do
+        local name, _, _, _, _, _, _, online, isDead, role, _, _ = GetRaidRosterInfo(raidIndex)
+        if name then
+            SetRaidTarget(name, 0)  -- Clear raid mark
         end
-    elseif class == "MONK" then
-        if specIndex == 2 then -- Mistweaver
-            role = "HEALER"
-            print("2")
-        elseif specIndex == 3 then -- Brewmaster
-            role = "TANK"
-            print("3")
-        else
-            role = "DAMAGER"
-            print("1")
-        end
-    elseif class == "PALADIN" then
-        if specIndex == 2 then -- Holy
-            role = "HEALER"
-        elseif specIndex == 1 then -- Protection
-            role = "TANK"
-        else
-            role = "DAMAGER"
-        end
-    elseif class == "PRIEST" then
-        if specIndex == 1 then -- Discipline
-            role = "HEALER"
-        else
-            role = "DAMAGER"
-        end
-    elseif class == "SHAMAN" then
-        if specIndex == 3 then -- Restoration
-            role = "HEALER"
-        else
-            role = "DAMAGER"
-        end
-    -- Add more class-specific logic as needed
-    elseif class == "WARRIOR" then
-        if specIndex == 3 then -- Protection
-            role = "TANK"
-        else
-            role = "DAMAGER"
-        end
-    -- elseif class == "DEATHKNIGHT" then ...
-    else
-        role = "DAMAGER"  -- Default assumption
-    end
-
-    return role
-end
-
--- Function to mark a specific player with a raid target icon
-local function MarkPlayer(unit, iconIndex)
-    if UnitExists(unit) then
-        SetRaidTarget(unit, iconIndex)
-    else
-        print("Player not found.")
     end
 end
 
--- Function to mark the tank and healer
-local function MarkPlayers()
-    -- Find the tank and healer in the party
-    local tank, healer
-
-    for i = 1, GetNumGroupMembers() do
-        local unit = "party" .. i
-        local role = GetPlayerRole(unit)
-        MarkPlayer(i, 7)
-        print("Unit:", unit, "Role:", role) -- Debug print to check role detection
-        if role == "TANK" then
-            tank = unit
-        elseif role == "HEALER" then
-            healer = unit
+-- Function to mark players with raid marks based on their combat role
+function MarkPlayersWithRaidMarks()
+    ClearAllRaidMarks()  -- Clear existing raid marks
+    for raidIndex = 1, GetNumGroupMembers() do
+        local name, _, _, _, _, _, _, online, isDead, role, _, combatRole = GetRaidRosterInfo(raidIndex)
+        if combatRole then
+            if combatRole == "TANK" then
+                SetRaidTarget(name, 2)  -- Apply nipple mark
+            elseif combatRole == "HEALER" then
+                SetRaidTarget(name, 4)  -- Apply triangle mark
+            end
         end
-    end
-
-    -- Mark the tank with an orange circle
-    if tank then
-        MarkPlayer(tank, 7) -- 7 is the index for orange circle
-    else
-        print("No tank found.")
-    end
-
-    -- Mark the healer with a green triangle
-    if healer then
-        MarkPlayer(healer, 4) -- 4 is the index for green triangle
-    else
-        print("No healer found.")
     end
 end
 
+-- Variable to track the state of marks (true: marks shown, false: marks hidden)
+local marksShown = false
+
+-- Function to toggle between showing and hiding marks
+function ToggleMarkState()
+    if marksShown then
+        ClearAllRaidMarks()  -- Clear marks
+        marksShown = false
+        Role_Marks_Button:SetNormalTexture("Interface\\CURSOR\\Crosshairs")
+    else
+        MarkPlayersWithRaidMarks()  -- Mark players
+        marksShown = true
+        Role_Marks_Button:SetNormalTexture("Interface\\CURSOR\\UnableCrosshairs")
+    end
+end
 
 -- Register the click event for the button
-Role_Marks_Button:SetScript("OnClick", MarkPlayers)
+Role_Marks_Button:SetScript("OnClick", ToggleMarkState)
 
     
 
@@ -588,6 +526,7 @@ Role_Marks_Button:SetScript("OnClick", MarkPlayers)
 
             button:Show() -- Show the button if the player is the group leader
             Ready_Check_Button:Show()
+            Role_Marks_Button:Show()
 
             -- Position the realm best time label
             realmBestLabel:SetPoint("LEFT", labelFrame, "LEFT", 80, 20) -- Adjust the offset as needed
@@ -614,6 +553,7 @@ Role_Marks_Button:SetScript("OnClick", MarkPlayers)
 
             button:Show() -- Show the button if the player is alone
             Ready_Check_Button:Hide()
+            Role_Marks_Button:Hide()
 
             -- Position the realm best time label
             realmBestLabel:SetPoint("LEFT", labelFrame, "LEFT", 80, 20) -- Adjust the offset as needed
@@ -638,6 +578,7 @@ Role_Marks_Button:SetScript("OnClick", MarkPlayers)
         else
             button:Hide() -- Hide the button if the player is in a group but not the leader
             Ready_Check_Button:Hide()
+            Role_Marks_Button:Hide()
 
             labelFrame:SetSize(200, 90) -- Set the size of the label frame
             -- Position the realm best time label
