@@ -12,7 +12,7 @@ Timer.lua
 Objectives.lua
 cmCompletionTimes.lua
 
---Strategies.lua
+Strategies.lua
 
 
 
