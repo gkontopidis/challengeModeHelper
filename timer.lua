@@ -24,6 +24,7 @@ local opacitySliderFrame = nil -- Variable to keep track of the opacity slider f
 local legendToggleButton -- Define legendToggleButton before dropdown menu initialization
 local ShowLegend -- = "False"
 local ShowPortalsButton
+local ShowReadyCheckVariable
 
 timeElapsed = 0
 
@@ -154,7 +155,7 @@ function CreateAddonFrame()
     hoverFrame:Hide() -- Hide the hover frame initially
 
     local function CreateButton(parent, index, portalName, iconPath, spellID)
-        local button = CreateFrame("Button", "MoPCMHelperHoverButton" .. index, parent, "SecureActionButtonTemplate")
+        button = CreateFrame("Button", "MoPCMHelperHoverButton" .. index, parent, "SecureActionButtonTemplate")
         button:SetSize(40, 40) -- Set the size of each button
         button:SetPoint("TOP", parent, "TOP", 0, -((index - 1) * 40)) -- Position each button vertically
 
@@ -373,7 +374,7 @@ function CreateAddonFrame()
         --DoReadyCheck()
     end)
 
-    local Ready_Check_Button = CreateFrame("Button", "MyWowButton", labelFrame, "UIPanelButtonTemplate")
+    Ready_Check_Button = CreateFrame("Button", "MyWowButton", labelFrame, "UIPanelButtonTemplate")
     Ready_Check_Button:SetSize(20, 20)
     Ready_Check_Button:SetPoint("LEFT", minutesLabel, "RIGHT", 120, -1)
     Ready_Check_Button:SetNormalTexture("Interface\\CURSOR\\thumbsup")
@@ -520,13 +521,28 @@ Role_Marks_Button:SetScript("OnClick", ToggleMarkState)
 
 
     -- Function to update the button state
-    local function UpdateButtonState()
+    function UpdateButtonState()
         if IsInGroup() and UnitIsGroupLeader("player") then
+            print("IsInGroup() and UnitIsGroupLeader")
             labelFrame:SetSize(270, 90) -- Set the size of the label frame
 
             button:Show() -- Show the button if the player is the group leader
-            Ready_Check_Button:Show()
-            Role_Marks_Button:Show()
+            --Ready_Check_Button:Show()
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+            
 
             -- Position the realm best time label
             realmBestLabel:SetPoint("LEFT", labelFrame, "LEFT", 80, 20) -- Adjust the offset as needed
@@ -549,6 +565,7 @@ Role_Marks_Button:SetScript("OnClick", ToggleMarkState)
             silverText:SetFontObject("GameFontNormalLarge")
             bronzeText:SetFontObject("GameFontNormalLarge")
         elseif not IsInGroup() then
+            print("not IsInGroup")
             labelFrame:SetSize(270, 90) -- Set the size of the label frame
 
             button:Show() -- Show the button if the player is alone
@@ -576,6 +593,7 @@ Role_Marks_Button:SetScript("OnClick", ToggleMarkState)
             silverText:SetFontObject("GameFontNormalLarge")
             bronzeText:SetFontObject("GameFontNormalLarge")
         else
+            print("not Leader")
             button:Hide() -- Hide the button if the player is in a group but not the leader
             Ready_Check_Button:Hide()
             Role_Marks_Button:Hide()
@@ -665,6 +683,67 @@ Role_Marks_Button:SetScript("OnClick", ToggleMarkState)
             bronzeText:Hide()
         end
     end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    -- Function to show the ReadyCheck
+    function ShowReadyCheck_Function()
+
+        if Ready_Check_Button then
+            Ready_Check_Button:Show()
+        end
+       
+    end
+
+ -- Function to hide the ReadyCheck
+ function HideReadyCheck_Function()
+
+    if Ready_Check_Button then
+        Ready_Check_Button:Hide()
+    end
+   
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     -- Function to show the portals button
     function Show_Portals_Function()
@@ -1079,6 +1158,7 @@ frame:RegisterEvent("START_TIMER")
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 frame:RegisterEvent("WORLD_MAP_UPDATE")
 frame:RegisterEvent("PLAYER_LOGOUT")
+frame:RegisterEvent("PLAYER_ROLES_ASSIGNED")
 
 frame:SetScript("OnEvent", function(self, event, ...)
     if event == "PLAYER_ENTERING_WORLD" then
@@ -1113,6 +1193,79 @@ frame:SetScript("OnEvent", function(self, event, ...)
             PortalButtonState = "NotPressed"
             PortalButton:SetNormalTexture("Interface\\Icons\\misc_arrowright")
         end
+    elseif event == "PLAYER_ROLES_ASSIGNED" then
+
+
+
+
+
+
+
+
+
+
+
+        if IsInGroup() and UnitIsGroupLeader("player") then
+            print("IsInGroup() and UnitIsGroupLeader")
+            labelFrame:SetSize(270, 90) -- Set the size of the label frame
+
+            button:Show() -- Show the button if the player is the group leader
+            
+
+
+            ShowReadyCheckVariable = CmHelperDB.framePosition.ShowReadyCheck
+
+            if ShowReadyCheckVariable == "False" then
+
+                HideReadyCheck_Function()
+            else
+
+                ShowReadyCheck_Function()
+            end
+
+
+
+        elseif not IsInGroup() then
+            print("not IsInGroup")
+            labelFrame:SetSize(270, 90) -- Set the size of the label frame
+
+            button:Show() -- Show the button if the player is alone
+            Ready_Check_Button:Hide()
+            --Role_Marks_Button:Hide()
+
+        else
+            print("not Leader")
+            button:Hide() -- Hide the button if the player is in a group but not the leader
+            Ready_Check_Button:Hide()
+            --Role_Marks_Button:Hide()
+
+
+        end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     elseif event == "PLAYER_LOGOUT" then
         if not CmHelperDB.framePosition.colorPicked2 then
             CmHelperDB.framePosition.colorPicked2 = "1" -- Variable to store the selected color option
@@ -1176,6 +1329,53 @@ frame:SetScript("OnEvent", function(self, event, ...)
 
                 Show_Portals_Function()
             end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            ShowReadyCheckVariable = CmHelperDB.framePosition.ShowReadyCheck
+
+            if ShowReadyCheckVariable == "False" then
+
+                HideReadyCheck_Function()
+            else
+
+                ShowReadyCheck_Function()
+            end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         else
             -- Initialize CmHelperDB with the default values
             -- *********************************************

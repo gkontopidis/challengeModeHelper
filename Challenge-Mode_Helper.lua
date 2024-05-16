@@ -382,13 +382,39 @@ local function Timer_Frame_Elements()
 
     Timer_Frame_compositeFrame2Show_Teleports_Checkbox:SetScript("OnClick", OnHidePortalButtonCheckboxStateChanged) -- Set script to handle checkbox state change
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     -- Define the checkbox variable outside any function to make it accessible globally
     local Timer_Frame_compositeFrame2Ready_Check
 
     -- Function to initialize the checkbox
     local function InitializeCheckbox_Ready_Check()
-        -- local isChecked = CmHelperDB.framePosition.ShowLegend == "False" -- Check the value from the database
-        -- Timer_Frame_compositeFrame2Ready_Check:SetChecked(isChecked)
+        local ReadyCheckisChecked = CmHelperDB.framePosition.ShowReadyCheck == "False" -- Check the value from the database
+        Timer_Frame_compositeFrame2Ready_Check:SetChecked(ReadyCheckisChecked)
     end
 
     -- Create Show_Legend_Checkbox
@@ -401,23 +427,82 @@ local function Timer_Frame_Elements()
 
     -- Function to handle Hide Legend checkbox state change
     local function OnReadyCheckCheckboxStateChanged(self)
-        -- local isChecked = self:GetChecked()
-        -- CmHelperDB.framePosition.ShowLegend = isChecked and "True" or "False" -- Update the value in the database
+        local ReadyCheckisChecked = self:GetChecked()
+        CmHelperDB.framePosition.ShowReadyCheck = ReadyCheckisChecked and "True" or "False" -- Update the value in the database
 
-        -- -- Call the corresponding function based on the checkbox state
-        -- if isChecked then
-        --     HideLegend_Function()
+        -- Call the corresponding function based on the checkbox state
+        if ReadyCheckisChecked then
+            HideReadyCheck_Function()
 
-        --     CmHelperDB.framePosition.ShowLegend = "False"
-        -- else
-        --     ShowLegend_Function()
+            CmHelperDB.framePosition.ShowReadyCheck = "False"
+        else
+            ShowReadyCheck_Function()
 
-        --     CmHelperDB.framePosition.ShowLegend = "True"
-        -- end
+            CmHelperDB.framePosition.ShowReadyCheck = "True"
+        end
 
     end
 
     Timer_Frame_compositeFrame2Ready_Check:SetScript("OnClick", OnReadyCheckCheckboxStateChanged) -- Set script to handle checkbox state change
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     -- Define the checkbox variable outside any function to make it accessible globally
     local Timer_Frame_compositeFrame2Mark_Tank_Healer
@@ -454,6 +539,51 @@ local function Timer_Frame_Elements()
     end
 
     Timer_Frame_compositeFrame2Mark_Tank_Healer:SetScript("OnClick", OnMark_Tank_HealerCheckboxStateChanged) -- Set script to handle checkbox state change
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end
 
@@ -786,20 +916,20 @@ function f:InitializeOptions()
 
     InterfaceOptions_AddCategory(self.panel.BL)
 
-        -- Strategies Frame Panel
-        self.panel.BL = CreateFrame("Frame", nil, UIParent, "OptionsBoxTemplate")
-        self.panel.BL:Hide()
-        self.panel.BL.name = "Strategies"
-        self.panel.BL.parent = "MoP CM Helper"
-    
-        -- Create a base frame to contain all layers
-        Strategies_compositeFrame = CreateFrame("Frame", nil, self.panel.BL)
-        Strategies_compositeFrame:SetPoint("TOPLEFT", 2, -2)
-        Strategies_compositeFrame:SetSize(950, 764) -- Adjust the size as needed
-    
-        Strategies_Frame_Elements()
-    
-        InterfaceOptions_AddCategory(self.panel.BL)
+    -- Strategies Frame Panel
+    self.panel.BL = CreateFrame("Frame", nil, UIParent, "OptionsBoxTemplate")
+    self.panel.BL:Hide()
+    self.panel.BL.name = "Strategies"
+    self.panel.BL.parent = "MoP CM Helper"
+
+    -- Create a base frame to contain all layers
+    Strategies_compositeFrame = CreateFrame("Frame", nil, self.panel.BL)
+    Strategies_compositeFrame:SetPoint("TOPLEFT", 2, -2)
+    Strategies_compositeFrame:SetSize(950, 764) -- Adjust the size as needed
+
+    Strategies_Frame_Elements()
+
+    InterfaceOptions_AddCategory(self.panel.BL)
 
     -- About Panel
     self.panel.BL = CreateFrame("Frame", nil, UIParent, "OptionsBoxTemplate")
