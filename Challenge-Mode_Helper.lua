@@ -382,32 +382,6 @@ local function Timer_Frame_Elements()
 
     Timer_Frame_compositeFrame2Show_Teleports_Checkbox:SetScript("OnClick", OnHidePortalButtonCheckboxStateChanged) -- Set script to handle checkbox state change
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     -- Define the checkbox variable outside any function to make it accessible globally
     local Timer_Frame_compositeFrame2Ready_Check
 
@@ -422,7 +396,7 @@ local function Timer_Frame_Elements()
         "UICheckButtonTemplate")
     Timer_Frame_compositeFrame2Ready_Check:SetPoint("TOP", Timer_Frame_compositeFrame2Show_Teleports_Checkbox, "CENTER",
         0, -35)
-    Timer_Frame_compositeFrame2Ready_Check.text:SetText("Hide Ready Check")
+    Timer_Frame_compositeFrame2Ready_Check.text:SetText("Hide Ready Check Button (*Leader)")
     Timer_Frame_compositeFrame2Ready_Check:SetScript("OnShow", InitializeCheckbox_Ready_Check) -- Call initialization function when the checkbox is shown
 
     -- Function to handle Hide Legend checkbox state change
@@ -441,149 +415,47 @@ local function Timer_Frame_Elements()
             CmHelperDB.framePosition.ShowReadyCheck = "True"
         end
 
+        Check_Group_State_For_Button_State()
     end
 
     Timer_Frame_compositeFrame2Ready_Check:SetScript("OnClick", OnReadyCheckCheckboxStateChanged) -- Set script to handle checkbox state change
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     -- Define the checkbox variable outside any function to make it accessible globally
     local Timer_Frame_compositeFrame2Mark_Tank_Healer
 
     -- Function to initialize the checkbox
     local function InitializeCheckbox_Mark_Tank_Healer()
-        -- local isChecked = CmHelperDB.framePosition.ShowLegend == "False" -- Check the value from the database
-        -- Timer_Frame_compositeFrame2Mark_Tank_Healer:SetChecked(isChecked)
+        local Mark_Tank_Healer_isChecked = CmHelperDB.framePosition.ShowMarkTankHealer == "False" -- Check the value from the database
+        Timer_Frame_compositeFrame2Mark_Tank_Healer:SetChecked(Mark_Tank_Healer_isChecked)
     end
 
     -- Create Show_Legend_Checkbox
     Timer_Frame_compositeFrame2Mark_Tank_Healer = CreateFrame("CheckButton", nil, Timer_Frame_compositeFrame2,
         "UICheckButtonTemplate")
     Timer_Frame_compositeFrame2Mark_Tank_Healer:SetPoint("TOP", Timer_Frame_compositeFrame2Ready_Check, "CENTER", 0, -35)
-    Timer_Frame_compositeFrame2Mark_Tank_Healer.text:SetText("Hide Ready Check")
+    Timer_Frame_compositeFrame2Mark_Tank_Healer.text:SetText("Hide Mark the Tank and the Healer\nButton (*Leader)")
     Timer_Frame_compositeFrame2Mark_Tank_Healer:SetScript("OnShow", InitializeCheckbox_Mark_Tank_Healer) -- Call initialization function when the checkbox is shown
 
     -- Function to handle Hide Legend checkbox state change
     local function OnMark_Tank_HealerCheckboxStateChanged(self)
-        -- local isChecked = self:GetChecked()
-        -- CmHelperDB.framePosition.ShowLegend = isChecked and "True" or "False" -- Update the value in the database
+        local Mark_Tank_Healer_isChecked = self:GetChecked()
+        CmHelperDB.framePosition.ShowMarkTankHealer = Mark_Tank_Healer_isChecked and "True" or "False" -- Update the value in the database
 
-        -- -- Call the corresponding function based on the checkbox state
-        -- if isChecked then
-        --     HideLegend_Function()
+        -- Call the corresponding function based on the checkbox state
+        if Mark_Tank_Healer_isChecked then
+            HideMarkTankHealer_Function()
 
-        --     CmHelperDB.framePosition.ShowLegend = "False"
-        -- else
-        --     ShowLegend_Function()
+            CmHelperDB.framePosition.ShowMarkTankHealer = "False"
+        else
+            ShowMarkTankHealer_Function()
 
-        --     CmHelperDB.framePosition.ShowLegend = "True"
-        -- end
+            CmHelperDB.framePosition.ShowMarkTankHealer = "True"
+        end
 
+        Check_Group_State_For_Button_State()
     end
 
     Timer_Frame_compositeFrame2Mark_Tank_Healer:SetScript("OnClick", OnMark_Tank_HealerCheckboxStateChanged) -- Set script to handle checkbox state change
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 end
 

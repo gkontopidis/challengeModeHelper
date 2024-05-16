@@ -25,6 +25,7 @@ local legendToggleButton -- Define legendToggleButton before dropdown menu initi
 local ShowLegend -- = "False"
 local ShowPortalsButton
 local ShowReadyCheckVariable
+local ShowMarkTankHealerVariable
 
 timeElapsed = 0
 
@@ -371,7 +372,7 @@ function CreateAddonFrame()
     -- Set the button's OnClick handler to run the script
     button:SetScript("OnClick", function()
         RunScript("ResetChallengeMode()")
-        --DoReadyCheck()
+        -- DoReadyCheck()
     end)
 
     Ready_Check_Button = CreateFrame("Button", "MyWowButton", labelFrame, "UIPanelButtonTemplate")
@@ -389,51 +390,18 @@ function CreateAddonFrame()
         GameTooltip:Hide()
     end)
 
--- Function to perform a ready check when the button is clicked
-Ready_Check_Button:SetScript("OnClick", function()
-    DoReadyCheck()
-end)
+    -- Function to perform a ready check when the button is clicked
+    Ready_Check_Button:SetScript("OnClick", function()
+        DoReadyCheck()
+    end)
 
+    -- Create a frame for the button
+    Role_Marks_Button = CreateFrame("Button", "MyMarkButton", labelFrame, "UIPanelButtonTemplate")
+    Role_Marks_Button:SetSize(20, 20)
+    Role_Marks_Button:SetPoint("LEFT", Ready_Check_Button, "RIGHT", -60, 0)
+    Role_Marks_Button:SetNormalTexture("Interface\\CURSOR\\Crosshairs")
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
--- Create a frame for the button
-local Role_Marks_Button = CreateFrame("Button", "MyMarkButton", labelFrame, "UIPanelButtonTemplate")
-Role_Marks_Button:SetSize(20, 20)
-Role_Marks_Button:SetPoint("LEFT", Ready_Check_Button, "RIGHT", -60, 0)
-Role_Marks_Button:SetNormalTexture("Interface\\CURSOR\\Crosshairs")
-
-Role_Marks_Button:SetScript("OnEnter", function(self)
+    Role_Marks_Button:SetScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
         GameTooltip:SetText("Mark Tank/Healer")
         GameTooltip:Show()
@@ -443,106 +411,56 @@ Role_Marks_Button:SetScript("OnEnter", function(self)
         GameTooltip:Hide()
     end)
 
-function ClearAllRaidMarks()
-    for raidIndex = 1, GetNumGroupMembers() do
-        local name, _, _, _, _, _, _, online, isDead, role, _, _ = GetRaidRosterInfo(raidIndex)
-        if name then
-            SetRaidTarget(name, 0)  -- Clear raid mark
-        end
-    end
-end
-
--- Function to mark players with raid marks based on their combat role
-function MarkPlayersWithRaidMarks()
-    ClearAllRaidMarks()  -- Clear existing raid marks
-    for raidIndex = 1, GetNumGroupMembers() do
-        local name, _, _, _, _, _, _, online, isDead, role, _, combatRole = GetRaidRosterInfo(raidIndex)
-        if combatRole then
-            if combatRole == "TANK" then
-                SetRaidTarget(name, 2)  -- Apply nipple mark
-            elseif combatRole == "HEALER" then
-                SetRaidTarget(name, 4)  -- Apply triangle mark
+    function ClearAllRaidMarks()
+        for raidIndex = 1, GetNumGroupMembers() do
+            local name, _, _, _, _, _, _, online, isDead, role, _, _ = GetRaidRosterInfo(raidIndex)
+            if name then
+                SetRaidTarget(name, 0) -- Clear raid mark
             end
         end
     end
-end
 
--- Variable to track the state of marks (true: marks shown, false: marks hidden)
-local marksShown = false
-
--- Function to toggle between showing and hiding marks
-function ToggleMarkState()
-    if marksShown then
-        ClearAllRaidMarks()  -- Clear marks
-        marksShown = false
-        Role_Marks_Button:SetNormalTexture("Interface\\CURSOR\\Crosshairs")
-    else
-        MarkPlayersWithRaidMarks()  -- Mark players
-        marksShown = true
-        Role_Marks_Button:SetNormalTexture("Interface\\CURSOR\\UnableCrosshairs")
+    -- Function to mark players with raid marks based on their combat role
+    function MarkPlayersWithRaidMarks()
+        ClearAllRaidMarks() -- Clear existing raid marks
+        for raidIndex = 1, GetNumGroupMembers() do
+            local name, _, _, _, _, _, _, online, isDead, role, _, combatRole = GetRaidRosterInfo(raidIndex)
+            if combatRole then
+                if combatRole == "TANK" then
+                    SetRaidTarget(name, 2) -- Apply nipple mark
+                elseif combatRole == "HEALER" then
+                    SetRaidTarget(name, 4) -- Apply triangle mark
+                end
+            end
+        end
     end
-end
 
--- Register the click event for the button
-Role_Marks_Button:SetScript("OnClick", ToggleMarkState)
+    -- Variable to track the state of marks (true: marks shown, false: marks hidden)
+    local marksShown = false
 
-    
+    -- Function to toggle between showing and hiding marks
+    function ToggleMarkState()
+        if marksShown then
+            ClearAllRaidMarks() -- Clear marks
+            marksShown = false
+            Role_Marks_Button:SetNormalTexture("Interface\\CURSOR\\Crosshairs")
+        else
+            MarkPlayersWithRaidMarks() -- Mark players
+            marksShown = true
+            Role_Marks_Button:SetNormalTexture("Interface\\CURSOR\\UnableCrosshairs")
+        end
+    end
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    -- Register the click event for the button
+    Role_Marks_Button:SetScript("OnClick", ToggleMarkState)
 
     -- Function to update the button state
     function UpdateButtonState()
         if IsInGroup() and UnitIsGroupLeader("player") then
-            print("IsInGroup() and UnitIsGroupLeader")
+
             labelFrame:SetSize(270, 90) -- Set the size of the label frame
 
             button:Show() -- Show the button if the player is the group leader
-            --Ready_Check_Button:Show()
-            
-
-
-
-
-
-
-
-
-
-
-
-
-
-            
 
             -- Position the realm best time label
             realmBestLabel:SetPoint("LEFT", labelFrame, "LEFT", 80, 20) -- Adjust the offset as needed
@@ -565,7 +483,7 @@ Role_Marks_Button:SetScript("OnClick", ToggleMarkState)
             silverText:SetFontObject("GameFontNormalLarge")
             bronzeText:SetFontObject("GameFontNormalLarge")
         elseif not IsInGroup() then
-            print("not IsInGroup")
+
             labelFrame:SetSize(270, 90) -- Set the size of the label frame
 
             button:Show() -- Show the button if the player is alone
@@ -593,7 +511,7 @@ Role_Marks_Button:SetScript("OnClick", ToggleMarkState)
             silverText:SetFontObject("GameFontNormalLarge")
             bronzeText:SetFontObject("GameFontNormalLarge")
         else
-            print("not Leader")
+
             button:Hide() -- Hide the button if the player is in a group but not the leader
             Ready_Check_Button:Hide()
             Role_Marks_Button:Hide()
@@ -684,66 +602,41 @@ Role_Marks_Button:SetScript("OnClick", ToggleMarkState)
         end
     end
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     -- Function to show the ReadyCheck
     function ShowReadyCheck_Function()
 
         if Ready_Check_Button then
             Ready_Check_Button:Show()
         end
-       
+
     end
 
- -- Function to hide the ReadyCheck
- function HideReadyCheck_Function()
+    -- Function to hide the ReadyCheck
+    function HideReadyCheck_Function()
 
-    if Ready_Check_Button then
-        Ready_Check_Button:Hide()
+        if Ready_Check_Button then
+            Ready_Check_Button:Hide()
+        end
+
     end
-   
-end
 
+    -- Function to show the MarkTankHealer
+    function ShowMarkTankHealer_Function()
 
+        if Role_Marks_Button then
+            Role_Marks_Button:Show()
+        end
 
+    end
 
+    -- Function to hide the MarkTankHealer
+    function HideMarkTankHealer_Function()
 
+        if Role_Marks_Button then
+            Role_Marks_Button:Hide()
+        end
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+    end
 
     -- Function to show the portals button
     function Show_Portals_Function()
@@ -1147,6 +1040,39 @@ local function checkPortalExistance(portalId)
     return C_Spell.DoesSpellExist(portalId)
 end
 
+function Check_Group_State_For_Button_State()
+    if IsInGroup() and UnitIsGroupLeader("player") then
+        labelFrame:SetSize(270, 90) -- Set the size of the label frame
+        button:Show() -- Show the button if the player is the group leader
+
+        ShowReadyCheckVariable = CmHelperDB.framePosition.ShowReadyCheck
+
+        if ShowReadyCheckVariable == "False" then
+            HideReadyCheck_Function()
+        else
+            ShowReadyCheck_Function()
+        end
+
+        ShowMarkTankHealerVariable = CmHelperDB.framePosition.ShowMarkTankHealer
+
+        if ShowMarkTankHealerVariable == "False" then
+            HideMarkTankHealer_Function()
+        else
+            ShowMarkTankHealer_Function()
+        end
+    elseif not IsInGroup() then
+        labelFrame:SetSize(270, 90) -- Set the size of the label frame
+
+        button:Show() -- Show the button if the player is alone
+        Ready_Check_Button:Hide()
+        Role_Marks_Button:Hide()
+    else
+        button:Hide() -- Hide the button if the player is in a group but not the leader
+        Ready_Check_Button:Hide()
+        Role_Marks_Button:Hide()
+    end
+end
+
 -- Register events
 local frame = CreateFrame("Frame")
 frame:RegisterEvent("WORLD_STATE_TIMER_START")
@@ -1194,78 +1120,7 @@ frame:SetScript("OnEvent", function(self, event, ...)
             PortalButton:SetNormalTexture("Interface\\Icons\\misc_arrowright")
         end
     elseif event == "PLAYER_ROLES_ASSIGNED" then
-
-
-
-
-
-
-
-
-
-
-
-        if IsInGroup() and UnitIsGroupLeader("player") then
-            print("IsInGroup() and UnitIsGroupLeader")
-            labelFrame:SetSize(270, 90) -- Set the size of the label frame
-
-            button:Show() -- Show the button if the player is the group leader
-            
-
-
-            ShowReadyCheckVariable = CmHelperDB.framePosition.ShowReadyCheck
-
-            if ShowReadyCheckVariable == "False" then
-
-                HideReadyCheck_Function()
-            else
-
-                ShowReadyCheck_Function()
-            end
-
-
-
-        elseif not IsInGroup() then
-            print("not IsInGroup")
-            labelFrame:SetSize(270, 90) -- Set the size of the label frame
-
-            button:Show() -- Show the button if the player is alone
-            Ready_Check_Button:Hide()
-            --Role_Marks_Button:Hide()
-
-        else
-            print("not Leader")
-            button:Hide() -- Hide the button if the player is in a group but not the leader
-            Ready_Check_Button:Hide()
-            --Role_Marks_Button:Hide()
-
-
-        end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        Check_Group_State_For_Button_State()
     elseif event == "PLAYER_LOGOUT" then
         if not CmHelperDB.framePosition.colorPicked2 then
             CmHelperDB.framePosition.colorPicked2 = "1" -- Variable to store the selected color option
@@ -1305,77 +1160,39 @@ frame:SetScript("OnEvent", function(self, event, ...)
 
             labelFrame:SetBackdropColor(0, 0, 0, CmHelperDB.framePosition.colorPicked2)
 
-            -- Load the legend visibility state
             ShowLegend = CmHelperDB.framePosition.ShowLegend
 
-            -- Update the legend visibility based on the loaded state
             if ShowLegend == "False" then
-                -- Hide legend if it was hidden before
                 HideLegend_Function()
             else
-                -- Show legend if it was shown before
                 ShowLegend_Function()
             end
 
-            -- Load the Portal Button visibility state
             ShowPortalsButton = CmHelperDB.framePosition.ShowPortalsButton
 
-            -- Update the Portal Button visibility based on the loaded state
             if ShowPortalsButton == "False" then
-                -- Hide Portal Button if it was hidden before
                 Hide_Portals_Function()
             else
-                -- Show Portal Button if it was shown before
-
                 Show_Portals_Function()
             end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
             ShowReadyCheckVariable = CmHelperDB.framePosition.ShowReadyCheck
 
             if ShowReadyCheckVariable == "False" then
-
                 HideReadyCheck_Function()
             else
-
                 ShowReadyCheck_Function()
             end
 
+            ShowMarkTankHealerVariable = CmHelperDB.framePosition.ShowMarkTankHealer
 
+            if ShowMarkTankHealerVariable == "False" then
+                HideMarkTankHealer_Function()
+            else
+                ShowMarkTankHealer_Function()
+            end
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            Check_Group_State_For_Button_State()
         else
             -- Initialize CmHelperDB with the default values
             -- *********************************************
@@ -1386,7 +1203,7 @@ frame:SetScript("OnEvent", function(self, event, ...)
             -- auto den ekteleitai
             -- auto den ekteleitai
             -- auto den ekteleitai
-            print("default")
+
             CmHelperDB = {
                 framePosition = {
                     yOfs = -21.22220802307129,
