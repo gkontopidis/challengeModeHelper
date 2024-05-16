@@ -1,24 +1,7 @@
 -- Saved variable to store strategies
 local SavedStrategies = {}
-local SavedPositions = {}
 local RemoveStrategyIcon = "Interface\\Buttons\\UI-GroupLoot-Pass-Down"
 local EditButtonIcon = "Interface\\Buttons\\UI-LinkProfession-Up"
-
--- Function to get saved position for a frame
-local function GetSavedPosition(frame)
-    return SavedPositions[frame:GetName()] or {"CENTER", UIParent, "CENTER", 0, 0}
-end
-
--- Function to set position for a frame
-local function SetSavedPosition(frame)
-    local position = GetSavedPosition(frame)
-    frame:SetPoint(unpack(position))
-end
-
--- Function to save position for a frame
-local function SavePosition(frame)
-    SavedPositions[frame:GetName()] = {frame:GetPoint()}
-end
 
 -- Function to save strategies
 local function SaveStrategies()
@@ -122,7 +105,6 @@ function OpenEditStrategyFrame(scenarioName, strategyIndex)
     end)
     editStrategyFrame:SetScript("OnDragStop", function(self)
         self:StopMovingOrSizing()
-        SavePosition(self) -- Save position when dragging stops
     end)
     -- Enable resizing
     editStrategyFrame:SetResizable(true)
@@ -132,8 +114,8 @@ function OpenEditStrategyFrame(scenarioName, strategyIndex)
     -- Create ScrollFrame
     local scrollFrame = CreateFrame("ScrollFrame", "EditStrategyScrollFrame", editStrategyFrame,
         "UIPanelScrollFrameTemplate")
-        scrollFrame:SetPoint("TOPLEFT", 10, -30)
-        scrollFrame:SetPoint("BOTTOMRIGHT", -30, 50)
+    scrollFrame:SetPoint("TOPLEFT", 10, -30)
+    scrollFrame:SetPoint("BOTTOMRIGHT", -30, 50)
 
     -- Create EditBox to edit the strategy
     local editBox = CreateFrame("EditBox", "EditStrategyEditBox", scrollFrame)
@@ -191,12 +173,11 @@ function OpenEditStrategyFrame(scenarioName, strategyIndex)
     editStrategyFrame:Show()
 end
 
--- Function to create a button
-local function CreateButton(parent, scenarioName, strategyIndex, buttonIndex)
-    local button = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
+local function CreateButton(scenarioName, strategyIndex, buttonIndex)
+    local button = CreateFrame("Button", nil, MyChallengeAddonFrame, "UIPanelButtonTemplate")
     button:SetText("Strategy " .. buttonIndex)
     button:SetSize(80, 25)
-    button:SetPoint("TOP", 0, -buttonIndex * 30)
+    button:SetPoint("TOPLEFT", 20, -buttonIndex * 30) -- Adjust the position as per your requirement
 
     -- OnClick handler
     button:SetScript("OnClick", function()
@@ -215,7 +196,7 @@ local function CreateButton(parent, scenarioName, strategyIndex, buttonIndex)
                     table.insert(chunks, chunk)
                     chunkStart = chunkEnd + 1
                 end
-            
+
                 -- Send each chunk separately
                 for _, chunk in ipairs(chunks) do
                     SendChatMessage(chunk, "SAY")
@@ -242,7 +223,6 @@ local function CreateButton(parent, scenarioName, strategyIndex, buttonIndex)
     -- Create remove button
     local removeButton = CreateRemoveButton(button, scenarioName, strategyIndex)
     local editButton = CreateEditButton(button, scenarioName, strategyIndex)
-
 end
 
 -- Function to update buttons after adding a new strategy
@@ -255,7 +235,6 @@ function UpdateButtons()
         strategies = SavedStrategies[scenarioName]
         if strategies then
             frame:SetSize(100, #strategies * 50) -- Adjust size based on the number of strategies
-            frame:SetPoint(unpack(GetSavedPosition(frame))) -- Set position based on saved position
 
             -- Enable frame for movement
             frame:RegisterForDrag("LeftButton")
@@ -266,7 +245,6 @@ function UpdateButtons()
             end)
             frame:SetScript("OnDragStop", function(self)
                 self:StopMovingOrSizing()
-                SavePosition(self) -- Save position when dragging stops
             end)
 
             -- Clear existing buttons
@@ -274,7 +252,7 @@ function UpdateButtons()
 
             -- Create buttons for each strategy
             for i, strategy in ipairs(strategies) do
-                CreateButton(frame, scenarioName, i, i)
+                CreateButton(scenarioName, i, i)
             end
         else
             ClearAllChildFrames(frame)
@@ -332,7 +310,6 @@ local function CreateNewStrategyFrame()
     end)
     newStrategyFrame:SetScript("OnDragStop", function(self)
         self:StopMovingOrSizing()
-        SavePosition(self) -- Save position when dragging stops
     end)
     newStrategyFrame:SetResizable(true)
     newStrategyFrame:SetMinResize(400, 200) -- Set minimum size for the frame
@@ -410,7 +387,6 @@ local function CreateToggleButton()
     end)
     button:SetScript("OnDragStop", function(self)
         self:StopMovingOrSizing()
-        SavePosition(self) -- Save position when dragging stops
     end)
 
     -- Create "Add New" button
@@ -444,11 +420,21 @@ end
 local function Init()
     -- Create the main frame
     local frame = CreateFrame("Frame", "MyChallengeAddonFrame", UIParent)
+    frame:SetPoint("CENTER")  -- Set initial position to the center of the screen
+    frame:SetSize(200, 200)   -- Set initial size for the frame
     frame:RegisterEvent("PLAYER_ENTERING_WORLD")
     frame:RegisterEvent("PLAYER_LOGOUT") -- Register logout event
     frame:RegisterEvent("ADDON_LOADED")
     frame:RegisterEvent("PLAYER_LOGIN") -- Register login event
-
+    -- Make the frame movable
+    frame:SetMovable(true)
+    frame:RegisterForDrag("LeftButton")
+    frame:SetScript("OnDragStart", function(self)
+        self:StartMoving()
+    end)
+    frame:SetScript("OnDragStop", function(self)
+        self:StopMovingOrSizing()
+    end)
     -- Create the toggle button
     local toggleButton = CreateToggleButton()
 
@@ -473,22 +459,12 @@ local function Init()
         elseif event == "PLAYER_LOGOUT" then
             -- Save positions on logout
             SaveStrategies()
-            SavePosition(self)
-            SavePosition(toggleButton) -- Save toggle button's position
             self:Hide()
-            CmHelperDB.SavedPositions = SavedPositions
         elseif event == "PLAYER_LOGIN" then
             -- Load saved strategies on login
             LoadStrategies()
             -- Update UI to reflect loaded strategies
             UpdateButtons()
-            -- Load saved positions on login
-            if CmHelperDB and CmHelperDB.SavedPositions then
-                SavedPositions = CmHelperDB.SavedPositions
-            end
-            SetSavedPosition(self)
-            SetSavedPosition(toggleButton) -- Set toggle button's position
-            self:SetPoint(unpack(GetSavedPosition(self)))
         elseif event == "ADDON_LOADED" then
             local addonName = ...
             if addonName == "Challenge-Mode_Helper" then
