@@ -13,6 +13,7 @@ Objectives.lua
 cmCompletionTimes.lua
 RocketBoots.lua
 Strategies.lua
+AutoMarker.lua
 
 
 
