@@ -23,22 +23,23 @@ local function MarkTarget(unitID)
     end
 end
 
-
--- Function to save the target database
-local function SaveTargetDB()
-    print("Saving target database to cmHelperDB...")
-    cmHelperDB = AutoMarker.targetDB
-    print("Target database saved.")
-end
-
--- Function to load the target database
+-- Load the target database from saved variables
 local function LoadTargetDB()
-    AutoMarker.targetDB = cmHelperDB or {}
+    if CmHelperDB and CmHelperDB.targetDB then
+        AutoMarker.targetDB = CmHelperDB.targetDB
+    else
+        -- If no saved variables found, initialize an empty target database
+        AutoMarker.targetDB = {}
+    end
     print("Target database loaded.")
 end
 
--- Load the target database when the addon is loaded
-LoadTargetDB()
+-- Save the target database to saved variables
+local function SaveTargetDB()
+    print("Saving target database to CmHelperDB...")
+    CmHelperDB.targetDB = AutoMarker.targetDB
+    print("Target database saved.")
+end
 
 -- Event handler function
 local function OnEvent(self, event, ...)
@@ -46,6 +47,9 @@ local function OnEvent(self, event, ...)
         MarkTarget("target")
     elseif event == "UPDATE_MOUSEOVER_UNIT" then
         MarkTarget("mouseover")
+    elseif event == "PLAYER_LOGIN" then
+        -- Load the target database when the player logs in
+        LoadTargetDB()
     end
 end
 
@@ -53,6 +57,7 @@ end
 local frame = CreateFrame("Frame")
 frame:RegisterEvent("PLAYER_TARGET_CHANGED")
 frame:RegisterEvent("UPDATE_MOUSEOVER_UNIT")
+frame:RegisterEvent("PLAYER_LOGIN")
 frame:SetScript("OnEvent", OnEvent)
 
 -- Slash command to manage targets
