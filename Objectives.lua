@@ -3,6 +3,7 @@ local Objectives_label
 local completionTimes = {} -- Define a table to store completion times for objectives
 local colorPicked = 0 -- Variable to store the selected color option
 local TotalEnemies = "" -- Initialize TotalEnemies variable
+
 localDB = {
     BestBossKillTime = {}
 }
@@ -103,7 +104,7 @@ local function UpdateObjectivesLabel()
             if (dungeon ~= "Shado-Pan Monastery") then
                 if i < #objectives then
                     text = text ..
-                               ("%s \nBest: %s - %s\n\n"):format(objective.name, objective.bossTimeToKill,
+                               ("%s \n" .. objective.bestcolored .. "%s - %s\n\n"):format(objective.name, objective.bossTimeToKill,
                             objective.timePassed)
                 else
                     text = text .. ("%s : %d/%d\n"):format(objective.name, objective.progress, TotalEnemies)
@@ -112,7 +113,7 @@ local function UpdateObjectivesLabel()
             else
                 if i < #objectives - 1 then
                     text = text ..
-                               ("%s \nBest: %s - Current: %s\n\n"):format(objective.name, objective.bossTimeToKill,
+                               ("%s \n" .. objective.bestcolored .. "%s - Current: %s\n\n"):format(objective.name, objective.bossTimeToKill,
                             objective.timePassed)
 
                 else
@@ -320,6 +321,7 @@ function GetScenarioObjectives()
         local objectiveName, _, completed, progress = C_Scenario.GetCriteriaInfo(i)
         local timePassed = ""
         local formattedObjectiveName = objectiveName
+        local bestcolored = "Best: "
         bossTimeToKill = localDB.BestBossKillTime[objectiveName] -- Set bossTimeToKill from db
 
         if bossTimeToKill == nil or bossTimeToKill == "" or bossTimeToKill == "00:00" then -- if there is no time stored in db 
@@ -359,10 +361,19 @@ function GetScenarioObjectives()
         -- Check if objective is completed and format the name with color for display
         if completed then
             formattedObjectiveName = "|cFF00FF00" .. formattedObjectiveName .. "|r" -- Green color for completion
+            if timePassed == bossTimeToKill then
+                print(timePassed,bossTimeToKill)
+                bestcolored = "|cFF00FF00Best: |r"
+            else
+                print(timePassed,bossTimeToKill)
+                bestcolored = "|cFFFF0000Best: |r"
+            end
+
         end
 
         table.insert(objectives, {
             name = formattedObjectiveName, -- Store the formatted name with colors
+            bestcolored = bestcolored,
             progress = progress,
             timePassed = timePassed,
             bossTimeToKill = bossTimeToKill
