@@ -90,4 +90,4 @@ end
 SLASH_AUTOMARKERDB1 = "/amdb"
 SlashCmdList["AUTOMARKERDB"] = PrintTargetDB
 
-print("AutoMarker loaded. Use /automarker to manage target marks.")
+

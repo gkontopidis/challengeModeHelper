@@ -213,7 +213,7 @@ local function CreateButton(scenarioName, buttonName, index)
 
                     -- Send each chunk separately
                     for _, chunk in ipairs(chunks) do
-                        SendChatMessage(chunk, "SAY")
+                        SendChatMessage(chunk, "PARTY")
                     end
                 end
             end
