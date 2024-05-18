@@ -362,10 +362,8 @@ function GetScenarioObjectives()
         if completed then
             formattedObjectiveName = "|cFF00FF00" .. formattedObjectiveName .. "|r" -- Green color for completion
             if timePassed == bossTimeToKill then
-                print(timePassed,bossTimeToKill)
                 bestcolored = "|cFF00FF00Best: |r"
             else
-                print(timePassed,bossTimeToKill)
                 bestcolored = "|cFFFF0000Best: |r"
             end
 

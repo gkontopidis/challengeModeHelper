@@ -78,7 +78,10 @@ local function ShowOpacitySliderFrame()
         -- Update the OnValueChanged callback function to correctly update colorPicked2
         slider:SetScript("OnValueChanged", function(self, value)
             colorPicked2 = value / 100 -- Normalize value to range 0-1
-            labelFrame:SetBackdropColor(0, 0, 0, colorPicked2)
+
+            LabelFrame_Opacity(colorPicked2)
+            SliderValue(value)
+            -- labelFrame:SetBackdropColor(0, 0, 0, colorPicked2)
             sliderValueLabel:SetText(math.floor(colorPicked2 * 100)) -- Update the value label
         end)
 
@@ -1038,6 +1041,12 @@ end
 
 local function checkPortalExistance(portalId)
     return C_Spell.DoesSpellExist(portalId)
+end
+
+function LabelFrame_Opacity(value)
+    labelFrame:SetBackdropColor(0, 0, 0, value)
+    colorPicked2 = value
+    labelFrame:SavePosition()
 end
 
 function Check_Group_State_For_Button_State()

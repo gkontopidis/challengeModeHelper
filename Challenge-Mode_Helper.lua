@@ -299,15 +299,31 @@ local function Timer_Frame_Elements()
         -10)
     Timer_Frame_compositeFrame2Timer_slider:SetWidth(200)
     Timer_Frame_compositeFrame2Timer_slider:SetHeight(20)
-    Timer_Frame_compositeFrame2Timer_slider:SetMinMaxValues(1, 100)
-    Timer_Frame_compositeFrame2Timer_slider:SetValue(50)
+    Timer_Frame_compositeFrame2Timer_slider:SetMinMaxValues(0, 100)
     Timer_Frame_compositeFrame2Timer_slider:SetValueStep(1)
 
     -- Slider Label Timer
     local Timer_Frame_compositeFrame2sliderLabel2 = Timer_Frame_compositeFrame2Timer_slider:CreateFontString(nil,
         "OVERLAY", "GameFontHighlight")
     Timer_Frame_compositeFrame2sliderLabel2:SetPoint("TOP", Timer_Frame_compositeFrame2Timer_slider, "BOTTOM", 0, -5)
-    Timer_Frame_compositeFrame2sliderLabel2:SetText("Value: " .. Timer_Frame_compositeFrame2Timer_slider:GetValue())
+    -- Timer_Frame_compositeFrame2sliderLabel2:SetText("Value: " .. colorPicked2Value) --Timer_Frame_compositeFrame2Timer_slider:GetValue())
+
+    -- Load colorPicked2 value from CmHelperDB if available, otherwise use default value
+    local initialColorPicked2 = (CmHelperDB and CmHelperDB.framePosition and CmHelperDB.framePosition.colorPicked2) or 1
+    Timer_Frame_compositeFrame2Timer_slider:SetValue(initialColorPicked2 * 100)
+    Timer_Frame_compositeFrame2sliderLabel2:SetText(math.floor(initialColorPicked2 * 100))
+
+    -- Update the OnValueChanged callback function to correctly update colorPicked2
+    Timer_Frame_compositeFrame2Timer_slider:SetScript("OnValueChanged", function(self, value)
+        local colorPicked2 = value / 100 -- Normalize value to range 0-1
+        LabelFrame_Opacity(colorPicked2)
+        Timer_Frame_compositeFrame2sliderLabel2:SetText(math.floor(colorPicked2 * 100)) -- Update the value label
+    end)
+
+    function SliderValue(SliderValue)
+        Timer_Frame_compositeFrame2Timer_slider:SetValue(SliderValue)
+        Timer_Frame_compositeFrame2sliderLabel2:SetText(math.floor(SliderValue))
+    end
 
     -- Define the checkbox variable outside any function to make it accessible globally
     local Timer_Frame_compositeFrame2Show_Legend_Checkbox
@@ -321,7 +337,7 @@ local function Timer_Frame_Elements()
     -- Create Show_Legend_Checkbox
     Timer_Frame_compositeFrame2Show_Legend_Checkbox = CreateFrame("CheckButton", nil, Timer_Frame_compositeFrame2,
         "UICheckButtonTemplate")
-        Timer_Frame_compositeFrame2Show_Legend_Checkbox:SetPoint("TOP", Timer_Frame_compositeFrame2Timer_slider, "CENTER",
+    Timer_Frame_compositeFrame2Show_Legend_Checkbox:SetPoint("TOP", Timer_Frame_compositeFrame2Timer_slider, "CENTER",
         -90, -50)
     Timer_Frame_compositeFrame2Show_Legend_Checkbox.text:SetText("Hide Legend")
     Timer_Frame_compositeFrame2Show_Legend_Checkbox:SetScript("OnShow", InitializeCheckbox) -- Call initialization function when the checkbox is shown
