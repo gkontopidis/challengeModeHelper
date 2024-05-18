@@ -613,14 +613,31 @@ local function Objectives_Frame_Elements()
     Objectives_Frame_slider:SetPoint("TOP", Objectives_Frame_Opacity_Label, "BOTTOM", 0, -10)
     Objectives_Frame_slider:SetWidth(200)
     Objectives_Frame_slider:SetHeight(20)
-    Objectives_Frame_slider:SetMinMaxValues(1, 100)
-    Objectives_Frame_slider:SetValue(50)
+    Objectives_Frame_slider:SetMinMaxValues(0, 100)
     Objectives_Frame_slider:SetValueStep(1)
 
     -- Slider Label Objectives
     local Objectives_Frame_sliderLabel = Objectives_Frame_slider:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     Objectives_Frame_sliderLabel:SetPoint("TOP", Objectives_Frame_slider, "BOTTOM", 0, -5)
-    Objectives_Frame_sliderLabel:SetText("Value: " .. Objectives_Frame_slider:GetValue())
+    -- Objectives_Frame_sliderLabel:SetText("Value: " .. Objectives_Frame_slider:GetValue())
+
+    -- Load colorPicked2 value from CmHelperDB if available, otherwise use default value
+    local initialColorPicked =
+        (CmHelperDB and CmHelperDB.Objectives_frame and CmHelperDB.Objectives_frame.colorPicked) or 1
+    Objectives_Frame_slider:SetValue(initialColorPicked * 100)
+    Objectives_Frame_sliderLabel:SetText(math.floor(initialColorPicked * 100))
+
+    -- Update the OnValueChanged callback function to correctly update colorPicked2
+    Objectives_Frame_slider:SetScript("OnValueChanged", function(self, value)
+        local colorPicked = value / 100 -- Normalize value to range 0-1
+        Objectives_Frame_Opacity(colorPicked)
+        Objectives_Frame_sliderLabel:SetText(math.floor(colorPicked * 100)) -- Update the value label
+    end)
+
+    function ObjectivesSliderValue(ObjectivesSliderValue)
+        Objectives_Frame_slider:SetValue(ObjectivesSliderValue)
+        Objectives_Frame_sliderLabel:SetText(math.floor(ObjectivesSliderValue))
+    end
 
     -- Label Combobox_Objectives_Size_Label
     local Objectives_Frame_Combobox_Objectives_Size_Label = Objectives_Frame_textFrame2:CreateFontString(nil, "OVERLAY",
@@ -855,20 +872,20 @@ function f:InitializeOptions()
 
     InterfaceOptions_AddCategory(self.panel.BL)
 
-     -- Automarker Frame Panel
-     self.panel.BL = CreateFrame("Frame", nil, UIParent, "OptionsBoxTemplate")
-     self.panel.BL:Hide()
-     self.panel.BL.name = "Automarker"
-     self.panel.BL.parent = "MoP CM Helper"
- 
-     -- Create a base frame to contain all layers
-     Automarker_compositeFrame = CreateFrame("Frame", nil, self.panel.BL)
-     Automarker_compositeFrame:SetPoint("TOPLEFT", 2, -2)
-     Automarker_compositeFrame:SetSize(950, 764) -- Adjust the size as needed
- 
-     Automarker_Frame_Elements()
- 
-     InterfaceOptions_AddCategory(self.panel.BL)
+    -- Automarker Frame Panel
+    self.panel.BL = CreateFrame("Frame", nil, UIParent, "OptionsBoxTemplate")
+    self.panel.BL:Hide()
+    self.panel.BL.name = "Automarker"
+    self.panel.BL.parent = "MoP CM Helper"
+
+    -- Create a base frame to contain all layers
+    Automarker_compositeFrame = CreateFrame("Frame", nil, self.panel.BL)
+    Automarker_compositeFrame:SetPoint("TOPLEFT", 2, -2)
+    Automarker_compositeFrame:SetSize(950, 764) -- Adjust the size as needed
+
+    Automarker_Frame_Elements()
+
+    InterfaceOptions_AddCategory(self.panel.BL)
 
     -- About Panel
     self.panel.BL = CreateFrame("Frame", nil, UIParent, "OptionsBoxTemplate")

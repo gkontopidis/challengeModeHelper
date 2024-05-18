@@ -49,15 +49,17 @@ local function ShowOpacitySliderFrame()
         slider:SetOrientation("HORIZONTAL")
 
         -- Load colorPicked value from CmHelperDB if available, otherwise use default value
-        local initialColorPicked =
-            (CmHelperDB and CmHelperDB.Objectives_frame and CmHelperDB.Objectives_frame.colorPicked) or 1
+        local initialColorPicked = (CmHelperDB and CmHelperDB.Objectives_frame and
+                                       CmHelperDB.Objectives_frame.colorPicked) or 1
         slider:SetValue(initialColorPicked * 100)
         sliderValueLabel:SetText(math.floor(initialColorPicked * 100))
 
         -- Update the OnValueChanged callback function to correctly update colorPicked
         slider:SetScript("OnValueChanged", function(self, value)
             colorPicked = value / 100 -- Normalize value to range 0-1
-            Objectives_frame:SetBackdropColor(0, 0, 0, colorPicked)
+            Objectives_Frame_Opacity(colorPicked)
+            ObjectivesSliderValue(value)
+            -- Objectives_frame:SetBackdropColor(0, 0, 0, colorPicked)
             sliderValueLabel:SetText(math.floor(colorPicked * 100)) -- Update the value label
         end)
 
@@ -104,8 +106,8 @@ local function UpdateObjectivesLabel()
             if (dungeon ~= "Shado-Pan Monastery") then
                 if i < #objectives then
                     text = text ..
-                               ("%s \n" .. objective.bestcolored .. "%s - %s\n\n"):format(objective.name, objective.bossTimeToKill,
-                            objective.timePassed)
+                               ("%s \n" .. objective.bestcolored .. "%s - %s\n\n"):format(objective.name,
+                            objective.bossTimeToKill, objective.timePassed)
                 else
                     text = text .. ("%s : %d/%d\n"):format(objective.name, objective.progress, TotalEnemies)
 
@@ -113,8 +115,8 @@ local function UpdateObjectivesLabel()
             else
                 if i < #objectives - 1 then
                     text = text ..
-                               ("%s \n" .. objective.bestcolored .. "%s - Current: %s\n\n"):format(objective.name, objective.bossTimeToKill,
-                            objective.timePassed)
+                               ("%s \n" .. objective.bestcolored .. "%s - Current: %s\n\n"):format(objective.name,
+                            objective.bossTimeToKill, objective.timePassed)
 
                 else
                     text = text .. ("%s : %d/%d\n"):format(objective.name, objective.progress, TotalEnemies)
@@ -385,6 +387,12 @@ function OnWorldStateTimerStop()
     Objectives_frame:SetScript("OnUpdate", nil)
 end
 
+function Objectives_Frame_Opacity(value)
+    Objectives_frame:SetBackdropColor(0, 0, 0, value)
+    colorPicked = value
+    Objectives_frame:SavePosition()
+end
+
 -- Register events
 Objectives_frame:RegisterEvent("START_TIMER")
 Objectives_frame:RegisterEvent("WORLD_STATE_TIMER_STOP")
@@ -446,6 +454,7 @@ Objectives_frame:SetScript("OnEvent", function(self, event, ...)
             -- Objectives_frame:SetPoint(savedPosition.point, UIParent, savedPosition.relativePoint, savedPosition.xOfs,
             --     savedPosition.yOfs)
             -- Objectives_frame:SetBackdropColor(0, 0, 0, savedPosition.alpha)
+            Objectives_frame:SetBackdropColor(0, 0, 0, CmHelperDB.Objectives_frame.colorPicked)
             colorPicked = savedPosition.colorPicked or 0
             -- Load the selected font size
             local fontName = savedPosition.fontSize
