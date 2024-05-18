@@ -2,6 +2,7 @@ local Main_Options_compositeFrame
 local Timer_Frame_compositeFrame2
 local Objectives_Frame_compositeFrame3
 local Strategies_compositeFrame
+local Automarker_compositeFrame
 local About_Panel_compositeFrame4
 local f = CreateFrame("Frame") -- Addon Initialization
 
@@ -695,6 +696,40 @@ local function Strategies_Frame_Elements()
 
 end
 
+local function Automarker_Frame_Elements()
+
+    -- Create pattern_image
+    local Automarker_image3 = Automarker_compositeFrame:CreateTexture(nil, "BORDER")
+    Automarker_image3:SetTexture("Interface\\Challenges\\challenges-background.blp")
+    Automarker_image3:SetSize(955, 800)
+    Automarker_image3:SetPoint("TOPLEFT", Automarker_compositeFrame, "TOPLEFT", 0, 0)
+
+    -- Create banner_image
+    local Automarker_banner_image3 = Automarker_compositeFrame:CreateTexture(nil, "ARTWORK")
+    Automarker_banner_image3:SetTexture("Interface\\Challenges\\challenges-besttime-bg.blp")
+    Automarker_banner_image3:SetSize(952, 50)
+    Automarker_banner_image3:SetPoint("TOPLEFT", Automarker_compositeFrame, "TOPLEFT", -166, -30)
+
+    -- Create textFrame
+    local Automarker_textFrame3 = CreateFrame("Frame", nil, Automarker_compositeFrame)
+    Automarker_textFrame3:SetAllPoints(Automarker_compositeFrame) -- Make the text frame cover the entire composite frame
+
+    -- Create base_background_image
+    local Automarker_base_background_image3 = Automarker_compositeFrame:CreateTexture(nil, "BACKGROUND")
+    Automarker_base_background_image3:SetTexture("Interface\\FriendsFrame\\PlusManz-BattleNetBG.blp")
+    Automarker_base_background_image3:SetSize(843, 830)
+    Automarker_base_background_image3:SetPoint("TOPLEFT", Automarker_compositeFrame, "TOPLEFT", -112, 130)
+    Automarker_base_background_image3:SetAlpha(0.3)
+
+    local Automarker_about_text = Automarker_textFrame3:CreateFontString(nil, "ARTWORK", "GameFontNormalHuge")
+    Automarker_about_text:SetPoint("CENTER", Automarker_banner_image3, "CENTER", 0, 0)
+    Automarker_about_text:SetText("|cffffd700Automarker") -- Use |r to reset color
+    Automarker_about_text:SetFont("Fonts\\MORPHEUS.TTF", 72) -- Set the font to Morpheus and adjust the font size here
+    Automarker_about_text:SetShadowColor(0, 0, 0) -- Set shadow color to black
+    Automarker_about_text:SetShadowOffset(2, -2) -- Set shadow offset to create a shadow effect
+
+end
+
 local function About_Panel_Elements()
 
     -- Create pattern_image
@@ -819,6 +854,21 @@ function f:InitializeOptions()
     Strategies_Frame_Elements()
 
     InterfaceOptions_AddCategory(self.panel.BL)
+
+     -- Automarker Frame Panel
+     self.panel.BL = CreateFrame("Frame", nil, UIParent, "OptionsBoxTemplate")
+     self.panel.BL:Hide()
+     self.panel.BL.name = "Automarker"
+     self.panel.BL.parent = "MoP CM Helper"
+ 
+     -- Create a base frame to contain all layers
+     Automarker_compositeFrame = CreateFrame("Frame", nil, self.panel.BL)
+     Automarker_compositeFrame:SetPoint("TOPLEFT", 2, -2)
+     Automarker_compositeFrame:SetSize(950, 764) -- Adjust the size as needed
+ 
+     Automarker_Frame_Elements()
+ 
+     InterfaceOptions_AddCategory(self.panel.BL)
 
     -- About Panel
     self.panel.BL = CreateFrame("Frame", nil, UIParent, "OptionsBoxTemplate")
