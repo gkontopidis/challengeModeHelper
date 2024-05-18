@@ -321,8 +321,8 @@ local function Timer_Frame_Elements()
     -- Create Show_Legend_Checkbox
     Timer_Frame_compositeFrame2Show_Legend_Checkbox = CreateFrame("CheckButton", nil, Timer_Frame_compositeFrame2,
         "UICheckButtonTemplate")
-    Timer_Frame_compositeFrame2Show_Legend_Checkbox:SetPoint("TOP", Timer_Frame_compositeFrame2sliderLabel2, "LEFT",
-        -60, -35)
+        Timer_Frame_compositeFrame2Show_Legend_Checkbox:SetPoint("TOP", Timer_Frame_compositeFrame2Timer_slider, "CENTER",
+        -90, -50)
     Timer_Frame_compositeFrame2Show_Legend_Checkbox.text:SetText("Hide Legend")
     Timer_Frame_compositeFrame2Show_Legend_Checkbox:SetScript("OnShow", InitializeCheckbox) -- Call initialization function when the checkbox is shown
 
