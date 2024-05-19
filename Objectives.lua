@@ -235,6 +235,7 @@ local function CreateDropdownMenu()
                     Objectives_label:SetFontObject("GameFontNormalSmall")
                     Objectives_frame:SavePosition()
                     UpdateFrameSize()
+                    Set_ComboBox_Text("Small Size")
                 end
                 UIDropDownMenu_AddButton(info, level)
 
@@ -246,6 +247,7 @@ local function CreateDropdownMenu()
                     Objectives_label:SetFontObject("GameFontNormal")
                     Objectives_frame:SavePosition()
                     UpdateFrameSize()
+                    Set_ComboBox_Text("Normal Size")
                 end
                 UIDropDownMenu_AddButton(info, level)
 
@@ -257,6 +259,7 @@ local function CreateDropdownMenu()
                     Objectives_label:SetFontObject("GameFontNormalLarge")
                     Objectives_frame:SavePosition()
                     UpdateFrameSize()
+                    Set_ComboBox_Text("Large Size")
                 end
                 UIDropDownMenu_AddButton(info, level)
             end
@@ -399,9 +402,25 @@ end
 
 function HideObjectivesFrame()
     local _, _, _, difficultyName = GetInstanceInfo()
-        if difficultyName == "Challenge Mode" then
-        else
+    if difficultyName == "Challenge Mode" then
+    else
         Objectives_frame:Hide()
+    end
+end
+
+function Change_Font_Size(value)
+    if value == "Small Size" then
+        Objectives_label:SetFontObject("GameFontNormalSmall")
+        Objectives_frame:SavePosition()
+        UpdateFrameSize()
+    elseif value == "Normal Size" then
+        Objectives_label:SetFontObject("GameFontNormal")
+        Objectives_frame:SavePosition()
+        UpdateFrameSize()
+    elseif value == "Large Size" then
+        Objectives_label:SetFontObject("GameFontNormalLarge")
+        Objectives_frame:SavePosition()
+        UpdateFrameSize()
     end
 end
 

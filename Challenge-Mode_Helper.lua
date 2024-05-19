@@ -232,7 +232,7 @@ local function Timer_Frame_Elements()
     Timer_Frame_compositeFrame2objectives_options_title:SetShadowColor(0, 0, 0) -- Set shadow color to black
     Timer_Frame_compositeFrame2objectives_options_title:SetShadowOffset(2, -2) -- Set shadow offset to create a shadow effect
 
-         -- Define the checkbox variable outside any function to make it accessible globally
+    -- Define the checkbox variable outside any function to make it accessible globally
     local Countdown_Checkbox
 
     -- Function to initialize the checkbox
@@ -242,12 +242,11 @@ local function Timer_Frame_Elements()
     end
 
     -- Create Countdown_Checkbox
-    Countdown_Checkbox = CreateFrame("CheckButton", nil, Timer_Frame_compositeFrame2,
-        "UICheckButtonTemplate")
-        Countdown_Checkbox:SetPoint("TOP", Timer_Frame_compositeFrame2objectives_options_title, "CENTER",
-        -90, -50)
-        Countdown_Checkbox.text:SetText("Disable the audio countdown for\nthe last 10 seconds of either the\nGuild Best Time or Realm Best Time,\nbased on your selection.")
-        Countdown_Checkbox:SetScript("OnShow", InitializeCheckbox) -- Call initialization function when the checkbox is shown
+    Countdown_Checkbox = CreateFrame("CheckButton", nil, Timer_Frame_compositeFrame2, "UICheckButtonTemplate")
+    Countdown_Checkbox:SetPoint("TOP", Timer_Frame_compositeFrame2objectives_options_title, "CENTER", -90, -50)
+    Countdown_Checkbox.text:SetText(
+        "Disable the audio countdown for\nthe last 10 seconds of either the\nGuild Best Time or Realm Best Time,\nbased on your selection.")
+    Countdown_Checkbox:SetScript("OnShow", InitializeCheckbox) -- Call initialization function when the checkbox is shown
 
     -- Function to handle Hide Legend checkbox state change
     local function OnCountdownCheckboxStateChanged(self)
@@ -263,13 +262,13 @@ local function Timer_Frame_Elements()
     end
 
     Countdown_Checkbox:SetScript("OnClick", OnCountdownCheckboxStateChanged) -- Set script to handle checkbox state change
-  
+
     -- Button to Restore Timer_Frame_Position_Reset_Button
     local Timer_Frame_compositeFrame2Timer_Frame_Position_Reset_Button = CreateFrame("Button", nil,
         Timer_Frame_compositeFrame2, "UIPanelButtonTemplate")
     Timer_Frame_compositeFrame2Timer_Frame_Position_Reset_Button:SetFrameLevel(3) -- This ensures that the button is at the correct level within the OVERLAY strata
     Timer_Frame_compositeFrame2Timer_Frame_Position_Reset_Button:SetPoint("CENTER",
-    Timer_Frame_compositeFrame2objectives_options_title, "CENTER", 5, -280)
+        Timer_Frame_compositeFrame2objectives_options_title, "CENTER", 5, -280)
     Timer_Frame_compositeFrame2Timer_Frame_Position_Reset_Button:SetText("Reset Timer Position")
     Timer_Frame_compositeFrame2Timer_Frame_Position_Reset_Button:SetWidth(200)
     Timer_Frame_compositeFrame2Timer_Frame_Position_Reset_Button:SetHeight(40)
@@ -643,6 +642,20 @@ local function Objectives_Frame_Elements()
     Objectives_Frame_comboBox:SetPoint("TOP", Objectives_Frame_Combobox_Objectives_Size_Label, "BOTTOM", 0, -10)
     Objectives_Frame_comboBox:SetSize(200, 30)
 
+    -- Determine the default font size
+    local Objectives_Font_Size =
+        (CmHelperDB and CmHelperDB.Objectives_frame and CmHelperDB.Objectives_frame.fontSize) or "GameFontNormal"
+
+    if Objectives_Font_Size == "GameFontNormalSmall" then
+        Objectives_Font_Size = "Small Size"
+    elseif Objectives_Font_Size == "GameFontNormal" then
+        Objectives_Font_Size = "Normal Size"
+    elseif Objectives_Font_Size == "GameFontNormalLarge" then
+        Objectives_Font_Size = "Large Size"
+    else
+        Objectives_Font_Size = "Normal Size" -- Ensure a valid default value
+    end
+
     -- Function to initialize the combobox
     local function InitializeComboBox(self, level)
         local info = UIDropDownMenu_CreateInfo()
@@ -656,18 +669,26 @@ local function Objectives_Frame_Elements()
             info.value = option
             info.notCheckable = true
             info.func = function(self)
-                UIDropDownMenu_SetSelectedValue(comboBox, self.value)
-                print("Selected Option:", self.value) -- Print the selected option to chat
+
+                UIDropDownMenu_SetText(Objectives_Frame_comboBox, self.value)
+                Change_Font_Size(self.value)
             end
             UIDropDownMenu_AddButton(info, level)
         end
+    end
+
+    function Set_ComboBox_Text(value)
+        UIDropDownMenu_SetText(Objectives_Frame_comboBox, value)
     end
 
     -- Initialize the combobox
     UIDropDownMenu_Initialize(Objectives_Frame_comboBox, InitializeComboBox)
     UIDropDownMenu_SetWidth(Objectives_Frame_comboBox, 200) -- Set the width of the dropdown menu
     UIDropDownMenu_SetButtonWidth(Objectives_Frame_comboBox, 124) -- Set the width of the button
-    UIDropDownMenu_SetSelectedValue(Objectives_Frame_comboBox, "") -- Set the default selected value
+
+    -- Use UIDropDownMenu_SetSelectedName to set the default selected value
+    UIDropDownMenu_SetSelectedName(Objectives_Frame_comboBox, Objectives_Font_Size) -- Set the default selected value
+    UIDropDownMenu_SetText(Objectives_Frame_comboBox, Objectives_Font_Size)
 
 end
 
