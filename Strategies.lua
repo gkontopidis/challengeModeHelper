@@ -269,7 +269,7 @@ function UpdateButtons()
             end
             -- Update frame size based on the number of strategies
 
-            local frameHeight = ((index-1) * (buttonHeight + verticalSpacing)) + 20 -- Add 20 for additional space
+            local frameHeight = ((index - 1) * (buttonHeight + verticalSpacing)) + 20 -- Add 20 for additional space
             frame:SetSize(180, frameHeight) -- Adjust size based on the number of strategies
             -- Enable frame for movement
             frame:RegisterForDrag("LeftButton")

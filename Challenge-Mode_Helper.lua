@@ -4,6 +4,10 @@ local Objectives_Frame_compositeFrame3
 local Strategies_compositeFrame
 local Automarker_compositeFrame
 local About_Panel_compositeFrame4
+local Add_New_Strategy_Button
+local editStrategyFrame
+local Strategies_Frame_comboBox
+local editBox
 local f = CreateFrame("Frame") -- Addon Initialization
 
 function f:OnEvent(event, addOnName)
@@ -724,6 +728,136 @@ local function Strategies_Frame_Elements()
     Strategies_about_text:SetShadowColor(0, 0, 0) -- Set shadow color to black
     Strategies_about_text:SetShadowOffset(2, -2) -- Set shadow offset to create a shadow effect
 
+    -- Create the combobox frame 
+    Strategies_Frame_comboBox = CreateFrame("Frame", "MyComboBoxFrame2", Strategies_compositeFrame,
+        "UIDropDownMenuTemplate")
+    Strategies_Frame_comboBox:SetPoint("TOP", Strategies_about_text, "BOTTOM", 0, -30)
+    Strategies_Frame_comboBox:SetSize(200, 30)
+
+    -- Function to initialize the combobox
+    local function InitializeComboBox2(self, level)
+        local info = UIDropDownMenu_CreateInfo()
+
+        -- Define the options for the combobox
+        local selected_dungeon = {"Temple of the Jade Serpent", "Stormstout Brewery", "Gate of the Setting Sun",
+                                  "Shado-Pan Monastery", "Siege of Niuzao Temple", "Mogu'shan Palace", "Scholomance",
+                                  "Scarlet Halls", "Scarlet Monastery"}
+
+        -- Add each option to the combobox
+        for _, option in ipairs(selected_dungeon) do
+            info.text = option
+            info.value = option
+            info.notCheckable = true
+            info.func = function(self)
+
+                UIDropDownMenu_SetText(Strategies_Frame_comboBox, self.value)
+                Add_New_Strategy_Button:Show()
+                --editStrategyFrame:Clear()
+                editStrategyFrame:Show()
+                editBox:Disable()
+            end
+            UIDropDownMenu_AddButton(info, level)
+        end
+    end
+
+    -- Initialize the combobox
+    UIDropDownMenu_Initialize(Strategies_Frame_comboBox, InitializeComboBox2)
+    UIDropDownMenu_SetWidth(Strategies_Frame_comboBox, 200) -- Set the width of the dropdown menu
+    UIDropDownMenu_SetButtonWidth(Strategies_Frame_comboBox, 124) -- Set the width of the button
+
+    -- Use UIDropDownMenu_SetSelectedName to set the default selected value
+    UIDropDownMenu_SetText(Strategies_Frame_comboBox, "Select dungeon")
+
+-- Button to Add new strategy
+Add_New_Strategy_Button = CreateFrame("Button", nil, Strategies_compositeFrame, "UIPanelButtonTemplate")
+Add_New_Strategy_Button:SetFrameLevel(3) -- This ensures that the button is at the correct level within the OVERLAY strata
+Add_New_Strategy_Button:SetPoint("LEFT", Strategies_about_text, "BOTTOM", -300, -75)
+Add_New_Strategy_Button:SetText("Add New Strategy")
+Add_New_Strategy_Button:SetWidth(150)
+Add_New_Strategy_Button:SetHeight(30)
+Add_New_Strategy_Button:Hide()
+
+Add_New_Strategy_Button:SetScript("OnClick", function()
+---inputbox bale onoma gia to koumpi
+end)
+
+
+
+
+
+
+
+
+
+editStrategyFrame = CreateFrame("Frame", "EditStrategyFrame", Strategies_compositeFrame)
+editStrategyFrame:SetSize(340, 300) -- Set an initial size for the frame
+editStrategyFrame:SetPoint("LEFT", Strategies_about_text, "BOTTOM", -50, -250)
+editStrategyFrame:SetFrameLevel(3)
+editStrategyFrame:SetBackdrop({
+    bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+    edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+    tile = true,
+    tileSize = 16,
+    edgeSize = 16,
+    insets = {
+        left = 4,
+        right = 4,
+        top = 4,
+        bottom = 4
+    }
+})
+editStrategyFrame:SetBackdropColor(0, 0, 0, 1) -- Set background color
+
+
+-- Create ScrollFrame
+local scrollFrame = CreateFrame("ScrollFrame", "EditStrategyScrollFrame", editStrategyFrame,
+    "UIPanelScrollFrameTemplate")
+scrollFrame:SetPoint("TOPLEFT", 10, -10)
+scrollFrame:SetPoint("BOTTOMRIGHT", -30, 10)
+
+
+    -- Create EditBox to edit the strategy
+    editBox = CreateFrame("EditBox", "EditStrategyEditBox", scrollFrame)
+    editBox:SetSize(305, 260) -- Set an initial size for the edit box
+    editBox:SetPoint("TOPLEFT", 10, -10)
+    editBox:SetMultiLine(true)
+    editBox:SetAutoFocus(true) -- Set auto-focus to true
+    editBox:SetFontObject(GameFontHighlight)
+    editBox:SetScript("OnEscapePressed", function(self)
+        self:ClearFocus()
+    end)
+    scrollFrame:SetScrollChild(editBox)
+    editStrategyFrame:Hide()
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 end
 
 local function Automarker_Frame_Elements()
@@ -937,6 +1071,10 @@ local function OnInterfaceOptionsFrameHide()
     -- When the Blizzard interface options frame is hidden, call CloseOptions
     HideTimerFrame()
     HideObjectivesFrame()
+    Add_New_Strategy_Button:Hide()
+    editStrategyFrame:Hide()
+    UIDropDownMenu_SetText(Strategies_Frame_comboBox, "Select dungeon")
+    editBox:SetText("")
 end
 
 -- Attach the script to the Blizzard Interface Options Frame
