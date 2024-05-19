@@ -919,6 +919,16 @@ local function SetDefaultFramePosition()
     end
 end
 
+-- Handle Blizzard's Interface Options Frame
+local function OnInterfaceOptionsFrameHide()
+    -- When the Blizzard interface options frame is hidden, call CloseOptions
+    HideTimerFrame()
+    HideObjectivesFrame()
+end
+
+-- Attach the script to the Blizzard Interface Options Frame
+InterfaceOptionsFrame:HookScript("OnHide", OnInterfaceOptionsFrameHide)
+
 -- Call the function to set default frame position
 SetDefaultFramePosition()
 
@@ -932,4 +942,6 @@ SLASH_CMHELPER2 = "/cmhelper"
 SlashCmdList["CMHELPER"] = function(msg, editBox)
     InterfaceOptionsFrame_OpenToCategory("MoP CM Helper")
     InterfaceOptionsFrame_OpenToCategory("MoP CM Helper")
+    ShowTimerFrame()
+    ShowObjectivesFrame()
 end

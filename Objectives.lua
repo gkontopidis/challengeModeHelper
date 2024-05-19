@@ -393,6 +393,18 @@ function Objectives_Frame_Opacity(value)
     Objectives_frame:SavePosition()
 end
 
+function ShowObjectivesFrame()
+    Objectives_frame:Show()
+end
+
+function HideObjectivesFrame()
+    local _, _, _, difficultyName = GetInstanceInfo()
+        if difficultyName == "Challenge Mode" then
+        else
+        Objectives_frame:Hide()
+    end
+end
+
 -- Register events
 Objectives_frame:RegisterEvent("START_TIMER")
 Objectives_frame:RegisterEvent("WORLD_STATE_TIMER_STOP")

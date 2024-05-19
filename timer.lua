@@ -1082,6 +1082,18 @@ function Check_Group_State_For_Button_State()
     end
 end
 
+function ShowTimerFrame()
+    labelFrame:Show()
+end
+
+function HideTimerFrame()
+    local _, _, _, difficultyName = GetInstanceInfo()
+        if difficultyName == "Challenge Mode" then
+        else
+        labelFrame:Hide()
+    end
+end
+
 -- Register events
 local frame = CreateFrame("Frame")
 frame:RegisterEvent("WORLD_STATE_TIMER_START")
