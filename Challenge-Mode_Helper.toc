@@ -16,9 +16,6 @@ Strategies.lua
 AutoMarker.lua
 
 
-
---otan anoigoun ta options na emfanizei ta frame kai ekso apo cmCompletionTimes
---sound level and enable/disable
 --na diavazei ta realm best sto login kai na ta bazei se db
 -- auto target mark
 

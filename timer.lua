@@ -26,6 +26,7 @@ local ShowLegend -- = "False"
 local ShowPortalsButton
 local ShowReadyCheckVariable
 local ShowMarkTankHealerVariable
+local EnableCountdown
 
 timeElapsed = 0
 
@@ -932,7 +933,14 @@ function SubtractTimer(labelToUse)
         -- Inside the condition for the last 10 seconds, check if the sound has already been played
         if secondsLeft <= 10 and secondsLeft > 0 and minutesLeft == 0 then
             if not soundPlayed[secondsLeft] then
-                PlaySoundFile("Interface\\AddOns\\Challenge-Mode_Helper\\Sounds\\" .. secondsLeft .. ".ogg")
+
+                EnableCountdown = CmHelperDB.framePosition.EnableCountdown or "True"
+
+                if EnableCountdown == "True" then
+                    PlaySoundFile("Interface\\AddOns\\Challenge-Mode_Helper\\Sounds\\" .. secondsLeft .. ".ogg",
+                        "Master")
+                end
+
                 soundPlayed[secondsLeft] = true
             end
         end
@@ -1088,8 +1096,8 @@ end
 
 function HideTimerFrame()
     local _, _, _, difficultyName = GetInstanceInfo()
-        if difficultyName == "Challenge Mode" then
-        else
+    if difficultyName == "Challenge Mode" then
+    else
         labelFrame:Hide()
     end
 end
@@ -1214,6 +1222,7 @@ frame:SetScript("OnEvent", function(self, event, ...)
             end
 
             Check_Group_State_For_Button_State()
+
         else
             -- Initialize CmHelperDB with the default values
             -- *********************************************
@@ -1233,7 +1242,8 @@ frame:SetScript("OnEvent", function(self, event, ...)
                     relativePoint = "TOP",
                     colorPicked2 = "1",
                     alpha = "1",
-                    ShowLegend = "True" -- Default legend visibility state
+                    ShowLegend = "True", -- Default legend visibility state
+                    EnableCountdown = "True"
                 }
             }
             labelFrame, minutesLabel, secondsLabel, millisecondsLabel = CreateAddonFrame()

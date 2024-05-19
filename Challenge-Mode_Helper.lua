@@ -232,52 +232,44 @@ local function Timer_Frame_Elements()
     Timer_Frame_compositeFrame2objectives_options_title:SetShadowColor(0, 0, 0) -- Set shadow color to black
     Timer_Frame_compositeFrame2objectives_options_title:SetShadowOffset(2, -2) -- Set shadow offset to create a shadow effect
 
-    -- Label Time_To_Beat_Label
-    local Timer_Frame_compositeFrame2Time_To_Beat_Label = Timer_Frame_compositeFrame2textFrame2:CreateFontString(nil,
-        "OVERLAY", "GameFontHighlight")
-    Timer_Frame_compositeFrame2Time_To_Beat_Label:SetPoint("TOP", Timer_Frame_compositeFrame2objectives_options_title,
-        "BOTTOM", 5, -20)
-    Timer_Frame_compositeFrame2Time_To_Beat_Label:SetText("Time To Beat")
+         -- Define the checkbox variable outside any function to make it accessible globally
+    local Countdown_Checkbox
 
-    -- Create the combobox frame within compositeFrame2
-    local Timer_Frame_compositeFrame2Time_To_Beat_ComboBox =
-        CreateFrame("Frame", "MyComboBoxFrame2", Timer_Frame_compositeFrame2, "UIDropDownMenuTemplate")
-    Timer_Frame_compositeFrame2Time_To_Beat_ComboBox:SetPoint("TOP", Timer_Frame_compositeFrame2Time_To_Beat_Label,
-        "BOTTOM", 0, -10)
-    Timer_Frame_compositeFrame2Time_To_Beat_ComboBox:SetSize(200, 30)
+    -- Function to initialize the checkbox
+    local function InitializeCheckbox()
+        local isChecked = CmHelperDB.framePosition.EnableCountdown == "False" -- Check the value from the database
+        Countdown_Checkbox:SetChecked(isChecked)
+    end
 
-    -- Function to initialize the combobox
-    local function InitializeComboBox(self, level)
-        local info = UIDropDownMenu_CreateInfo()
+    -- Create Countdown_Checkbox
+    Countdown_Checkbox = CreateFrame("CheckButton", nil, Timer_Frame_compositeFrame2,
+        "UICheckButtonTemplate")
+        Countdown_Checkbox:SetPoint("TOP", Timer_Frame_compositeFrame2objectives_options_title, "CENTER",
+        -90, -50)
+        Countdown_Checkbox.text:SetText("Disable the audio countdown for\nthe last 10 seconds of either the\nGuild Best Time or Realm Best Time,\nbased on your selection.")
+        Countdown_Checkbox:SetScript("OnShow", InitializeCheckbox) -- Call initialization function when the checkbox is shown
 
-        -- Define the options for the combobox
-        local options = {"Guild Best", "Realm Best"}
+    -- Function to handle Hide Legend checkbox state change
+    local function OnCountdownCheckboxStateChanged(self)
+        local isChecked = self:GetChecked()
+        CmHelperDB.framePosition.EnableCountdown = isChecked and "True" or "False" -- Update the value in the database
 
-        -- Add each option to the combobox
-        for _, option in ipairs(options) do
-            info.text = option
-            info.value = option
-            info.notCheckable = true
-            info.func = function(self)
-                UIDropDownMenu_SetSelectedValue(Time_To_Beat_ComboBox, self.value)
-                print("Selected Option:", self.value) -- Print the selected option to chat
-            end
-            UIDropDownMenu_AddButton(info, level)
+        -- Call the corresponding function based on the checkbox state
+        if isChecked then
+            CmHelperDB.framePosition.EnableCountdown = "False"
+        else
+            CmHelperDB.framePosition.EnableCountdown = "True"
         end
     end
 
-    -- Initialize the combobox
-    UIDropDownMenu_Initialize(Timer_Frame_compositeFrame2Time_To_Beat_ComboBox, InitializeComboBox)
-    UIDropDownMenu_SetWidth(Timer_Frame_compositeFrame2Time_To_Beat_ComboBox, 200) -- Set the width of the dropdown menu
-    UIDropDownMenu_SetButtonWidth(Timer_Frame_compositeFrame2Time_To_Beat_ComboBox, 124) -- Set the width of the button
-    UIDropDownMenu_SetSelectedValue(Timer_Frame_compositeFrame2Time_To_Beat_ComboBox, "") -- Set the default selected value
-
+    Countdown_Checkbox:SetScript("OnClick", OnCountdownCheckboxStateChanged) -- Set script to handle checkbox state change
+  
     -- Button to Restore Timer_Frame_Position_Reset_Button
     local Timer_Frame_compositeFrame2Timer_Frame_Position_Reset_Button = CreateFrame("Button", nil,
         Timer_Frame_compositeFrame2, "UIPanelButtonTemplate")
     Timer_Frame_compositeFrame2Timer_Frame_Position_Reset_Button:SetFrameLevel(3) -- This ensures that the button is at the correct level within the OVERLAY strata
     Timer_Frame_compositeFrame2Timer_Frame_Position_Reset_Button:SetPoint("CENTER",
-        Timer_Frame_compositeFrame2Time_To_Beat_Label, "CENTER", 0, -250)
+    Timer_Frame_compositeFrame2objectives_options_title, "CENTER", 5, -280)
     Timer_Frame_compositeFrame2Timer_Frame_Position_Reset_Button:SetText("Reset Timer Position")
     Timer_Frame_compositeFrame2Timer_Frame_Position_Reset_Button:SetWidth(200)
     Timer_Frame_compositeFrame2Timer_Frame_Position_Reset_Button:SetHeight(40)
