@@ -453,7 +453,7 @@ Objectives_frame:SetScript("OnEvent", function(self, event, ...)
         if difficultyName == "Challenge Mode" then
             -- If in a challenge mode instance, hide the WatchFrame UI
             --     WatchFrame:SetScript("OnEvent", nil)
-            WatchFrame:Hide()
+            WatchFrame:Hide()  --ANOIXE TO, TO EKLEISA GIA TO SHADO PAN
             Objectives_frame:Show()
         else
             Objectives_frame:Hide()

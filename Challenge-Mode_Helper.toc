@@ -11,11 +11,7 @@ Challenge-Mode_Helper.lua
 Timer.lua
 Objectives.lua
 cmCompletionTimes.lua
-RocketBoots.lua
 Strategies.lua
-AutoMarker.lua
+--AutoMarker.lua
 
-
---na diavazei ta realm best sto login kai na ta bazei se db
--- auto target mark
 

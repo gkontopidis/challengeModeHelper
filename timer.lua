@@ -23,6 +23,11 @@ local PortalButtonState = "NotPressed"
 local opacitySliderFrame = nil -- Variable to keep track of the opacity slider frame
 local legendToggleButton -- Define legendToggleButton before dropdown menu initialization
 local ShowLegend -- = "False"
+local Timer_frame_Scale
+local AutoEquipXtremeBoots = false
+local Swap_Trinkets = false
+local bootItemID_cloth = 35581 -- Rocket Boots Item ID cloth version
+local bootItemID_leather = 23824 -- Rocket Boots Item ID leather version
 local ShowPortalsButton
 local ShowReadyCheckVariable
 local ShowMarkTankHealerVariable
@@ -114,7 +119,7 @@ end
 function CreateAddonFrame()
     -- Create a frame for the label
     labelFrame = CreateFrame("Frame", "MoPCMHelperLabelFrame", UIParent)
-    labelFrame:SetSize(270, 90) -- Set the size of the label frame
+    labelFrame:SetSize(270, 100) -- Set the size of the label frame
 
     -- Set up backdrop for the frame
     labelFrame:SetBackdrop({
@@ -234,7 +239,7 @@ function CreateAddonFrame()
     millisecondsLabel:SetFont("Fonts\\FRIZQT__.TTF", 18)
 
     -- Position the font strings within the label frame
-    minutesLabel:SetPoint("LEFT", 80, -20)
+    minutesLabel:SetPoint("LEFT", 80, -10)
     secondsLabel:SetPoint("LEFT", minutesLabel, "RIGHT", 0, 0)
     millisecondsLabel:SetPoint("LEFT", secondsLabel, "RIGHT", 0, -1) -- Adjusted the Y offset here
 
@@ -256,7 +261,7 @@ function CreateAddonFrame()
     realmBestLabel:SetText(textToDisplay .. realmBestTime)
 
     -- Position the realm best time label
-    realmBestLabel:SetPoint("LEFT", labelFrame, "LEFT", 80, 20) -- Adjust the offset as needed
+    realmBestLabel:SetPoint("LEFT", labelFrame, "LEFT", 80, 30) -- Adjust the offset as needed
 
     -- Create a new font string for the best clear time label
     bestClearLabel = labelFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
@@ -287,7 +292,7 @@ function CreateAddonFrame()
     end)
 
     -- Position the best clear time label below the realm best time label
-    bestClearLabel:SetPoint("LEFT", labelFrame, "LEFT", 80, 0) -- Adjust the offset as needed
+    bestClearLabel:SetPoint("LEFT", labelFrame, "LEFT", 80, 10) -- Adjust the offset as needed
 
     -- Create icon and text
     local goldicon = labelFrame:CreateTexture(nil, "OVERLAY")
@@ -335,7 +340,7 @@ function CreateAddonFrame()
     local button = CreateFrame("Button", nil, labelFrame, "UIPanelButtonTemplate")
     button:SetText("RESET")
     button:SetSize(60, 60)
-    button:SetPoint("LEFT", 10, 0) -- Adjust the position as needed
+    button:SetPoint("LEFT", 10, 10) -- Adjust the position as needed
 
     -- Set the button's icon texture
     button:SetNormalTexture("Interface\\Icons\\SPELL_HOLY_BORROWEDTIME")
@@ -378,6 +383,42 @@ function CreateAddonFrame()
         RunScript("ResetChallengeMode()")
         -- DoReadyCheck()
     end)
+
+    -- Create a new font string for the realm best time label
+    Boots_Info_Label = labelFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    Boots_Info_Label:SetFont("Fonts\\FRIZQT__.TTF", 14, "OUTLINE") -- Set font path, size, and outline (optional)
+    Boots_Info_Label:SetText("Xtreme Boots")
+
+    -- Function to update label color based on AutoEquipXtremeBoots state
+    local function UpdateBootsInfoLabelColor()
+        if AutoEquipXtremeBoots then
+            Boots_Info_Label:SetTextColor(0, 1, 0) -- Green color (RGB: 0, 1, 0)
+        else
+            Boots_Info_Label:SetTextColor(1, 0, 0) -- Red color (RGB: 1, 0, 0)
+        end
+    end
+
+    -- Call the function initially to set the color on load
+    UpdateBootsInfoLabelColor()
+
+    -- Position the realm best time label
+    Boots_Info_Label:SetPoint("TOPLEFT", button, "BOTTOMLEFT", 0, -5) -- Adjust the offset as needed
+
+    function ToggleXtremeBootsState_Color()
+        AutoEquipXtremeBoots = not AutoEquipXtremeBoots
+        UpdateBootsInfoLabelColor() -- Update label color
+    end
+
+    Slash_Label = labelFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    Slash_Label:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE") -- Set font path, size, and outline (optional)
+    Slash_Label:SetText("/")
+    Slash_Label:SetPoint("LEFT", Boots_Info_Label, "RIGHT", 0, 0) -- Position Slash_Label to the right with a small offset
+
+    -- Create the "Trinket" label and position it to the right of Slash_Label
+    Trinket_Label = labelFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    Trinket_Label:SetFont("Fonts\\FRIZQT__.TTF", 14, "OUTLINE") -- Set font path, size, and outline (optional)
+    Trinket_Label:SetText("Trinket")
+    Trinket_Label:SetPoint("LEFT", Slash_Label, "RIGHT", 0, 0) -- Position Trinket_Label to the right of Slash_Label with a small offset
 
     Ready_Check_Button = CreateFrame("Button", "MyWowButton", labelFrame, "UIPanelButtonTemplate")
     Ready_Check_Button:SetSize(20, 20)
@@ -458,23 +499,218 @@ function CreateAddonFrame()
     -- Register the click event for the button
     Role_Marks_Button:SetScript("OnClick", ToggleMarkState)
 
+    swapButton = CreateFrame("Button", "MyMarkButton", labelFrame, "UIPanelButtonTemplate")
+    swapButton:SetSize(24, 24)
+    swapButton:SetPoint("CENTER")
+    swapButton:SetPoint("LEFT", Ready_Check_Button, "RIGHT", -20, -22)
+
+    swapButton:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText("Auto Swap Trinkets at 2 seconds")
+        GameTooltip:Show()
+    end)
+
+    swapButton:SetScript("OnLeave", function(self)
+        GameTooltip:Hide()
+    end)
+
+    -- Variables to track trinket IDs and equip state
+    local trinket1ID, trinket2ID
+    local trinketsInBags = false
+
+    -- Function to handle swapping the trinkets
+    function swapTrinkets()
+        local trinket1Slot = 13 -- Trinket 1 slot
+        local trinket2Slot = 14 -- Trinket 2 slot
+
+        -- Get the item IDs for the current trinkets
+        trinket1ID = GetInventoryItemID("player", trinket1Slot)
+        trinket2ID = GetInventoryItemID("player", trinket2Slot)
+
+        -- Check if both trinkets are equipped
+        if trinket1ID and trinket2ID then
+
+            -- Step 1: Remove Trinket 1 and place it into the backpack
+            PickupInventoryItem(trinket1Slot)
+            PutItemInBackpack()
+
+            -- Step 2: Remove Trinket 2 and place it into the backpack
+            PickupInventoryItem(trinket2Slot)
+            PutItemInBackpack()
+
+            -- Set flag to indicate trinkets should be equipped in swapped slots
+            trinketsInBags = true
+        else
+            print("|cffff0000One or both trinkets are not equipped!")
+        end
+    end
+
+    -- Event handler for BAG_UPDATE_DELAYED
+    local function OnBagUpdateDelayed()
+        if trinketsInBags then
+            -- Track whether each trinket has been successfully equipped
+            local trinket1Equipped = false
+            local trinket2Equipped = false
+
+            -- Attempt to equip Trinket 1 into Trinket 1's slot
+            for bag = 0, NUM_BAG_SLOTS do
+                for slot = 1, GetContainerNumSlots(bag) do
+                    local itemID = GetContainerItemID(bag, slot)
+                    if itemID == trinket1ID then
+                        UseContainerItem(bag, slot) -- Equip Trinket 2
+                        trinket1Equipped = true
+                        break
+                    end
+                end
+                if trinket1Equipped then
+                    break
+                end
+            end
+
+            -- Attempt to equip Trinket 2 into Trinket 2's slot
+            for bag = 0, NUM_BAG_SLOTS do
+                for slot = 1, GetContainerNumSlots(bag) do
+                    local itemID = GetContainerItemID(bag, slot)
+                    if itemID == trinket2ID then
+                        UseContainerItem(bag, slot) -- Equip Trinket 1
+                        trinket2Equipped = true
+                        break
+                    end
+                end
+                if trinket2Equipped then
+                    break
+                end
+            end
+
+            -- Check if both trinkets have been equipped
+            if trinket1Equipped and trinket2Equipped then
+                trinketsInBags = false -- Stop further checks
+                print("|cff00ff00Trinkets have been successfully swapped and equipped!") -- Green color for success
+            else
+                -- If either trinket is still in the bag, the function will try again on the next BAG_UPDATE_DELAYED event
+                print("|cffff0000Retrying trinket equip on next BAG_UPDATE_DELAYED event.") -- Red color for retry message
+            end
+        end
+    end
+
+    -- Register the BAG_UPDATE_DELAYED event
+    local eventFrame = CreateFrame("Frame")
+    eventFrame:RegisterEvent("BAG_UPDATE_DELAYED")
+    eventFrame:SetScript("OnEvent", OnBagUpdateDelayed)
+
+    -- Function to update the label color based on Swap_Trinkets value
+    local function updateLabelColor()
+        if Swap_Trinkets then
+            Trinket_Label:SetTextColor(0, 1, 0) -- Green color
+            swapButton:SetNormalTexture("Interface\\Scenarios\\ScenarioIcon-Check")
+        else
+            Trinket_Label:SetTextColor(1, 0, 0) -- Red color
+            swapButton:SetNormalTexture("Interface\\Scenarios\\ScenarioIcon-Fail")
+        end
+
+    end
+
+    -- Set up the button's OnClick script
+    swapButton:SetScript("OnClick", function()
+        Swap_Trinkets = not Swap_Trinkets -- Toggle the variable
+        -- print("Swap_Trinkets is now:", Swap_Trinkets) -- Print the new value for debugging
+        updateLabelColor() -- Update the label color based on the new value
+    end)
+
+    -- Initial label color setup
+    updateLabelColor() -- Set initial color based on the initial value of Swap_Trinkets
+
+    Xtreme_Boots_Button = CreateFrame("Button", "MyMarkButton", labelFrame, "UIPanelButtonTemplate")
+    Xtreme_Boots_Button:SetSize(20, 20)
+    Xtreme_Boots_Button:SetPoint("LEFT", Ready_Check_Button, "RIGHT", -60, -22)
+    -- Xtreme_Boots_Button:SetNormalTexture("Interface\\Icons\\INV_Gizmo_RocketBoot_01")
+    if AutoEquipXtremeBoots == false then
+        Xtreme_Boots_Button:SetNormalTexture("Interface\\Icons\\INV_Gizmo_RocketBoot_Destroyed_02")
+    else
+        Xtreme_Boots_Button:SetNormalTexture("Interface\\Icons\\INV_Gizmo_RocketBoot_01")
+    end
+
+    Xtreme_Boots_Button:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText("Auto equip Xtreme Boots")
+        GameTooltip:Show()
+    end)
+
+    Xtreme_Boots_Button:SetScript("OnLeave", function(self)
+        GameTooltip:Hide()
+    end)
+
+    -- Function to Equip Rocket Boots if in Challenge Mode and auto-equip is enabled
+    local function EquipRocketBoots()
+        if not AutoEquipXtremeBoots then
+            Boots_Info_Label:SetTextColor(1, 0, 0) -- Red color (RGB: 1, 0, 0)
+            return
+        end
+        if IsInInstance() then
+            local scenarioName, _, _, difficultyName = GetInstanceInfo()
+            if difficultyName == "Challenge Mode" then
+                Boots_Info_Label:SetTextColor(0, 1, 0) -- Green color (RGB: 0, 1, 0)
+                for bag = 0, NUM_BAG_SLOTS do
+                    for slot = 1, GetContainerNumSlots(bag) do
+                        local itemID = GetContainerItemID(bag, slot)
+                        if itemID == bootItemID_cloth or itemID == bootItemID_leather then
+                            UseContainerItem(bag, slot)
+                            print("|cff00ccffRocket Boots Xtreme equipped!!!")
+                            return
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    -- Function to Enable_EquipRocketBoots
+    function Enable_EquipRocketBoots_Function()
+        -- print("|cff00ff00Rocket Boots Xtreme autoequip ENABLED!")
+        EquipRocketBoots()
+    end
+
+    -- Function to Disable_EquipRocketBoots
+    function Disable_EquipRocketBoots_Function()
+        -- print("|cffff0000Rocket Boots Xtreme autoequip DISABLED!")
+        EquipRocketBoots()
+    end
+
+    -- Toggle function for auto-equip state
+    local function ToggleXtremeBootsState()
+        if AutoEquipXtremeBoots then
+            AutoEquipXtremeBoots = false
+            Disable_EquipRocketBoots_Function()
+            Xtreme_Boots_Button:SetNormalTexture("Interface\\Icons\\INV_Gizmo_RocketBoot_Destroyed_02")
+            -- labelFrame:SavePosition()
+        else
+            AutoEquipXtremeBoots = true
+            Enable_EquipRocketBoots_Function()
+            Xtreme_Boots_Button:SetNormalTexture("Interface\\Icons\\INV_Gizmo_RocketBoot_01")
+            -- labelFrame:SavePosition()
+        end
+    end
+
+    -- Register the click event for the button
+    Xtreme_Boots_Button:SetScript("OnClick", ToggleXtremeBootsState)
+
     -- Function to update the button state
     function UpdateButtonState()
         if IsInGroup() and UnitIsGroupLeader("player") then
 
-            labelFrame:SetSize(270, 90) -- Set the size of the label frame
+            labelFrame:SetSize(270, 100) -- Set the size of the label frame
 
             button:Show() -- Show the button if the player is the group leader
 
             -- Position the realm best time label
-            realmBestLabel:SetPoint("LEFT", labelFrame, "LEFT", 80, 20) -- Adjust the offset as needed
+            realmBestLabel:SetPoint("LEFT", labelFrame, "LEFT", 80, 30) -- Adjust the offset as needed
             PortalButton:SetPoint("LEFT", minutesLabel, "RIGHT", 120, 41) -- Adjust the position as needed
             -- Position the font strings within the label frame
-            minutesLabel:SetPoint("LEFT", 80, -20)
+            minutesLabel:SetPoint("LEFT", 80, -10)
             secondsLabel:SetPoint("LEFT", minutesLabel, "RIGHT", 0, 0)
             millisecondsLabel:SetPoint("LEFT", secondsLabel, "RIGHT", 0, -1) -- Adjusted the Y offset here
             -- Position the best clear time label below the realm best time label
-            bestClearLabel:SetPoint("LEFT", labelFrame, "LEFT", 80, 0) -- Adjust the offset as needed
+            bestClearLabel:SetPoint("LEFT", labelFrame, "LEFT", 80, 10) -- Adjust the offset as needed
 
             goldicon:SetPoint("LEFT", labelFrame, "BOTTOM", -135, -12)
             goldText:SetPoint("LEFT", goldicon, "RIGHT", 10, 0)
@@ -486,23 +722,26 @@ function CreateAddonFrame()
             goldText:SetFontObject("GameFontNormalLarge")
             silverText:SetFontObject("GameFontNormalLarge")
             bronzeText:SetFontObject("GameFontNormalLarge")
+
+            swapButton:SetPoint("LEFT", Ready_Check_Button, "RIGHT", -20, -22)
+            Xtreme_Boots_Button:SetPoint("LEFT", Ready_Check_Button, "RIGHT", -60, -22)
         elseif not IsInGroup() then
 
-            labelFrame:SetSize(270, 90) -- Set the size of the label frame
+            labelFrame:SetSize(270, 100) -- Set the size of the label frame
 
             button:Show() -- Show the button if the player is alone
             Ready_Check_Button:Hide()
             Role_Marks_Button:Hide()
 
             -- Position the realm best time label
-            realmBestLabel:SetPoint("LEFT", labelFrame, "LEFT", 80, 20) -- Adjust the offset as needed
+            realmBestLabel:SetPoint("LEFT", labelFrame, "LEFT", 80, 30) -- Adjust the offset as needed
             PortalButton:SetPoint("LEFT", minutesLabel, "RIGHT", 120, 41) -- Adjust the position as needed
             -- Position the font strings within the label frame
-            minutesLabel:SetPoint("LEFT", 80, -20)
+            minutesLabel:SetPoint("LEFT", 80, -10)
             secondsLabel:SetPoint("LEFT", minutesLabel, "RIGHT", 0, 0)
             millisecondsLabel:SetPoint("LEFT", secondsLabel, "RIGHT", 0, -1) -- Adjusted the Y offset here
             -- Position the best clear time label below the realm best time label
-            bestClearLabel:SetPoint("LEFT", labelFrame, "LEFT", 80, 0) -- Adjust the offset as needed
+            bestClearLabel:SetPoint("LEFT", labelFrame, "LEFT", 80, 10) -- Adjust the offset as needed
 
             goldicon:SetPoint("LEFT", labelFrame, "BOTTOM", -135, -12)
             goldText:SetPoint("LEFT", goldicon, "RIGHT", 10, 0)
@@ -514,22 +753,25 @@ function CreateAddonFrame()
             goldText:SetFontObject("GameFontNormalLarge")
             silverText:SetFontObject("GameFontNormalLarge")
             bronzeText:SetFontObject("GameFontNormalLarge")
+
+            swapButton:SetPoint("LEFT", Ready_Check_Button, "RIGHT", -20, -22)
+            Xtreme_Boots_Button:SetPoint("LEFT", Ready_Check_Button, "RIGHT", -60, -22)
         else
 
             button:Hide() -- Hide the button if the player is in a group but not the leader
             Ready_Check_Button:Hide()
             Role_Marks_Button:Hide()
 
-            labelFrame:SetSize(200, 90) -- Set the size of the label frame
+            labelFrame:SetSize(200, 100) -- Set the size of the label frame
             -- Position the realm best time label
-            realmBestLabel:SetPoint("LEFT", labelFrame, "LEFT", 10, 20) -- Adjust the offset as needed
+            realmBestLabel:SetPoint("LEFT", labelFrame, "LEFT", 10, 30) -- Adjust the offset as needed
             PortalButton:SetPoint("LEFT", minutesLabel, "RIGHT", 120, 41) -- Adjust the position as needed
             -- Position the font strings within the label frame
-            minutesLabel:SetPoint("LEFT", 10, -20)
+            minutesLabel:SetPoint("LEFT", 10, -10)
             secondsLabel:SetPoint("LEFT", minutesLabel, "RIGHT", 0, 0)
             millisecondsLabel:SetPoint("LEFT", secondsLabel, "RIGHT", 0, -1) -- Adjusted the Y offset here
             -- Position the best clear time label below the realm best time label
-            bestClearLabel:SetPoint("LEFT", labelFrame, "LEFT", 10, 0) -- Adjust the offset as needed
+            bestClearLabel:SetPoint("LEFT", labelFrame, "LEFT", 10, 10) -- Adjust the offset as needed
 
             goldicon:SetPoint("LEFT", labelFrame, "BOTTOM", -95, -12)
             goldText:SetPoint("LEFT", goldicon, "RIGHT", 0, 0)
@@ -542,6 +784,8 @@ function CreateAddonFrame()
             silverText:SetFontObject("GameFontNormal")
             bronzeText:SetFontObject("GameFontNormal")
 
+            swapButton:SetPoint("LEFT", Ready_Check_Button, "RIGHT", -20, 0)
+            Xtreme_Boots_Button:SetPoint("LEFT", Ready_Check_Button, "RIGHT", -60, 0)
         end
     end
 
@@ -713,6 +957,28 @@ function CreateAddonFrame()
 
             UIDropDownMenu_AddButton(lockUnlockInfo, level)
 
+            local scale_frame_Button = UIDropDownMenu_CreateInfo()
+
+            if Timer_frame_Scale == "1" then
+                scale_frame_Button.text = "Scale to 0.75x"
+                scale_frame_Button.notCheckable = true
+                scale_frame_Button.func = function()
+                    ToggleFrameScale075()
+                    Timer_frame_Scale = "0.75"
+                    labelFrame:SavePosition()
+                end
+            else
+                scale_frame_Button.text = "Scale to 1x"
+                scale_frame_Button.notCheckable = true
+                scale_frame_Button.func = function()
+                    ToggleFrameScale1()
+                    Timer_frame_Scale = "1"
+                    labelFrame:SavePosition()
+                end
+            end
+
+            UIDropDownMenu_AddButton(scale_frame_Button, level)
+
             local transparencyButton = UIDropDownMenu_CreateInfo()
             transparencyButton.text = "Opacity"
             transparencyButton.notCheckable = true
@@ -818,7 +1084,8 @@ function CreateAddonFrame()
             yOfs = yOfs,
             colorPicked2 = colorPicked2, -- Save the selected color option
             -- alpha = a,
-            ShowLegend = ShowLegend -- Save the legend visibility state
+            ShowLegend = ShowLegend, -- Save the legend visibility state
+            Timer_frame_Scale = Timer_frame_Scale
         }
 
     end
@@ -956,6 +1223,7 @@ function UpdateTimer(minutesLabel, secondsLabel, millisecondsLabel)
     local currentTime = GetTime()
     local elapsedTime = currentTime - startTime
     timeElapsed = elapsedTime
+
     local minutes = math.floor(elapsedTime / 60)
     local seconds = math.floor(elapsedTime % 60)
     local milliseconds = math.floor((elapsedTime * 1000) % 1000)
@@ -1059,7 +1327,7 @@ end
 
 function Check_Group_State_For_Button_State()
     if IsInGroup() and UnitIsGroupLeader("player") then
-        labelFrame:SetSize(270, 90) -- Set the size of the label frame
+        labelFrame:SetSize(270, 100) -- Set the size of the label frame
         button:Show() -- Show the button if the player is the group leader
 
         ShowReadyCheckVariable = CmHelperDB.framePosition.ShowReadyCheck
@@ -1078,7 +1346,7 @@ function Check_Group_State_For_Button_State()
             ShowMarkTankHealer_Function()
         end
     elseif not IsInGroup() then
-        labelFrame:SetSize(270, 90) -- Set the size of the label frame
+        labelFrame:SetSize(270, 100) -- Set the size of the label frame
 
         button:Show() -- Show the button if the player is alone
         Ready_Check_Button:Hide()
@@ -1100,6 +1368,30 @@ function HideTimerFrame()
     else
         labelFrame:Hide()
     end
+end
+
+-- Create a function to simulate a delayed action
+local function DelayedAction(delay, func)
+    local start = GetTime()
+    local frame = CreateFrame("Frame")
+    frame:SetScript("OnUpdate", function(self, elapsed)
+        if GetTime() - start >= delay then
+            func() -- Execute the delayed function
+            self:SetScript("OnUpdate", nil) -- Stop the OnUpdate loop
+        end
+    end)
+end
+
+-- Function to toggle the scale of the frame and its children
+function ToggleFrameScale1()
+    labelFrame:SetScale(1) -- Set to normal size
+    Timer_frame_Scale = "1"
+end
+
+-- Function to toggle the scale of the frame and its children
+function ToggleFrameScale075()
+    labelFrame:SetScale(0.75) -- Set to 75% scale
+    Timer_frame_Scale = "0.75"
 end
 
 -- Register events
@@ -1148,11 +1440,22 @@ frame:SetScript("OnEvent", function(self, event, ...)
             PortalButtonState = "NotPressed"
             PortalButton:SetNormalTexture("Interface\\Icons\\misc_arrowright")
         end
+
+        if AutoEquipXtremeBoots == false then
+            Disable_EquipRocketBoots_Function()
+            Xtreme_Boots_Button:SetNormalTexture("Interface\\Icons\\INV_Gizmo_RocketBoot_Destroyed_02")
+        else
+            Enable_EquipRocketBoots_Function()
+            Xtreme_Boots_Button:SetNormalTexture("Interface\\Icons\\INV_Gizmo_RocketBoot_01")
+        end
     elseif event == "PLAYER_ROLES_ASSIGNED" then
         Check_Group_State_For_Button_State()
     elseif event == "PLAYER_LOGOUT" then
         if not CmHelperDB.framePosition.colorPicked2 then
             CmHelperDB.framePosition.colorPicked2 = "1" -- Variable to store the selected color option
+        end
+        if not CmHelperDB.framePosition.Timer_frame_Scale then
+            CmHelperDB.framePosition.Timer_frame_Scale = "1" -- Variable to store the selected color option
         end
         if not CmHelperDB.framePosition.ShowLegend then
             CmHelperDB.framePosition.ShowLegend = "True" -- Variable to store the selected color option
@@ -1195,6 +1498,14 @@ frame:SetScript("OnEvent", function(self, event, ...)
                 HideLegend_Function()
             else
                 ShowLegend_Function()
+            end
+
+            Timer_frame_Scale = CmHelperDB.framePosition.Timer_frame_Scale
+
+            if Timer_frame_Scale == "1" then
+                ToggleFrameScale1()
+            else
+                ToggleFrameScale075()
             end
 
             ShowPortalsButton = CmHelperDB.framePosition.ShowPortalsButton
@@ -1255,6 +1566,11 @@ frame:SetScript("OnEvent", function(self, event, ...)
         updateFrame()
 
     elseif event == "START_TIMER" then
+
+        if Swap_Trinkets then
+            DelayedAction(3, swapTrinkets) -- Calls swapTrinkets after 3 seconds only if Swap_Trinkets is true
+        end
+
         startTime = GetTime() + 5 -- Record the start time
         isTimerActive = true
         if resetButton then

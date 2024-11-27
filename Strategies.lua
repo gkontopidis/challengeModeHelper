@@ -1,7 +1,7 @@
 -- Saved variable to store strategies
 local SavedStrategies = {}
-local RemoveStrategyIcon = "Interface\\Buttons\\UI-GroupLoot-Pass-Down"
-local EditButtonIcon = "Interface\\Buttons\\UI-LinkProfession-Up"
+local RemoveStrategyIcon = "Interface\\Scenarios\\ScenarioIcon-Fail"
+local EditButtonIcon = "Interface\\Scenarios\\ScenarioIcon-Interact"
 
 -- Function to load strategies
 local function LoadStrategies()
@@ -37,10 +37,30 @@ end
 
 -- Function to create the "Remove Strategy" button
 local function CreateRemoveButton(parent, scenarioName, buttonName)
-    local removeButton = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
-    removeButton:SetSize(15, 15)
-    removeButton:SetPoint("RIGHT", 15, 0)
+
+    -- Create a transparent button without a template
+    removeButton = CreateFrame("Button", nil, parent)
+    removeButton:SetSize(20, 20)
+    removeButton:SetPoint("LEFT", 200, 0)
+
+    -- Set the normal texture for the button
     removeButton:SetNormalTexture(RemoveStrategyIcon)
+
+    -- Set the button to be transparent
+    removeButton:SetBackdrop(nil) -- Ensure there is no backdrop
+    removeButton:SetHighlightTexture(nil) -- Remove the highlight texture if needed
+    removeButton:SetPushedTexture(nil) -- Remove the pushed texture if needed
+
+    -- Set up the tooltip
+    removeButton:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT") -- Position the tooltip next to the button
+        GameTooltip:SetText("Remove Strategy", 1, 1, 1) -- Set tooltip text and color (RGB)
+        GameTooltip:Show() -- Show the tooltip
+    end)
+
+    removeButton:SetScript("OnLeave", function()
+        GameTooltip:Hide() -- Hide the tooltip when the mouse leaves
+    end)
 
     removeButton:SetScript("OnClick", function()
         StaticPopupDialogs["CONFIRM_REMOVE_STRATEGY"] = {
@@ -65,10 +85,27 @@ end
 
 -- Function to create the "Edit Strategy" button
 local function CreateEditButton(parent, scenarioName, strategyIndex)
-    local editButton = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
-    editButton:SetNormalTexture(EditButtonIcon)
+    -- Create the edit button, anchored to the right of removeButton
+    editButton = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
     editButton:SetSize(15, 15)
-    editButton:SetPoint("RIGHT", 30, 0)
+    editButton:SetPoint("LEFT", removeButton, "RIGHT", 10, 0) -- Positioned 30 pixels to the right of removeButton
+    editButton:SetNormalTexture(EditButtonIcon)
+
+    -- Make the button background transparent
+    editButton:SetBackdrop(nil) -- No backdrop
+    editButton:SetHighlightTexture(nil) -- Remove highlight texture
+    editButton:SetPushedTexture(nil) -- Remove pushed texture
+
+    -- Set up the tooltip for the edit button
+    editButton:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT") -- Position the tooltip next to the button
+        GameTooltip:SetText("Edit Strategy", 1, 1, 1) -- Set tooltip text and color (RGB)
+        GameTooltip:Show() -- Show the tooltip
+    end)
+
+    editButton:SetScript("OnLeave", function()
+        GameTooltip:Hide() -- Hide the tooltip when the mouse leaves
+    end)
 
     editButton:SetScript("OnClick", function()
         -- Open a frame for editing the strategy
@@ -188,7 +225,7 @@ end
 local function CreateButton(scenarioName, buttonName, index)
     local button = CreateFrame("Button", nil, MyChallengeAddonFrame, "UIPanelButtonTemplate")
     button:SetText(buttonName)
-    button:SetSize(120, 25)
+    button:SetSize(200, 25)
     button:SetPoint("TOPLEFT", 10, -index * 30)
     -- OnClick handler
     button:SetScript("OnMouseDown", function(self, clickType)
@@ -197,25 +234,40 @@ local function CreateButton(scenarioName, buttonName, index)
         else
             local strategy = SavedStrategies[scenarioName][buttonName]
             if strategy then
-                -- Split the multiline strategy into separate lines
-                local lines = {strsplit("\n", strategy)}
-                -- Send each line separately
-                for _, line in ipairs(lines) do
-                    -- Split the line into chunks of 255 characters or less
-                    local chunks = {}
-                    local chunkStart = 1
-                    while chunkStart <= #line do
-                        local chunkEnd = math.min(chunkStart + 254, #line) -- Ensure chunk doesn't exceed 255 characters
-                        local chunk = string.sub(line, chunkStart, chunkEnd)
-                        table.insert(chunks, chunk)
-                        chunkStart = chunkEnd + 1
-                    end
 
-                    -- Send each chunk separately
-                    for _, chunk in ipairs(chunks) do
-                        SendChatMessage(chunk, "PARTY")
+                -- Check if the player is in a party
+                local sendChannel = IsInGroup() and "PARTY" or "WHISPER"
+                local targetName = IsInGroup() and nil or UnitName("player") -- Send to self if not in a party
+
+                -- Split message into lines by newline characters
+                local lines = {strsplit("\n", strategy)}
+
+                for _, line in ipairs(lines) do
+                    -- Check if the line length is greater than 255
+                    if #line > 255 then
+                        -- Split the line into chunks of 255 characters
+                        local chunkStart = 1
+                        while chunkStart <= #line do
+                            local chunkEnd = math.min(chunkStart + 254, #line) -- Ensure chunk doesn't exceed 255 characters
+                            local chunk = string.sub(line, chunkStart, chunkEnd)
+                            -- Send to party or whisper based on group status
+                            if sendChannel == "PARTY" then
+                                SendChatMessage(chunk, sendChannel)
+                            else
+                                SendChatMessage(chunk, sendChannel, nil, targetName)
+                            end
+                            chunkStart = chunkEnd + 1
+                        end
+                    else
+                        -- If line length is within limits, send it directly
+                        if sendChannel == "PARTY" then
+                            SendChatMessage(line, sendChannel)
+                        else
+                            SendChatMessage(line, sendChannel, nil, targetName)
+                        end
                     end
                 end
+
             end
         end
     end)
@@ -248,6 +300,9 @@ local function UpdateFrameSize(numButtons)
     MyChallengeAddonFrame:SetHeight(frameHeight) -- Set the frame height
 end
 
+-- Declare the title label outside of the UpdateButtons function
+local titleLabel
+
 -- Function to update buttons after adding a new strategy
 function UpdateButtons()
     local frame = MyChallengeAddonFrame
@@ -256,21 +311,56 @@ function UpdateButtons()
     local strategies
     frame:Hide()
     local scenarioName, _, _, difficultyName = GetInstanceInfo()
+
     if difficultyName == "Challenge Mode" then
         strategies = SavedStrategies[scenarioName]
         if strategies then
             -- Clear existing buttons
             ClearAllChildFrames(frame)
 
+            -- Create the title label if it doesn't exist
+            if not titleLabel then
+                titleLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+                titleLabel:SetPoint("TOPLEFT", 0, -10) -- Position it at the top left
+                titleLabel:SetPoint("TOPRIGHT", 0, -10) -- Position it at the top right
+                titleLabel:SetJustifyH("CENTER") -- Center the text horizontally
+            end
+
+            -- Set the instance name as the title
+            local instanceName = scenarioName or "Unknown Instance" -- Get the instance name, default to "Unknown Instance" if nil
+            titleLabel:SetText(instanceName) -- Set the instance name as the title text
+
+            titleLabel:SetTextColor(1.0, 0.843, 0) -- Gold color
+            titleLabel:SetJustifyH("CENTER") -- Center the text horizontally
+
             local index = 1
             for buttonName, strategy in pairs(strategies) do
                 CreateButton(scenarioName, buttonName, index)
                 index = index + 1
             end
-            -- Update frame size based on the number of strategies
 
-            local frameHeight = ((index - 1) * (buttonHeight + verticalSpacing)) + 20 -- Add 20 for additional space
-            frame:SetSize(180, frameHeight) -- Adjust size based on the number of strategies
+            -- Update frame size based on the number of strategies
+            local frameHeight = ((index - 1) * (buttonHeight + verticalSpacing)) + 15 -- + titleLabel:GetStringHeight() -- Add height for title
+            frame:SetSize(265, frameHeight) -- Adjust size based on the number of strategies
+
+            -- Set backdrop for the frame to show borders
+            frame:SetBackdrop({
+                bgFile = "Interface\\Tooltips\\UI-Tooltip-Background", -- Background texture
+                edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", -- Border texture
+                tile = true,
+                tileSize = 16,
+                edgeSize = 16,
+                insets = {
+                    left = 4,
+                    right = 4,
+                    top = 4,
+                    bottom = 4
+                }
+            })
+
+            frame:SetBackdropColor(0, 0, 0, 1) -- Background color (black)
+            frame:SetBackdropBorderColor(1, 1, 1, 1) -- Border color (white)
+
             -- Enable frame for movement
             frame:RegisterForDrag("LeftButton")
             frame:SetMovable(true)
@@ -358,7 +448,7 @@ function CreateNewStrategyFrame(defaultButtonName, scenarioName)
     buttonNameEditBox:SetSize(160, 30)
     buttonNameEditBox:SetPoint("TOP", 0, -25)
     buttonNameEditBox:SetAutoFocus(true)
-    buttonNameEditBox:SetMaxLetters(30) -- Set maximum characters for button name
+    buttonNameEditBox:SetMaxLetters(20) -- Set maximum characters for button name
     buttonNameEditBox:SetFontObject(GameFontHighlight)
     buttonNameEditBox:SetScript("OnEscapePressed", function(self)
         self:ClearFocus()
@@ -370,7 +460,6 @@ function CreateNewStrategyFrame(defaultButtonName, scenarioName)
         buttonNameEditBox:SetText(defaultButtonName)
     end
 
-    -- Create Confirm Button for button name
     local confirmButton = CreateFrame("Button", nil, newStrategyFrame, "UIPanelButtonTemplate")
     confirmButton:SetText("Confirm")
     confirmButton:SetSize(60, 30)
@@ -380,10 +469,16 @@ function CreateNewStrategyFrame(defaultButtonName, scenarioName)
         if newButtonName ~= "" then
             -- Once button name is confirmed, proceed to enter strategy
             newStrategyFrame:Hide()
+
             if defaultButtonName then
-                if SavedStrategies[scenarioName] and SavedStrategies[scenarioName][defaultButtonName] then
-                    SavedStrategies[scenarioName][newButtonName] = SavedStrategies[scenarioName][defaultButtonName]
-                    SavedStrategies[scenarioName][defaultButtonName] = nil
+                -- Check if the new button name is different from the default
+                if newButtonName ~= defaultButtonName then
+                    if SavedStrategies[scenarioName] and SavedStrategies[scenarioName][defaultButtonName] then
+                        SavedStrategies[scenarioName][newButtonName] = SavedStrategies[scenarioName][defaultButtonName]
+                        SavedStrategies[scenarioName][defaultButtonName] = nil
+                    end
+                else
+                    print("Button name remains the same: " .. newButtonName)
                 end
                 UpdateButtons()
                 MyChallengeAddonFrame:Show()
@@ -526,6 +621,7 @@ local function CreateToggleButton()
     addButton:SetText("Add New")
     addButton:SetSize(80, 25)
     addButton:SetPoint("LEFT", button, "RIGHT", 10, 0)
+
     addButton:SetScript("OnClick", function()
         CreateNewStrategyFrame()
     end)

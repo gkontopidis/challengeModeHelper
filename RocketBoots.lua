@@ -4,6 +4,10 @@ local f = CreateFrame("Frame")
 local bootItemID = 35581 -- The item ID for Rocket Boots Xtreme
 
 local function EquipRocketBoots()
+    print("prin")
+    -- Check if AutoEquipXtremeBoots is enabled
+    if not AutoEquipXtremeBoots then return end
+    print("meta")
     if IsInInstance() then
         local scenarioName, _, _, difficultyName = GetInstanceInfo()
             if difficultyName == "Challenge Mode" then

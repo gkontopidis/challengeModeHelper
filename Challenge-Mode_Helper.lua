@@ -20,7 +20,7 @@ function f:OnEvent(event, addOnName)
             print(
                 "|cff00ccffChallenge-Mode Helper loaded. An essential addon for Mist of Pandaria Challenge Modes! Enhance your performance with valuable insights and convenient functionalities.")
             print("|cff00ccffType /cm or /cmhelper to access options and reset boss kill times.")
-            print("|cff00ccffAutoMarker usage /am add 'NPC Name'.")
+            --print("|cff00ccffAutoMarker usage /am add 'NPC Name'.")
         end
     elseif event == "WORLD_STATE_TIMER_STOP" then
         OnWorldStateTimerStop() -- This calls the globally shared function
@@ -1017,7 +1017,7 @@ function f:InitializeOptions()
 
     Strategies_Frame_Elements()
 
-    InterfaceOptions_AddCategory(self.panel.BL)
+    --InterfaceOptions_AddCategory(self.panel.BL)     --Strategies panel 
 
     -- Automarker Frame Panel
     self.panel.BL = CreateFrame("Frame", nil, UIParent, "OptionsBoxTemplate")
@@ -1032,7 +1032,7 @@ function f:InitializeOptions()
 
     Automarker_Frame_Elements()
 
-    InterfaceOptions_AddCategory(self.panel.BL)
+    --InterfaceOptions_AddCategory(self.panel.BL)      --Automarker panel 
 
     -- About Panel
     self.panel.BL = CreateFrame("Frame", nil, UIParent, "OptionsBoxTemplate")
